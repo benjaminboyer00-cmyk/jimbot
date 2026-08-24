@@ -1,0 +1,73 @@
+name: Rapport quotidien
+
+on:
+  schedule:
+    # 07:00 UTC — après la clôture US et avant l'ouverture européenne.
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+    inputs:
+      no_send:
+        description: "Générer le PDF sans publier sur Discord"
+        type: boolean
+        default: false
+
+concurrency:
+  group: jimbot-data
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: engine/requirements.txt
+
+      - name: Installer les dépendances
+        run: pip install -r engine/requirements.txt
+
+      - name: Générer le rapport
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_ROLE_ID: ${{ secrets.DISCORD_ROLE_ID }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          JIMBOT_PAPER_CAPITAL: ${{ vars.JIMBOT_PAPER_CAPITAL }}
+        run: python engine/daily_report.py ${{ inputs.no_send && '--no-send' || '' }}
+
+      - name: Archiver le PDF dans l'exécution
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapport-${{ github.run_id }}
+          path: reports/*.pdf
+          retention-days: 30
+
+      - name: Purger les rapports de plus de 60 jours
+        run: |
+          # Sans purge, le dépôt gonfle d'environ 400 Ko par jour.
+          find reports -name 'jimbot-*.pdf' -type f -mtime +60 -delete || true
+
+      - name: Publier les résultats
+        run: |
+          git config user.name  "jimbot"
+          git config user.email "jimbot@users.noreply.github.com"
+          git add data/ reports/
+          if git diff --staged --quiet; then
+            echo "aucun changement à publier"
+            exit 0
+          fi
+          git commit -m "rapport: $(date -u '+%Y-%m-%d')"
+          for attempt in 1 2 3; do
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && \
+            git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            sleep 5
+          done
+          echo "::error::publication impossible après 3 tentatives"
+          exit 1
