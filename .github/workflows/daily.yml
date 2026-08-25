@@ -65,7 +65,10 @@ jobs:
           fi
           git commit -m "rapport: $(date -u '+%Y-%m-%d')"
           for attempt in 1 2 3; do
-            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" && \
+            # -X theirs : en cas de conflit sur data/, on conserve les fichiers
+            # qui viennent d'être générés. Ce sont des artefacts recalculés à
+            # chaque exécution, jamais une source de vérité à préserver.
+            git pull --rebase -X theirs --autostash origin "${GITHUB_REF_NAME}" && \
             git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
             sleep 5
           done
