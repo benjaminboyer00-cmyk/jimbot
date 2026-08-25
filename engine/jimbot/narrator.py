@@ -329,7 +329,7 @@ def _digits(price: float) -> int:
 # Résumé d'actualité
 # --------------------------------------------------------------------------
 def news_facts(articles: list[dict], sentiment: dict, risk_off: dict,
-               speeches: list[dict]) -> dict:
+               speeches: list[dict], agenda: dict | None = None) -> dict:
     """Agrège l'actualité en faits chiffrés, prêts à être mis en phrases.
 
     Un tableau de titres n'est pas un résumé : il demande au lecteur de faire
@@ -367,6 +367,16 @@ def news_facts(articles: list[dict], sentiment: dict, risk_off: dict,
             {"orateur": s["speaker"], "propos": s["title"], "tonalite": s["tone"],
              "effet_or": s["impact"].get("XAUUSD", 0.0)}
             for s in speeches[:3]
+        ],
+        "echeances_mecaniques": [
+            {"dans_jours": e["days_ahead"], "libelle": e["label"],
+             "impact": e["impact"]}
+            for e in (agenda or {}).get("mechanical", [])[:5]
+        ],
+        "echeances_annoncees_par_la_presse": [
+            {"libelle": e["label"], "impact": e["impact"], "source": e["source"],
+             "titre": e["detail"]}
+            for e in (agenda or {}).get("press", [])[:5]
         ],
         "actifs_les_plus_cites": [
             {"actif": sym, "articles": v["count"],
@@ -411,6 +421,17 @@ def template_news(facts: dict) -> str:
             f"L'information de marché la plus chargée est {sens} : "
             f"« {a['titre'][:110]} » ({a['source']}, {a['sentiment']:+.1f}).")
 
+    mech = facts.get("echeances_mecaniques", [])
+    presse = facts.get("echeances_annoncees_par_la_presse", [])
+    if mech or presse:
+        bouts = []
+        for e in mech[:3]:
+            quand = "aujourd'hui" if e["dans_jours"] == 0 else f"dans {e['dans_jours']} j"
+            bouts.append(f"{e['libelle']} ({quand})")
+        for e in presse[:3]:
+            bouts.append(f"{e['libelle']} (annoncé par {e['source']})")
+        parts.append("À venir : " + " ; ".join(bouts) + ".")
+
     if facts["actifs_les_plus_cites"]:
         listing = ", ".join(
             f"{x['actif']} ({x['articles']} art., {x['sentiment']:+.2f})"
@@ -421,20 +442,23 @@ def template_news(facts: dict) -> str:
 
 
 def narrate_news(articles: list[dict], sentiment: dict, risk_off: dict,
-                 speeches: list[dict]) -> tuple[str, str]:
+                 speeches: list[dict], agenda: dict | None = None) -> tuple[str, str]:
     """Rédige le résumé d'actualité. Renvoie (texte, moteur utilisé)."""
-    facts = news_facts(articles, sentiment, risk_off, speeches)
+    facts = news_facts(articles, sentiment, risk_off, speeches, agenda)
     prompt = (
-        "Rédige un résumé d'actualité en 3 paragraphes courts, destiné à un "
+        "Rédige un résumé d'actualité en 4 paragraphes courts, destiné à un "
         "lecteur qui veut comprendre le contexte avant de regarder les "
         "graphiques :\n"
         "1) ce qui domine l'actualité internationale et la tension qui en découle ;\n"
         "2) ce que disent les banques centrales et l'actualité de marché ;\n"
-        "3) quels actifs sont concernés et dans quel sens.\n\n"
+        "3) quels actifs sont concernés et dans quel sens ;\n"
+        "4) ce qui arrive dans les prochains jours et ce qu'il faut surveiller. "
+        "Pour les échéances annoncées par la presse, ne donne aucune date "
+        "précise : seule la source la connaît, cite-la sans l'inventer.\n\n"
         "Rappelle que l'effet d'une escalade dépend de l'actif : haussier pour "
         "l'or, le dollar et la volatilité, baissier pour les indices et la "
         "crypto. Utilise exclusivement les valeurs ci-dessous.\n\n"
         "DONNÉES CALCULÉES :\n" + _facts_block(facts)
     )
-    text = _ask(prompt, max_tokens=2500)
+    text = _ask(prompt, max_tokens=3000)
     return (text, "llm") if text else (template_news(facts), "gabarit")

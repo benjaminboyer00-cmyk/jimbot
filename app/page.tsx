@@ -16,6 +16,7 @@ import {
 } from "@/lib/data";
 
 import {
+  Agenda,
   ApiSection,
   Memecoins,
   NewsSummary,
@@ -112,6 +113,8 @@ export default async function Page() {
             </div>
           )}
         </section>
+
+        <Agenda agenda={snap.agenda} />
 
         <Watchlist items={snap.watchlist ?? []} />
 

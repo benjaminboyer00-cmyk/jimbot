@@ -131,6 +131,17 @@ export type Snapshot = {
   news_engine?: string;
   speeches?: Speech[];
   watchlist?: Signal[];
+  agenda?: {
+    mechanical: {
+      date: string;
+      days_ahead: number;
+      label: string;
+      impact: string;
+      detail: string;
+    }[];
+    press: { label: string; impact: string; detail: string; source: string; url: string }[];
+    high_impact: number;
+  };
   reports?: Report[];
   news: Article[];
   portfolio: {

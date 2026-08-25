@@ -111,34 +111,47 @@ export function NewsSummary({
 /**
  * Motif pour lequel une orientation n'est pas retenue.
  *
- * La distinction compte : « aucun avantage mesuré » et « espérance négative »
- * n'ont pas le même sens. Sous un score de 50, le modèle attribue un avantage
- * strictement nul — le signal ne dit rien de la direction — et l'espérance est
- * alors négative par construction, du seul fait des coûts et des pénalités.
- * Au-delà de 50, une espérance négative signale au contraire que la structure
- * du marché bloque le chemin vers l'objectif.
+ * Trois cas bien distincts, qu'il serait trompeur de confondre :
+ *
+ * - sous un score de 50, le modèle attribue un avantage **directionnel**
+ *   strictement nul. Une espérance malgré tout positive ne vient donc pas
+ *   d'une conviction sur le sens du marché, mais du seul placement du stop
+ *   derrière un niveau solide — c'est réel, mais bien plus faible ;
+ * - une espérance négative signale que la structure bloque le chemin vers
+ *   l'objectif ;
+ * - au-delà de 50 avec une espérance positive, il ne manque que la
+ *   conviction pour franchir le seuil.
  */
-function verdict(s: Signal): string {
-  if (s.score < 50) return "aucun avantage mesuré (score < 50)";
-  if (s.expected_r <= 0) return "structure défavorable — objectif hors d’atteinte";
-  return `espérance positive mais sous le seuil (${s.score.toFixed(0)}/58)`;
+function verdict(s: Signal): { text: string; tone: "neutral" | "bad" } {
+  if (s.expected_r <= 0)
+    return { text: "structure défavorable — objectif hors d'atteinte", tone: "bad" };
+  if (s.score < 50)
+    return {
+      text: "aucune conviction directionnelle — l'espérance ne vient que du stop",
+      tone: "neutral",
+    };
+  return {
+    text: `espérance positive, conviction insuffisante (${s.score.toFixed(0)}/58)`,
+    tone: "neutral",
+  };
 }
 
 export function Watchlist({ items }: { items: Signal[] }) {
   if (!items.length) return null;
   return (
     <section>
-      <h2>Suggestions du moment</h2>
+      <h2>Les moins défavorables du moment</h2>
       <p className="note" style={{ marginTop: 0, marginBottom: 14 }}>
-        Ces orientations <strong>n’atteignent pas le seuil de déclenchement</strong> et
-        ne donnent lieu à aucune position. Elles sont affichées parce que savoir
-        ce qui s’en rapproche le plus a de la valeur, et parce qu’une espérance
-        négative dit explicitement de <em>ne pas</em> prendre le trade.
+        Classées de la moins défavorable à la plus défavorable. Aucune n’atteint
+        le seuil de déclenchement et aucune ne donne lieu à une position :
+        ce ne sont pas des opportunités, seulement ce qui s’en approche le plus
+        aujourd’hui.
         <br />
-        Sous un score de 50, le modèle attribue un avantage directionnel
-        strictement nul : l’espérance y est donc négative par construction, du
-        seul fait des coûts et de la distance au stop. C’est délibéré — un
-        signal faible ne doit pas pouvoir paraître rentable.
+        <strong>Une espérance positive ici ne signifie pas un bon trade.</strong>{" "}
+        Sous un score de 50, le modèle n’accorde aucun avantage directionnel :
+        l’espérance affichée provient alors uniquement du placement du stop
+        derrière un niveau solide. C’est un avantage réel mais faible, et il ne
+        dit rien du sens dans lequel le marché va partir.
       </p>
       <div className="tablewrap">
         <table>
@@ -153,7 +166,7 @@ export function Watchlist({ items }: { items: Signal[] }) {
               <th className="num">R/R</th>
               <th className="num">P(gain)</th>
               <th className="num">Espérance</th>
-              <th>Verdict</th>
+              <th className="wide">Lecture</th>
             </tr>
           </thead>
           <tbody>
@@ -173,7 +186,9 @@ export function Watchlist({ items }: { items: Signal[] }) {
                   {s.expected_r >= 0 ? "+" : ""}
                   {fmtNum(s.expected_r, 3)} R
                 </td>
-                <td className="muted">{verdict(s)}</td>
+                <td className={verdict(s).tone === "bad" ? "down" : "muted"}>
+                  {verdict(s).text}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -520,6 +535,112 @@ export function WorldContext({ riskOff }: { riskOff: RiskOff }) {
           sur les indices et la crypto.
         </p>
       </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Agenda                                                              */
+/* ------------------------------------------------------------------ */
+export function Agenda({
+  agenda,
+}: {
+  agenda?: {
+    mechanical: {
+      date: string;
+      days_ahead: number;
+      label: string;
+      impact: string;
+      detail: string;
+    }[];
+    press: { label: string; impact: string; detail: string; source: string; url: string }[];
+  };
+}) {
+  if (!agenda) return null;
+  const { mechanical = [], press = [] } = agenda;
+  if (!mechanical.length && !press.length) return null;
+
+  const badge = (impact: string) =>
+    impact === "eleve" ? "short" : impact === "moyen" ? "neutre" : "neutre";
+  const libelle = (impact: string) =>
+    impact === "eleve" ? "IMPACT ÉLEVÉ" : impact === "moyen" ? "IMPACT MOYEN" : "IMPACT FAIBLE";
+
+  return (
+    <section>
+      <h2>À venir</h2>
+
+      {mechanical.length > 0 && (
+        <div className="agenda">
+          {mechanical.map((e, i) => (
+            <div className="event" key={i}>
+              <div className="event-when">
+                <div className="event-days">
+                  {e.days_ahead === 0 ? "auj." : `J+${e.days_ahead}`}
+                </div>
+                <div className="event-date muted">{e.date.slice(5)}</div>
+              </div>
+              <div>
+                <div className="event-head">
+                  <strong>{e.label}</strong>
+                  <span className={`badge ${badge(e.impact)}`}>{libelle(e.impact)}</span>
+                </div>
+                <div className="muted" style={{ fontSize: 12, marginTop: 3 }}>
+                  {e.detail}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {press.length > 0 && (
+        <>
+          <h3 style={{ marginTop: 22 }}>Annoncé par la presse</h3>
+          <div className="tablewrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Échéance</th>
+                  <th>Impact</th>
+                  <th>Ce que dit la source</th>
+                  <th>Source</th>
+                </tr>
+              </thead>
+              <tbody>
+                {press.map((e, i) => (
+                  <tr key={i}>
+                    <td style={{ fontWeight: 600 }}>{e.label}</td>
+                    <td className={e.impact === "eleve" ? "down" : "muted"}>
+                      {e.impact === "eleve" ? "élevé" : e.impact === "moyen" ? "moyen" : "faible"}
+                    </td>
+                    <td className="wide">
+                      {e.url ? (
+                        <a href={e.url} target="_blank" rel="noopener noreferrer">
+                          {e.detail}
+                        </a>
+                      ) : (
+                        e.detail
+                      )}
+                    </td>
+                    <td className="muted">{e.source}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+      <p className="note">
+        Deux sources, et deux seulement. Les échéances du haut se{" "}
+        <strong>déduisent du calendrier</strong> par une règle — le rapport sur
+        l’emploi tombe le premier vendredi du mois, les options expirent le
+        troisième — et sont donc exactes par construction. Celles du bas sont
+        celles que <strong>la presse annonce</strong>, citées avec leur source
+        pour être vérifiables. Aucun calendrier de réunions de banques centrales
+        n’est inscrit en dur : une date fausse présentée comme certaine serait
+        pire que pas de date du tout.
+      </p>
     </section>
   );
 }

@@ -38,6 +38,7 @@ non falsifiable a posteriori.
 | `engine/jimbot/paper.py` | Exécution simulée avec frais et glissement, statistiques de performance |
 | `engine/jimbot/narrator.py` | Rédaction hybride : chiffres calculés en Python, mise en phrases par Claude |
 | `engine/jimbot/report.py` | Rapport PDF (ReportLab + matplotlib) |
+| `engine/jimbot/calendar.py` | Échéances à venir : règles de calendrier et annonces de presse |
 | `app/` | Dashboard Next.js et routes d'API |
 | `metatrader/` | Expert Advisor MQL5 prêt à l'emploi |
 
@@ -101,6 +102,22 @@ sentiment classique ne peut pas représenter :
 Les deux lexiques existent en anglais et en français — sans quoi les flux
 France 24 et Le Monde seraient entièrement ignorés.
 
+### Échéances à venir
+
+Deux sources, et deux seulement, parce que ce sont les deux qu'on peut
+garantir. Les **échéances mécaniques** se déduisent du calendrier par une
+règle — le rapport sur l'emploi américain tombe le premier vendredi du mois,
+les options expirent le troisième, les fins de trimestre déclenchent des
+rééquilibrages — et sont donc exactes par construction. Les **annonces de
+presse** sont extraites des dépêches qui signalent explicitement un événement
+à venir (« ahead of Thursday's CPI », « the Fed meets next week »), et citées
+avec leur source.
+
+Aucun calendrier de réunions de banques centrales n'est inscrit en dur : ces
+dates changent, et une date fausse présentée comme certaine est pire que pas
+de date du tout. Le moteur signale l'échéance quand la presse la mentionne, et
+se tait sinon.
+
 ### Risque
 
 Le dimensionnement part du risque accepté, pas du montant investi : la taille
@@ -161,7 +178,7 @@ Puis, sur GitHub, onglet **Actions** → *Scan de marché* → **Run workflow**.
 .venv/bin/python engine/scan.py --no-alert    # analyse seule
 .venv/bin/python engine/scan.py --dry-run     # simule aussi les envois
 .venv/bin/python engine/daily_report.py       # rapport PDF + publication
-.venv/bin/python -m pytest engine/tests -v    # 155 tests, sans réseau
+.venv/bin/python -m pytest engine/tests -v    # 196 tests, sans réseau
 npm run dev                                   # dashboard sur localhost:3000
 ```
 

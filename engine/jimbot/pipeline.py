@@ -11,6 +11,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pandas as pd
 
+from . import calendar as cal
 from . import risk, stats
 from .config import MEMECOIN_CHAINS, REPORTS_DIR, SETTINGS, UNIVERSE, Asset
 from .datasources import crypto, dexscreener, news as news_src, yahoo
@@ -200,15 +201,20 @@ def persist_scan(signals: list[dict], data: dict, portfolio: dict,
 
     articles = [a.to_dict() for a in data["articles"]]
     speeches = news_src.major_speeches(data["articles"])
+    agenda = cal.upcoming(articles)
     news_summary, news_engine = narrator.narrate_news(
-        articles, data["sentiment"], data.get("risk_off", {}), speeches)
+        articles, data["sentiment"], data.get("risk_off", {}), speeches, agenda)
 
     # Liste de surveillance : les meilleures orientations du moment, y compris
     # sous le seuil de déclenchement. Sans elle, un jour calme n'affiche rien,
     # alors que l'information « voici ce qui s'en rapproche le plus » a de la
     # valeur.
-    watchlist = [s for s in signals
-                 if s["bias"] != "neutre" and not s["actionable"]][:8]
+    # Classées de la moins défavorable à la plus défavorable : la question
+    # utile n'est pas « laquelle est bonne » — aucune ne l'est — mais « laquelle
+    # l'est le moins ».
+    watchlist = sorted(
+        (s for s in signals if s["bias"] != "neutre" and not s["actionable"]),
+        key=lambda s: -s["expected_r"])[:8]
 
     snapshot = {
         "generated_at": data["generated_at"],
@@ -216,6 +222,7 @@ def persist_scan(signals: list[dict], data: dict, portfolio: dict,
         "news_engine": news_engine,
         "speeches": speeches,
         "watchlist": watchlist,
+        "agenda": agenda,
         "reports": list_reports(),
         "signals": signals,
         "regimes": regimes,
