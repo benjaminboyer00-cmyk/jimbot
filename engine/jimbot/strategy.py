@@ -19,6 +19,7 @@ import numpy as np
 import pandas as pd
 
 from . import indicators as I
+from . import levels as L
 from . import stats as S
 from .config import Asset, RISK, SETTINGS
 
@@ -41,26 +42,32 @@ from .config import Asset, RISK, SETTINGS
 # reste atteignable mais exige un alignement quasi total des six facteurs.
 SCORE_SCALE = 0.36
 
+# Espérance minimale, en multiples de risque, pour qu'un signal soit retenu.
+# Un score élevé ne suffit pas : si la structure ne laisse aucun objectif
+# atteignable avant une résistance solide, le trade est mauvais quelle que
+# soit la conviction. C'est le principal apport de l'optimisation des niveaux.
+MIN_EXPECTED_R = 0.02
+
 # --------------------------------------------------------------------------
 # Pondérations par régime : la même donnée ne vaut pas la même chose partout.
 # Chaque colonne somme à 1.0.
 # --------------------------------------------------------------------------
 WEIGHTS: dict[str, dict[str, float]] = {
     "tendance_haussière": {
-        "trend": 0.32, "momentum": 0.24, "breakout": 0.18,
-        "volume": 0.12, "mean_reversion": -0.04, "sentiment": 0.10,
+        "trend": 0.26, "momentum": 0.20, "breakout": 0.14, "structure": 0.16,
+        "volume": 0.10, "mean_reversion": -0.04, "sentiment": 0.10,
     },
     "tendance_baissière": {
-        "trend": 0.32, "momentum": 0.24, "breakout": 0.18,
-        "volume": 0.12, "mean_reversion": -0.04, "sentiment": 0.10,
+        "trend": 0.26, "momentum": 0.20, "breakout": 0.14, "structure": 0.16,
+        "volume": 0.10, "mean_reversion": -0.04, "sentiment": 0.10,
     },
     "range": {
-        "trend": 0.08, "momentum": 0.10, "breakout": 0.05,
-        "volume": 0.12, "mean_reversion": 0.50, "sentiment": 0.15,
+        "trend": 0.06, "momentum": 0.08, "breakout": 0.04, "structure": 0.14,
+        "volume": 0.10, "mean_reversion": 0.44, "sentiment": 0.14,
     },
     "chaotique": {
-        "trend": 0.18, "momentum": 0.18, "breakout": 0.10,
-        "volume": 0.18, "mean_reversion": 0.18, "sentiment": 0.18,
+        "trend": 0.15, "momentum": 0.15, "breakout": 0.08, "structure": 0.16,
+        "volume": 0.15, "mean_reversion": 0.15, "sentiment": 0.16,
     },
 }
 
@@ -108,6 +115,11 @@ class Signal:
     news_score: float
     news_count: int
     generated_at: str
+    win_prob: float = 0.0      # probabilité estimée d'atteindre l'objectif avant le stop
+    expected_r: float = 0.0    # espérance du trade, en multiples de risque
+    stop_basis: str = ""       # niveau structurel justifiant le stop
+    target_basis: str = ""     # niveau structurel justifiant l'objectif
+    plan_alternatives: list = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
@@ -278,6 +290,52 @@ def factor_breakout(df: pd.DataFrame) -> Factor:
     return Factor("breakout", round(val, 4), 0.0, " · ".join(detail) or "pas de cassure")
 
 
+def factor_structure(df: pd.DataFrame) -> Factor:
+    """Structure de marché : Supertrend, nuage Ichimoku et divergences.
+
+    Ce facteur regroupe les signaux qui portent sur la *forme* du marché
+    plutôt que sur sa vitesse. La divergence y occupe une place à part :
+    c'est l'un des rares indicateurs réellement avancés, puisqu'il détecte
+    l'essoufflement d'une impulsion avant que le prix ne se retourne.
+    """
+    close, high, low = df["close"], df["high"], df["low"]
+    parts, detail = [], []
+
+    _, direction = I.supertrend(high, low, close)
+    st_dir = S._last(direction, 0.0)
+    if np.isfinite(st_dir) and st_dir != 0:
+        parts.append(float(np.clip(st_dir, -1, 1)))
+        detail.append(f"Supertrend {'haussier' if st_dir > 0 else 'baissier'}")
+
+    _, _, span_a, span_b, _ = I.ichimoku(high, low, close)
+    a, b = S._last(span_a), S._last(span_b)
+    price = S._last(close)
+    atr_v = S._last(I.atr(high, low, close))
+    if np.isfinite(a) and np.isfinite(b) and atr_v > 0:
+        cloud_top, cloud_bottom = max(a, b), min(a, b)
+        if price > cloud_top:
+            parts.append(_squash((price - cloud_top) / atr_v, 1.5))
+            detail.append("au-dessus du nuage Ichimoku")
+        elif price < cloud_bottom:
+            parts.append(-_squash((cloud_bottom - price) / atr_v, 1.5))
+            detail.append("sous le nuage Ichimoku")
+        else:
+            parts.append(0.0)
+            detail.append("dans le nuage Ichimoku (indécision)")
+
+    div_value, div_label = I.divergence(close, I.rsi(close))
+    if div_value != 0.0:
+        # La divergence pèse double : elle contredit le mouvement en cours,
+        # ce qui est rare et informatif.
+        parts.append(div_value)
+        parts.append(div_value)
+        detail.append(div_label)
+
+    val = float(np.mean(parts)) if parts else 0.0
+    return Factor("structure", round(val, 4), 0.0,
+                  " · ".join(detail) or "structure indéterminée")
+
+
 def factor_sentiment(news_score: float, count: int) -> Factor:
     """Sentiment de presse, déjà borné dans [-1, 1] par la couche news."""
     if count == 0:
@@ -325,6 +383,7 @@ def analyze(asset: Asset, df: pd.DataFrame, *, timeframe: str = "1h",
         factor_mean_reversion(df),
         factor_volume(df),
         factor_breakout(df),
+        factor_structure(df),
         factor_sentiment(news_score, news_count),
     ]
     for f in factors:
@@ -335,7 +394,8 @@ def analyze(asset: Asset, df: pd.DataFrame, *, timeframe: str = "1h",
     raw = sum(f.contribution for f in factors)
     norm = sum(abs(w) for w in weights.values()) or 1.0
     weighted = float(np.clip(raw / norm, -1.0, 1.0))
-    # Puis calibrage sur l'échelle 0-100 : voir SCORE_SCALE.
+    # Score avant prise en compte du régime et de l'unité supérieure, conservé
+    # pour l'audit : il isole ce que disent les seuls facteurs.
     raw_score = float(np.tanh(weighted / SCORE_SCALE)) * 100.0
 
     bias, bias_detail = htf_bias(df_htf)
@@ -348,8 +408,15 @@ def analyze(asset: Asset, df: pd.DataFrame, *, timeframe: str = "1h",
     else:
         htf_mult = 1.0
 
-    score_signed = raw_score * regime.confidence_mult * htf_mult
-    score_signed = float(np.clip(score_signed, -100.0, 100.0))
+    # Les pénalités s'appliquent à la somme pondérée, AVANT le calibrage, et
+    # non au score déjà calibré. Les appliquer après compresserait deux fois :
+    # le tanh sature d'abord, puis les multiplicateurs rabotent, si bien qu'un
+    # score brut de 74 ressortait à 48 et qu'aucun seuil calibré ne signifiait
+    # plus rien. Les points d'ancrage de SCORE_SCALE portent donc sur la
+    # somme pondérée corrigée, ce qui est le sens voulu : « une confluence de
+    # 0.24, une fois tenu compte du régime et de l'unité supérieure ».
+    adjusted = weighted * regime.confidence_mult * htf_mult
+    score_signed = float(np.clip(np.tanh(adjusted / SCORE_SCALE) * 100.0, -100.0, 100.0))
 
     if abs(score_signed) < SETTINGS.signal_threshold:
         direction = "neutre"
@@ -364,7 +431,19 @@ def analyze(asset: Asset, df: pd.DataFrame, *, timeframe: str = "1h",
     if regime.vol_percentile > 0.95:
         warnings.append("volatilité au plus haut de son historique, glissement probable")
 
-    entry, stop, target, rr = _levels(asset, price, atr_v, direction)
+    plan = _build_plan(asset, df, direction, abs(score_signed), regime)
+    entry, stop, target, rr = plan.entry, plan.stop, plan.target, plan.rr
+
+    # Un plan à espérance négative est rejeté même si la conviction est forte :
+    # cela signifie que la structure ne laisse aucun objectif atteignable avant
+    # un obstacle solide. Prendre le trade quand même reviendrait à ignorer la
+    # seule information qui porte sur le résultat plutôt que sur la direction.
+    if direction != "neutre" and plan.expected_r < MIN_EXPECTED_R:
+        warnings.append(
+            f"écarté : espérance {plan.expected_r:+.3f} R sous le minimum "
+            f"({MIN_EXPECTED_R:+.2f} R) — {plan.target_basis}")
+        direction = "neutre"
+        entry, stop, target, rr = price, 0.0, 0.0, 0.0
 
     return Signal(
         symbol=asset.symbol, label=asset.label, klass=asset.klass,
@@ -376,28 +455,30 @@ def analyze(asset: Asset, df: pd.DataFrame, *, timeframe: str = "1h",
         atr_pct=round(atr_pct, 2), timeframe=timeframe,
         htf_alignment=bias, news_score=round(float(news_score), 3),
         news_count=news_count, generated_at=generated_at, warnings=warnings,
+        win_prob=plan.win_prob, expected_r=plan.expected_r,
+        stop_basis=plan.stop_basis, target_basis=plan.target_basis,
+        plan_alternatives=plan.alternatives,
     )
 
 
-def _levels(asset: Asset, price: float, atr_v: float,
-            direction: str) -> tuple[float, float, float, float]:
-    """Calcule entrée, stop et objectif à partir de l'ATR.
+def _build_plan(asset: Asset, df: pd.DataFrame, direction: str, score: float,
+                regime) -> "L.Plan":
+    """Construit le plan de trade optimal pour cet actif.
 
-    Le stop est placé à N ATR, pas à un pourcentage fixe : un stop à 2 % est
-    absurde sur un actif qui bouge de 8 % par jour, et étouffant sur une paire
-    forex qui bouge de 0.4 %.
+    Les niveaux ne sont plus déduits d'un multiple d'ATR fixe : ils sont
+    adossés à la structure réellement observée (pivots, congestions,
+    Fibonacci, point de contrôle du volume), et le couple retenu est celui qui
+    maximise l'espérance mathématique. Les préréglages par classe d'actif
+    servent de repli quand la structure est inexploitable.
+
+    Le stop reste calé sur la volatilité, jamais sur un pourcentage fixe : un
+    stop à 2 % est absurde sur un actif qui varie de 8 % par jour, et
+    étouffant sur une paire forex qui varie de 0.4 %.
     """
     profile = RISK.get(asset.klass, RISK["crypto"])
-    if direction == "neutre" or not np.isfinite(atr_v) or atr_v <= 0 or price <= 0:
-        return round(price, 8), 0.0, 0.0, 0.0
-
-    dist = profile.atr_stop_mult * atr_v
-    if direction == "long":
-        stop, target = price - dist, price + dist * profile.rr_target
-    else:
-        stop, target = price + dist, price - dist * profile.rr_target
-
-    risk = abs(price - stop)
-    reward = abs(target - price)
-    rr = reward / risk if risk > 0 else 0.0
-    return round(price, 8), round(max(stop, 0.0), 8), round(max(target, 0.0), 8), round(rr, 2)
+    return L.optimal_plan(
+        df, direction, score,
+        regime_quality=float(regime.quality),
+        fallback_atr_mult=profile.atr_stop_mult,
+        fallback_rr=profile.rr_target,
+    )

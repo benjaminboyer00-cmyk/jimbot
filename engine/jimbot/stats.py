@@ -121,6 +121,8 @@ class Regime:
     hurst: float
     vol_percentile: float  # percentile de la volatilité courante sur l'historique
     quality: float         # R² de la régression, 0-1
+    choppiness: float      # 0-100 : agitation sans progression
+    variance_ratio: float  # 1.0 = marche aléatoire, >1 persistance, <1 alternance
     # Multiplicateur appliqué au score, dans [0.3, 1.0] : n'atténue jamais
     # au-delà, et ne gonfle jamais un signal (plafonné à 1.0).
     confidence_mult: float
@@ -141,6 +143,8 @@ def detect_regime(df: pd.DataFrame) -> Regime:
     slope_s, r2_s = I.slope_r2(close, 40)
     slope, r2 = _last(slope_s, 0.0), _last(r2_s, 0.0)
     h = hurst_exponent(close)
+    chop = _last(I.choppiness(high, low, close), 50.0)
+    vr = _last(I.variance_ratio(close), 1.0)
 
     vol = I.realized_vol(close, 20)
     vol_now = _last(vol, float("nan"))
@@ -158,17 +162,25 @@ def detect_regime(df: pd.DataFrame) -> Regime:
     clean_trend = r2 >= 0.55 and adx_v >= 15.0
     strong_trend = adx_v >= 25.0 and r2 >= 0.30
     trending = clean_trend or strong_trend
+    # Le choppiness mesure l'efficacité du parcours là où l'ADX n'en mesure
+    # que la force : un marché peut être fortement directionnel par à-coups
+    # tout en n'allant nulle part. Au-delà de 61, on refuse le label tendance.
+    if chop > 61.0:
+        trending = False
     up = slope > 0 if np.isfinite(slope) and slope != 0 else directional > 0
 
     if trending:
         name = "tendance_haussière" if up else "tendance_baissière"
-    elif adx_v < 20.0 and r2 < 0.45:
+    elif (adx_v < 20.0 and r2 < 0.45) or (chop > 61.0 and vr < 1.0):
         name = "range"
     else:
         name = "chaotique"
 
     # Volatilité extrême = stops sautés, exécution dégradée : on réduit la confiance.
     vol_penalty = 0.75 if vol_pct > 0.92 else (0.9 if vol_pct > 0.8 else 1.0)
+    # Un ratio de variance proche de 1 signale une marche aléatoire : aucune
+    # structure n'y est exploitable, quel que soit le régime nominal.
+    random_walk_penalty = 0.85 if abs(vr - 1.0) < 0.08 else 1.0
     base = {"tendance_haussière": 1.0, "tendance_baissière": 1.0,
             "range": 0.85, "chaotique": 0.6}[name]
     quality_bonus = 0.85 + 0.3 * float(np.clip(r2, 0.0, 1.0))
@@ -179,7 +191,9 @@ def detect_regime(df: pd.DataFrame) -> Regime:
         hurst=round(h, 3) if np.isfinite(h) else float("nan"),
         vol_percentile=round(vol_pct, 3),
         quality=round(float(r2), 3),
-        confidence_mult=round(float(np.clip(base * vol_penalty * quality_bonus, 0.3, 1.0)), 3),
+        choppiness=round(float(chop), 1),
+        variance_ratio=round(float(vr), 3),
+        confidence_mult=round(float(np.clip(base * vol_penalty * quality_bonus * random_walk_penalty, 0.3, 1.0)), 3),
     )
 
 
