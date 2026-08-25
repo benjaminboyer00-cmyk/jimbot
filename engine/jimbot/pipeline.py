@@ -69,10 +69,17 @@ def collect(universe: list[Asset] | None = None) -> dict:
         articles = news_future.result()
         memecoins, meme_report = meme_future.result()
 
-    sentiment = news_src.sentiment_by_asset(articles) if articles else {}
-    log.info("collecte : %d/%d actifs, %d articles, %d memecoin(s) sur %d criblé(s)",
-             len(candles), len(universe), len(articles), len(memecoins),
+    # On passe l'univers complet : l'axe géopolitique ne cite jamais d'actif,
+    # il doit néanmoins atteindre chacun d'eux via son bêta de valeur refuge.
+    symbols = [a.symbol for a in universe]
+    sentiment = news_src.sentiment_by_asset(articles, symbols) if articles else {}
+    risk_off = news_src.risk_off_level(articles) if articles else {"level": 0.0, "count": 0, "top": []}
+    monde = sum(1 for a in articles if a.category == "monde")
+    log.info("collecte : %d/%d actifs, %d articles (%d monde), %d memecoin(s) sur %d criblé(s)",
+             len(candles), len(universe), len(articles), monde, len(memecoins),
              meme_report.get("screened", 0))
+    log.info("climat géopolitique : %+.3f sur %d article(s) porteurs",
+             risk_off["level"], risk_off["count"])
 
     return {
         "generated_at": generated_at,
@@ -80,6 +87,7 @@ def collect(universe: list[Asset] | None = None) -> dict:
         "htfs": htfs,
         "articles": articles,
         "sentiment": sentiment,
+        "risk_off": risk_off,
         "memecoins": memecoins,
         "meme_report": meme_report,
         "universe": [a for a in universe if a.symbol in candles],
@@ -197,6 +205,7 @@ def persist_scan(signals: list[dict], data: dict, portfolio: dict,
         "meme_report": data.get("meme_report", {}),
         "news": [a.to_dict() for a in data["articles"][:40]],
         "sentiment": data["sentiment"],
+        "risk_off": data.get("risk_off", {}),
         "portfolio": portfolio,
         "closed_this_cycle": closed,
         "counts": {

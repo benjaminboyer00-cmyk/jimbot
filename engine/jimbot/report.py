@@ -59,6 +59,10 @@ def _styles() -> dict:
                                alignment=TA_JUSTIFY, spaceAfter=6),
         "small": ParagraphStyle("s", parent=base["Normal"], fontName="Helvetica",
                                 fontSize=7.5, leading=10, textColor=MUTED, spaceAfter=4),
+        # Cellule de tableau à retour à la ligne : sans elle, un titre long
+        # déborde sur la colonne voisine au lieu de s'enrouler.
+        "cell": ParagraphStyle("c", parent=base["Normal"], fontName="Helvetica",
+                               fontSize=7.5, leading=9.5, textColor=INK),
         "kpi": ParagraphStyle("k", parent=base["Normal"], fontName="Helvetica-Bold",
                               fontSize=15, leading=18, textColor=INK, alignment=1),
         "kpi_label": ParagraphStyle("kl", parent=base["Normal"], fontName="Helvetica",
@@ -169,7 +173,9 @@ def build(*, signals: list[dict], candles: dict, briefing: str,
           narratives: dict[str, str], portfolio: dict, performance: dict,
           trades: list[dict], news: list[dict], memecoins: list[dict],
           corr=None, engine: str = "gabarit",
-          meme_report: dict | None = None) -> Path:
+          meme_report: dict | None = None,
+          risk_off: dict | None = None,
+          speeches: list[dict] | None = None) -> Path:
     """Assemble le rapport PDF complet et renvoie son chemin."""
     st = _styles()
     now = datetime.now(timezone.utc)
@@ -204,6 +210,8 @@ def build(*, signals: list[dict], candles: dict, briefing: str,
 
     flow.append(Spacer(1, 6))
     flow.append(_img(charts.score_overview(signals)))
+
+    flow.extend(_context_section(risk_off or {}, speeches or [], st))
 
     # --- Signaux détaillés ---
     if actionable:
@@ -297,7 +305,7 @@ def build(*, signals: list[dict], candles: dict, briefing: str,
             "un poids fixe, avec inversion sur les tournures négatives. Le "
             "procédé est reproductible et vérifiable, contrairement à une "
             "notation par modèle de langage.", st["small"]))
-        rows = [[n["source"][:12], _escape(n["title"])[:78],
+        rows = [[n["source"][:12], Paragraph(_escape(n["title"])[:120], st["cell"]),
                  f"{n['sentiment']:+.1f}", f"{n['age_hours']:.0f} h",
                  ", ".join(n["assets"][:2]) or "—"] for n in news[:22]]
         flow.append(_table(["Source", "Titre", "Score", "Âge", "Actifs"], rows,
@@ -311,6 +319,63 @@ def build(*, signals: list[dict], candles: dict, briefing: str,
     doc.build(flow)
     log.info("rapport écrit : %s (%.0f Ko)", path, path.stat().st_size / 1024)
     return path
+
+
+def _context_section(risk_off: dict, speeches: list[dict], st: dict) -> list:
+    """Climat géopolitique et rhétorique monétaire.
+
+    Ces deux axes expliquent souvent les signaux de la section suivante : une
+    escalade fait tourner les capitaux vers l'or et le dollar, un discours
+    accommodant soulève simultanément l'or et les actifs de duration.
+    """
+    if not risk_off.get("count") and not speeches:
+        return []
+
+    out: list = [Paragraph("Contexte mondial", st["h1"])]
+    w = PAGE_W - 2 * MARGIN
+
+    niveau = risk_off.get("level", 0.0)
+    if risk_off.get("count"):
+        if niveau > 0.25:
+            lecture = ("Tension en hausse : rotation attendue vers les valeurs "
+                       "refuges (or, dollar, volatilité), pression sur les indices "
+                       "et la crypto.")
+        elif niveau < -0.25:
+            lecture = ("Détente : rotation attendue vers les actifs de risque, "
+                       "pression sur les valeurs refuges.")
+        else:
+            lecture = "Climat neutre, sans biais directionnel marqué."
+        out.append(Paragraph(
+            f"<b>Indice de tension géopolitique : {niveau:+.2f}</b> sur une échelle "
+            f"de -1 (apaisement) à +1 (escalade), calculé sur "
+            f"{risk_off['count']} article(s) porteurs. {lecture}", st["body"]))
+
+        rows = [[Paragraph(_escape(t["title"])[:130], st["cell"]),
+                 t["source"][:12], f"{t['risk']:+.1f}",
+                 Paragraph(_escape(", ".join(t["terms"][:3]))[:44], st["cell"])]
+                for t in risk_off.get("top", [])[:6]]
+        if rows:
+            out.append(_table(["Fait marquant", "Source", "Tension", "Termes relevés"],
+                              rows, [w * .52, w * .12, w * .10, w * .26],
+                              aligns={2: "RIGHT"}))
+
+    if speeches:
+        out.append(Paragraph("Discours de politique monétaire", st["h2"]))
+        out.append(Paragraph(
+            "L'or est l'actif dont la réaction à la rhétorique monétaire est la "
+            "plus directe : il ne dépend d'aucun bénéfice, seulement des taux "
+            "réels et de la confiance dans la monnaie. Une tonalité positive "
+            "est accommodante, donc haussière pour l'or.", st["small"]))
+        rows = [[s_["speaker"].title()[:14],
+                 Paragraph(_escape(s_["title"])[:130], st["cell"]),
+                 f"{s_['tone']:+.1f}", f"{s_['importance']:.2f}",
+                 f"{s_['impact'].get('XAUUSD', 0):+.2f}"]
+                for s_ in speeches[:6]]
+        out.append(_table(["Orateur", "Propos", "Tonalité", "Importance", "Effet or"],
+                          rows, [w * .14, w * .48, w * .12, w * .13, w * .13],
+                          aligns={2: "RIGHT", 3: "RIGHT", 4: "RIGHT"}))
+    out.append(Spacer(1, 8))
+    return out
 
 
 def _signal_section(sig: dict, df, narrative: str, st: dict) -> list:
@@ -332,12 +397,19 @@ def _signal_section(sig: dict, df, narrative: str, st: dict) -> list:
         risk = abs(sig["entry"] - sig["stop"]) / sig["entry"] * 100
         out.append(Spacer(1, 4))
         out.append(_table(
-            ["Entrée", "Invalidation", "Objectif", "R/R", "Risque", "Volatilité", "Régime"],
+            ["Entrée", "Invalidation", "Objectif", "R/R", "Risque", "P(gain)", "Espérance"],
             [[f"{sig['entry']:,.{digits}f}", f"{sig['stop']:,.{digits}f}",
               f"{sig['target']:,.{digits}f}", f"{sig['rr']:.2f}", f"{risk:.2f} %",
-              f"{sig['atr_pct']:.2f} %", sig["regime"]["name"].replace("_", " ")]],
-            [w * .14, w * .14, w * .14, w * .08, w * .11, w * .12, w * .17],
-            aligns={0: "RIGHT", 1: "RIGHT", 2: "RIGHT", 3: "RIGHT", 4: "RIGHT", 5: "RIGHT"}))
+              f"{sig.get('win_prob', 0) * 100:.0f} %",
+              f"{sig.get('expected_r', 0):+.3f} R"]],
+            [w * .14, w * .14, w * .14, w * .09, w * .11, w * .10, w * .13],
+            aligns={0: "RIGHT", 1: "RIGHT", 2: "RIGHT", 3: "RIGHT", 4: "RIGHT",
+                    5: "RIGHT", 6: "RIGHT"}))
+        if sig.get("stop_basis"):
+            out.append(Paragraph(
+                f"Niveaux retenus par maximisation de l'espérance — "
+                f"stop adossé à : {_escape(sig['stop_basis'])} ; objectif borné par : "
+                f"{_escape(sig.get('target_basis', '—'))}.", st["small"]))
 
     # Les deux graphiques et le tableau restent groupés ; le texte s'écoule
     # ensuite librement. Garder le texte solidaire du graphique de facteurs
@@ -428,14 +500,30 @@ def _method_section(st: dict) -> list:
             "qui l'a produit ; les graphiques de décomposition présentés plus "
             "haut sont la sortie directe de ce calcul.", st["body"]),
         Paragraph(
-            "Les niveaux d'invalidation sont calés sur l'ATR et non sur un "
-            "pourcentage fixe, car un stop à 2 % n'a pas le même sens sur une "
-            "paire forex qui varie de 0.4 % par jour et sur un memecoin qui "
-            "varie de 30 %. Le dimensionnement part du risque accepté, pas du "
-            "montant investi : la taille découle de la distance au stop, et "
-            "plusieurs plafonds — risque total du portefeuille, exposition "
-            "unitaire, risque cumulé entre actifs corrélés — priment sur le "
-            "score.", st["body"]),
+            "Les niveaux ne sont pas déduits d'un multiple d'ATR fixe. Le moteur "
+            "identifie d'abord la structure réellement respectée par le marché — "
+            "points pivots, zones de congestion, retracements de Fibonacci, point "
+            "de contrôle du volume — puis évalue les couples stop/objectif "
+            "adossés à cette structure et retient celui qui maximise l'espérance "
+            "mathématique.", st["body"]),
+        Paragraph(
+            "Cette espérance part d'un résultat exact : pour une marche aléatoire "
+            "sans dérive, la probabilité d'atteindre l'objectif avant le stop vaut "
+            "<b>d_stop / (d_stop + d_objectif)</b>, ce qui rend l'espérance "
+            "rigoureusement nulle quel que soit le ratio rendement/risque. "
+            "Autrement dit, aucun réglage de R/R ne crée d'avantage à lui seul — "
+            "un point que la plupart des systèmes passent sous silence. "
+            "L'avantage ne peut venir que de trois sources : la capacité du signal "
+            "à prédire la direction (décroissante avec la distance de l'objectif, "
+            "car un signal technique a un horizon fini), la solidité du niveau "
+            "adossant le stop, et l'absence d'obstacle devant l'objectif. Un plan "
+            "dont l'espérance reste négative est écarté, même à forte conviction.",
+            st["body"]),
+        Paragraph(
+            "Le dimensionnement part du risque accepté, pas du montant investi : "
+            "la taille découle de la distance au stop, et plusieurs plafonds — "
+            "risque total du portefeuille, exposition unitaire par classe, risque "
+            "cumulé entre actifs corrélés — priment sur le score.", st["body"]),
         Paragraph(
             "Le portefeuille papier applique frais et glissement à l'entrée "
             "comme à la sortie, et détecte les sorties sur les extrêmes des "

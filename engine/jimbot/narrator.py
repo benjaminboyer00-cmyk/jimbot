@@ -149,7 +149,8 @@ def template_signal(sig: dict) -> str:
     return "\n\n".join(lines)
 
 
-def template_briefing(facts: dict, signals: list[dict], regimes: dict) -> str:
+def template_briefing(facts: dict, signals: list[dict], regimes: dict,
+                      risk_off: dict | None = None) -> str:
     """Briefing quotidien par règles."""
     longs = [s for s in signals if s["direction"] == "long"]
     shorts = [s for s in signals if s["direction"] == "short"]
@@ -170,6 +171,20 @@ def template_briefing(facts: dict, signals: list[dict], regimes: dict) -> str:
         dominant = max(regimes.items(), key=lambda kv: kv[1])
         parts.append(f"Sur l'univers suivi, le régime dominant est « "
                      f"{dominant[0].replace('_', ' ')} » ({dominant[1]} actifs).")
+
+    niveau = (risk_off or {}).get("level", 0.0)
+    if (risk_off or {}).get("count"):
+        if niveau > 0.25:
+            climat = ("Le climat géopolitique est tendu : les valeurs refuges "
+                      "(or, dollar, volatilité) en bénéficient, les indices et "
+                      "la crypto en pâtissent.")
+        elif niveau < -0.25:
+            climat = ("Le climat géopolitique se détend, ce qui favorise les "
+                      "actifs de risque au détriment des valeurs refuges.")
+        else:
+            climat = "Le climat géopolitique est neutre, sans biais directionnel marqué."
+        parts.append(f"{climat} Indice de tension : {niveau:+.2f} sur "
+                     f"{risk_off['count']} article(s) porteurs.")
 
     if facts.get("trades_fermes"):
         parts.append(
@@ -252,7 +267,8 @@ def narrate_signal(sig: dict) -> tuple[str, str]:
 
 
 def narrate_briefing(perf: dict, portfolio: dict, signals: list[dict],
-                     regimes: dict, top_news: list[dict]) -> tuple[str, str]:
+                     regimes: dict, top_news: list[dict],
+                     risk_off: dict | None = None) -> tuple[str, str]:
     """Rédige le discours de marché quotidien. Renvoie (texte, moteur utilisé)."""
     facts = portfolio_facts(perf, portfolio)
     signal_summary = [
@@ -263,22 +279,34 @@ def narrate_briefing(perf: dict, portfolio: dict, signals: list[dict],
     news_summary = [{"titre": n["title"], "source": n["source"],
                      "sentiment": n["sentiment"]} for n in top_news[:8]]
 
+    risk_off = risk_off or {}
+    climat = {
+        "tension_mondiale": f"{risk_off.get('level', 0.0):+.2f} sur une échelle de -1 (apaisement) à +1 (escalade)",
+        "articles_geopolitiques": risk_off.get("count", 0),
+        "faits_marquants": [f"{t['title']} ({t['source']}, tension {t['risk']:+.1f})"
+                            for t in risk_off.get("top", [])[:5]],
+    }
     prompt = (
-        "Rédige le briefing de marché quotidien en 4 à 6 paragraphes :\n"
+        "Rédige le briefing de marché quotidien en 5 à 7 paragraphes :\n"
         "1) l'état général des marchés suivis et le régime dominant ;\n"
         "2) les configurations retenues et pourquoi ;\n"
-        "3) ce que dit l'actualité et si elle confirme ou contredit la technique ;\n"
-        "4) l'état du portefeuille papier, lu honnêtement (si les résultats sont "
+        "3) le contexte géopolitique mondial et son effet attendu : une escalade "
+        "profite aux valeurs refuges (or, dollar, volatilité) et pèse sur les "
+        "actifs de risque (indices, crypto) ;\n"
+        "4) ce que dit l'actualité de marché et si elle confirme ou contredit "
+        "la technique ;\n"
+        "5) l'état du portefeuille papier, lu honnêtement (si les résultats sont "
         "mauvais, dis-le clairement) ;\n"
-        "5) ce qu'il faut surveiller ensuite.\n\n"
+        "6) ce qu'il faut surveiller ensuite.\n\n"
         "Utilise exclusivement les valeurs ci-dessous.\n\n"
         "PORTEFEUILLE ET PERFORMANCE :\n" + _facts_block(facts) +
         "\n\nRÉGIMES DE MARCHÉ (nombre d'actifs par régime) :\n" + _facts_block(regimes) +
         "\n\nSIGNAUX RETENUS :\n" + _facts_block(signal_summary) +
+        "\n\nCLIMAT GÉOPOLITIQUE :\n" + _facts_block(climat) +
         "\n\nACTUALITÉS MARQUANTES :\n" + _facts_block(news_summary)
     )
     text = _ask(prompt, max_tokens=6000)
-    return (text, "llm") if text else (template_briefing(facts, signals, regimes), "gabarit")
+    return (text, "llm") if text else (template_briefing(facts, signals, regimes, risk_off), "gabarit")
 
 
 def _digits(price: float) -> int:

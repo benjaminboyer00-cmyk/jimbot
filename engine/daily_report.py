@@ -18,6 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from jimbot import discord, narrator, pipeline, report  # noqa: E402
+from jimbot.datasources import news as news_src  # noqa: E402
 from jimbot.paper import performance  # noqa: E402
 from jimbot.store import read, write, now_iso  # noqa: E402
 
@@ -58,7 +59,8 @@ def main() -> int:
     log.info("--- rédaction ---")
     briefing, engine = narrator.narrate_briefing(
         perf, portfolio, [s for s in signals if s["direction"] != "neutre"],
-        regimes, [a.to_dict() for a in data["articles"][:10]])
+        regimes, [a.to_dict() for a in data["articles"][:10]],
+        risk_off=data.get("risk_off", {}))
     log.info("briefing rédigé via %s (%d caractères)", engine, len(briefing))
 
     narratives = {}
@@ -74,6 +76,8 @@ def main() -> int:
         memecoins=[m.to_dict() | {"health_score": m.health_score}
                    for m in data["memecoins"]],
         meme_report=data.get("meme_report", {}),
+        risk_off=data.get("risk_off", {}),
+        speeches=news_src.major_speeches(data["articles"]),
         corr=corr, engine=engine,
     )
     log.info("PDF : %s (%.0f Ko)", path, path.stat().st_size / 1024)
