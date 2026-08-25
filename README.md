@@ -38,7 +38,8 @@ non falsifiable a posteriori.
 | `engine/jimbot/paper.py` | Exécution simulée avec frais et glissement, statistiques de performance |
 | `engine/jimbot/narrator.py` | Rédaction hybride : chiffres calculés en Python, mise en phrases par Claude |
 | `engine/jimbot/report.py` | Rapport PDF (ReportLab + matplotlib) |
-| `app/` | Dashboard Next.js |
+| `app/` | Dashboard Next.js et routes d'API |
+| `metatrader/` | Expert Advisor MQL5 prêt à l'emploi |
 
 ## Principe du moteur
 
@@ -160,7 +161,7 @@ Puis, sur GitHub, onglet **Actions** → *Scan de marché* → **Run workflow**.
 .venv/bin/python engine/scan.py --no-alert    # analyse seule
 .venv/bin/python engine/scan.py --dry-run     # simule aussi les envois
 .venv/bin/python engine/daily_report.py       # rapport PDF + publication
-.venv/bin/python -m pytest engine/tests -v    # 153 tests, sans réseau
+.venv/bin/python -m pytest engine/tests -v    # 155 tests, sans réseau
 npm run dev                                   # dashboard sur localhost:3000
 ```
 
@@ -185,6 +186,34 @@ dans `.github/workflows/scan.yml` :
 ```yaml
 - cron: "*/30 * * * *"
 ```
+
+## API
+
+Trois routes en lecture seule, sans authentification, avec CORS ouvert — elles
+ne servent que des données déjà publiques dans le dépôt.
+
+| Route | Contenu |
+|---|---|
+| `/api/mt` | Flux au format MetaTrader : symbole, `BUY`/`SELL`, stop, objectif, risque suggéré. Paramètres `mode` (`actionable`, `watchlist`, `all`), `min_score`, `symbol` |
+| `/api/signals` | État complet du scan en JSON. Paramètre `actionable=1` pour filtrer |
+| `/api/reports` | Index des rapports PDF ; `?file=jimbot-AAAA-MM-JJ.pdf` télécharge le document |
+
+## MetaTrader 5
+
+`metatrader/JimbotConnector.mq5` interroge `/api/mt`, affiche les
+configurations sur le graphique et, si l'exécution automatique est activée,
+ouvre les positions correspondantes.
+
+**Il est en lecture seule par défaut.** L'exécution doit être activée
+explicitement et reste bornée par un risque maximal par position, un risque
+cumulé et un nombre de positions. Le volume est toujours déduit de la distance
+au stop, jamais d'un nombre de lots fixe ; si le risque voulu correspond à un
+volume sous le lot minimal du courtier, rien n'est ouvert plutôt que
+d'arrondir vers le haut. Un signal à espérance négative est ignoré même en
+mode automatique.
+
+Voir `metatrader/README.md` pour l'installation — notamment l'autorisation des
+`WebRequest`, sans laquelle rien ne fonctionne.
 
 ## Réglages
 

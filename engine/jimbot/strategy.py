@@ -115,6 +115,10 @@ class Signal:
     news_score: float
     news_count: int
     generated_at: str
+    # Orientation de la lecture, indépendamment du seuil : un actif sous le
+    # seuil garde un biais exploitable pour une liste de surveillance.
+    bias: str = "neutre"       # "long" | "short" | "neutre"
+    actionable: bool = False   # le signal franchit-il le seuil et l'espérance minimale
     win_prob: float = 0.0      # probabilité estimée d'atteindre l'objectif avant le stop
     expected_r: float = 0.0    # espérance du trade, en multiples de risque
     stop_basis: str = ""       # niveau structurel justifiant le stop
@@ -124,10 +128,6 @@ class Signal:
 
     def to_dict(self) -> dict:
         return asdict(self)
-
-    @property
-    def actionable(self) -> bool:
-        return self.direction != "neutre" and self.score >= SETTINGS.signal_threshold
 
 
 # --------------------------------------------------------------------------
@@ -418,10 +418,11 @@ def analyze(asset: Asset, df: pd.DataFrame, *, timeframe: str = "1h",
     adjusted = weighted * regime.confidence_mult * htf_mult
     score_signed = float(np.clip(np.tanh(adjusted / SCORE_SCALE) * 100.0, -100.0, 100.0))
 
-    if abs(score_signed) < SETTINGS.signal_threshold:
-        direction = "neutre"
-    else:
-        direction = "long" if score_signed > 0 else "short"
+    # Le biais existe dès qu'il y a une orientation, même faible : c'est lui
+    # qui alimente la liste de surveillance. La direction, elle, n'est
+    # renseignée que si le signal est réellement déclenchable.
+    bias = "long" if score_signed > 0 else "short" if score_signed < 0 else "neutre"
+    direction = bias if abs(score_signed) >= SETTINGS.signal_threshold else "neutre"
 
     price = S._last(df["close"])
     atr_v = S._last(I.atr(df["high"], df["low"], df["close"]))
@@ -431,7 +432,10 @@ def analyze(asset: Asset, df: pd.DataFrame, *, timeframe: str = "1h",
     if regime.vol_percentile > 0.95:
         warnings.append("volatilité au plus haut de son historique, glissement probable")
 
-    plan = _build_plan(asset, df, direction, abs(score_signed), regime)
+    # Le plan est calculé sur le biais, pas sur la direction : un actif sous le
+    # seuil conserve ainsi des niveaux affichables en liste de surveillance,
+    # au lieu de n'exposer que des zéros.
+    plan = _build_plan(asset, df, bias, abs(score_signed), regime)
     entry, stop, target, rr = plan.entry, plan.stop, plan.target, plan.rr
 
     # Un plan à espérance négative est rejeté même si la conviction est forte :
@@ -443,11 +447,13 @@ def analyze(asset: Asset, df: pd.DataFrame, *, timeframe: str = "1h",
             f"écarté : espérance {plan.expected_r:+.3f} R sous le minimum "
             f"({MIN_EXPECTED_R:+.2f} R) — {plan.target_basis}")
         direction = "neutre"
-        entry, stop, target, rr = price, 0.0, 0.0, 0.0
+
+    actionable = direction != "neutre"
 
     return Signal(
         symbol=asset.symbol, label=asset.label, klass=asset.klass,
-        direction=direction, score=round(abs(score_signed), 2),
+        direction=direction, bias=bias, actionable=actionable,
+        score=round(abs(score_signed), 2),
         raw_score=round(raw_score, 2), price=round(price, 8),
         regime=regime.to_dict(), factors=[f.to_dict() for f in factors],
         entry=entry, stop=stop, target=target, rr=rr,

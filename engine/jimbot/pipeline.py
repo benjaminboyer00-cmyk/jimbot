@@ -12,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import pandas as pd
 
 from . import risk, stats
-from .config import MEMECOIN_CHAINS, SETTINGS, UNIVERSE, Asset
+from .config import MEMECOIN_CHAINS, REPORTS_DIR, SETTINGS, UNIVERSE, Asset
 from .datasources import crypto, dexscreener, news as news_src, yahoo
 from .datasources.base import DataError
 from .paper import Portfolio, performance
@@ -196,14 +196,33 @@ def persist_scan(signals: list[dict], data: dict, portfolio: dict,
     for s in signals:
         regimes[s["regime"]["name"]] = regimes.get(s["regime"]["name"], 0) + 1
 
+    from . import narrator  # import tardif : évite un cycle au chargement
+
+    articles = [a.to_dict() for a in data["articles"]]
+    speeches = news_src.major_speeches(data["articles"])
+    news_summary, news_engine = narrator.narrate_news(
+        articles, data["sentiment"], data.get("risk_off", {}), speeches)
+
+    # Liste de surveillance : les meilleures orientations du moment, y compris
+    # sous le seuil de déclenchement. Sans elle, un jour calme n'affiche rien,
+    # alors que l'information « voici ce qui s'en rapproche le plus » a de la
+    # valeur.
+    watchlist = [s for s in signals
+                 if s["bias"] != "neutre" and not s["actionable"]][:8]
+
     snapshot = {
         "generated_at": data["generated_at"],
+        "news_summary": news_summary,
+        "news_engine": news_engine,
+        "speeches": speeches,
+        "watchlist": watchlist,
+        "reports": list_reports(),
         "signals": signals,
         "regimes": regimes,
         "memecoins": [m.to_dict() | {"health_score": m.health_score}
                       for m in data["memecoins"]],
         "meme_report": data.get("meme_report", {}),
-        "news": [a.to_dict() for a in data["articles"][:40]],
+        "news": articles[:40],
         "sentiment": data["sentiment"],
         "risk_off": data.get("risk_off", {}),
         "portfolio": portfolio,
@@ -226,6 +245,30 @@ def persist_scan(signals: list[dict], data: dict, portfolio: dict,
     if actionable:
         append_history("signals", actionable, MAX_SIGNALS_HISTORY)
     return snapshot
+
+
+def list_reports() -> list[dict]:
+    """Index des rapports PDF disponibles, du plus récent au plus ancien.
+
+    Sert au dashboard, qui n'a aucun autre moyen de savoir quels rapports
+    existent : il lit les données depuis le dépôt et ne voit pas le système de
+    fichiers du moteur.
+    """
+    if not REPORTS_DIR.exists():
+        return []
+    out = []
+    for f in sorted(REPORTS_DIR.glob("jimbot-*.pdf"), reverse=True):
+        try:
+            stat = f.stat()
+        except OSError:
+            continue
+        out.append({
+            "name": f.name,
+            "date": f.stem.replace("jimbot-", ""),
+            "size_kb": round(stat.st_size / 1024),
+            "path": f"reports/{f.name}",
+        })
+    return out[:60]
 
 
 def _safe(fn, default, label: str, *args):

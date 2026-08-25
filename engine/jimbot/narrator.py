@@ -323,3 +323,118 @@ def _digits(price: float) -> int:
     if price >= 0.01:
         return 6
     return 10
+
+
+# --------------------------------------------------------------------------
+# Résumé d'actualité
+# --------------------------------------------------------------------------
+def news_facts(articles: list[dict], sentiment: dict, risk_off: dict,
+               speeches: list[dict]) -> dict:
+    """Agrège l'actualité en faits chiffrés, prêts à être mis en phrases.
+
+    Un tableau de titres n'est pas un résumé : il demande au lecteur de faire
+    lui-même la synthèse. On regroupe donc par thème, on classe par impact, et
+    on rattache chaque bloc aux actifs concernés.
+    """
+    marches = [a for a in articles if a.get("category") == "marches"]
+    monde = [a for a in articles if a.get("category") == "monde"]
+
+    def top(items: list[dict], cle, n: int = 5) -> list[dict]:
+        return sorted(items, key=cle, reverse=True)[:n]
+
+    # Actifs les plus cités, avec le sens du sentiment agrégé.
+    par_actif = sorted(
+        ((sym, v) for sym, v in sentiment.items() if v.get("count", 0) > 0),
+        key=lambda kv: -kv[1]["count"])[:6]
+
+    return {
+        "articles_total": len(articles),
+        "articles_marches": len(marches),
+        "articles_monde": len(monde),
+        "tension_geopolitique": f"{risk_off.get('level', 0.0):+.2f} sur [-1, +1]",
+        "articles_geopolitiques": risk_off.get("count", 0),
+        "plus_marquants": [
+            {"titre": a["title"], "source": a["source"],
+             "sentiment": a["sentiment"], "actifs": a.get("assets", [])}
+            for a in top(marches, lambda x: abs(x.get("sentiment", 0)))
+        ],
+        "faits_geopolitiques": [
+            {"titre": t["title"], "source": t["source"], "tension": t["risk"],
+             "termes": t.get("terms", [])}
+            for t in risk_off.get("top", [])[:5]
+        ],
+        "discours": [
+            {"orateur": s["speaker"], "propos": s["title"], "tonalite": s["tone"],
+             "effet_or": s["impact"].get("XAUUSD", 0.0)}
+            for s in speeches[:3]
+        ],
+        "actifs_les_plus_cites": [
+            {"actif": sym, "articles": v["count"],
+             "sentiment": v["score"],
+             "part_geopolitique": v.get("geo", 0.0),
+             "part_monetaire": v.get("monetary", 0.0)}
+            for sym, v in par_actif
+        ],
+    }
+
+
+def template_news(facts: dict) -> str:
+    """Résumé d'actualité par règles. Aucun appel réseau."""
+    parts: list[str] = []
+
+    parts.append(
+        f"{facts['articles_total']} articles retenus sur le cycle, dont "
+        f"{facts['articles_monde']} d'actualité internationale et "
+        f"{facts['articles_marches']} d'actualité de marché.")
+
+    if facts["faits_geopolitiques"]:
+        titres = " ; ".join(f["titre"][:90] for f in facts["faits_geopolitiques"][:3])
+        parts.append(
+            f"Sur le plan géopolitique, l'indice de tension s'établit à "
+            f"{facts['tension_geopolitique']} sur "
+            f"{facts['articles_geopolitiques']} articles porteurs. Les faits "
+            f"dominants : {titres}.")
+
+    if facts["discours"]:
+        d = facts["discours"][0]
+        sens = "accommodante" if d["tonalite"] > 0 else "restrictive"
+        parts.append(
+            f"Côté politique monétaire, la prise de parole la plus marquante est "
+            f"celle de {d['orateur'].title()}, de tonalité {sens} "
+            f"({d['tonalite']:+.1f}), avec un effet attendu de "
+            f"{d['effet_or']:+.2f} sur l'or.")
+
+    if facts["plus_marquants"]:
+        a = facts["plus_marquants"][0]
+        sens = "positive" if a["sentiment"] > 0 else "négative"
+        parts.append(
+            f"L'information de marché la plus chargée est {sens} : "
+            f"« {a['titre'][:110]} » ({a['source']}, {a['sentiment']:+.1f}).")
+
+    if facts["actifs_les_plus_cites"]:
+        listing = ", ".join(
+            f"{x['actif']} ({x['articles']} art., {x['sentiment']:+.2f})"
+            for x in facts["actifs_les_plus_cites"][:4])
+        parts.append(f"Actifs les plus couverts : {listing}.")
+
+    return "\n\n".join(parts)
+
+
+def narrate_news(articles: list[dict], sentiment: dict, risk_off: dict,
+                 speeches: list[dict]) -> tuple[str, str]:
+    """Rédige le résumé d'actualité. Renvoie (texte, moteur utilisé)."""
+    facts = news_facts(articles, sentiment, risk_off, speeches)
+    prompt = (
+        "Rédige un résumé d'actualité en 3 paragraphes courts, destiné à un "
+        "lecteur qui veut comprendre le contexte avant de regarder les "
+        "graphiques :\n"
+        "1) ce qui domine l'actualité internationale et la tension qui en découle ;\n"
+        "2) ce que disent les banques centrales et l'actualité de marché ;\n"
+        "3) quels actifs sont concernés et dans quel sens.\n\n"
+        "Rappelle que l'effet d'une escalade dépend de l'actif : haussier pour "
+        "l'or, le dollar et la volatilité, baissier pour les indices et la "
+        "crypto. Utilise exclusivement les valeurs ci-dessous.\n\n"
+        "DONNÉES CALCULÉES :\n" + _facts_block(facts)
+    )
+    text = _ask(prompt, max_tokens=2500)
+    return (text, "llm") if text else (template_news(facts), "gabarit")

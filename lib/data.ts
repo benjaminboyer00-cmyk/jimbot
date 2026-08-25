@@ -39,6 +39,26 @@ export type Signal = {
   expected_r: number;
   stop_basis: string;
   target_basis: string;
+  bias: "long" | "short" | "neutre";
+  actionable: boolean;
+};
+
+export type Speech = {
+  title: string;
+  source: string;
+  url: string;
+  speaker: string;
+  tone: number;
+  terms: string[];
+  importance: number;
+  impact: Record<string, number>;
+};
+
+export type Report = {
+  name: string;
+  date: string;
+  size_kb: number;
+  path: string;
 };
 
 export type RiskOff = {
@@ -82,6 +102,9 @@ export type Article = {
   sentiment: number;
   age_hours: number;
   assets: string[];
+  category?: "marches" | "monde";
+  risk?: number;
+  risk_terms?: string[];
 };
 
 export type Memecoin = {
@@ -104,6 +127,11 @@ export type Snapshot = {
   memecoins: Memecoin[];
   meme_report: { screened?: number; retained?: number; near_misses?: unknown[] };
   risk_off?: RiskOff;
+  news_summary?: string;
+  news_engine?: string;
+  speeches?: Speech[];
+  watchlist?: Signal[];
+  reports?: Report[];
   news: Article[];
   portfolio: {
     capital: number;
@@ -148,27 +176,42 @@ const REMOTE_BASE =
   process.env.JIMBOT_DATA_URL ??
   "https://raw.githubusercontent.com/benjaminboyer00-cmyk/jimbot/main/data";
 
-async function readJson<T>(name: string, fallback: T): Promise<T> {
-  // 1) Source distante, sans cache pour refléter le dernier scan.
-  if (REMOTE_BASE) {
-    try {
-      const res = await fetch(`${REMOTE_BASE}/${name}.json`, { cache: "no-store" });
-      if (res.ok) return (await res.json()) as T;
-    } catch {
-      // Réseau indisponible : on tente le fichier local ci-dessous.
-    }
-  }
-
-  // 2) Repli sur le fichier local, utile en développement et si GitHub est
-  //    injoignable au moment du rendu.
+async function readLocal<T>(name: string): Promise<T | null> {
   try {
     const raw = await fs.readFile(path.join(DATA_DIR, `${name}.json`), "utf8");
     return JSON.parse(raw) as T;
   } catch {
-    // Fichier absent avant le premier scan, ou JSON invalide : le dashboard
-    // doit s'afficher malgré tout, avec un état vide explicite.
-    return fallback;
+    return null;
   }
+}
+
+async function readRemote<T>(name: string): Promise<T | null> {
+  if (!REMOTE_BASE) return null;
+  try {
+    const res = await fetch(`${REMOTE_BASE}/${name}.json`, { cache: "no-store" });
+    return res.ok ? ((await res.json()) as T) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function readJson<T>(name: string, fallback: T): Promise<T> {
+  // En développement, le fichier local fait foi : sinon on travaillerait sur
+  // les données du dépôt et un scan lancé en local resterait invisible.
+  // En production, c'est l'inverse : le dépôt est la source, et le fichier
+  // embarqué dans le bundle est figé à l'instant du build.
+  const order =
+    process.env.NODE_ENV === "production"
+      ? [readRemote<T>, readLocal<T>]
+      : [readLocal<T>, readRemote<T>];
+
+  for (const read of order) {
+    const value = await read(name);
+    if (value !== null) return value;
+  }
+  // Fichier absent avant le premier scan : le dashboard doit s'afficher
+  // malgré tout, avec un état vide explicite.
+  return fallback;
 }
 
 export const getSnapshot = () => readJson<Snapshot | null>("latest", null);

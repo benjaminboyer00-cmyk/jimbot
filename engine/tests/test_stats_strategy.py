@@ -142,10 +142,38 @@ def test_niveaux_coherents_pour_une_vente(asset):
         assert sig.rr > 0
 
 
-def test_aucun_niveau_sur_signal_neutre(asset, random_walk):
+def test_signal_neutre_conserve_son_plan(asset, random_walk):
+    """Un actif sous le seuil garde des niveaux affichables.
+
+    C'est ce qui alimente la liste de surveillance : sans plan conservé, un
+    jour calme n'afficherait que des zéros, alors que « voici ce qui s'en
+    rapproche le plus, et voici pourquoi c'est insuffisant » a de la valeur.
+    Le garde-fou n'est pas l'absence de niveaux mais le drapeau `actionable`.
+    """
     sig = St.analyze(asset, random_walk, timeframe="1h")
     if sig.direction == "neutre":
-        assert sig.stop == 0.0 and sig.target == 0.0
+        assert not sig.actionable
+        if sig.bias != "neutre":
+            assert sig.stop > 0 and sig.target > 0
+
+
+def test_actionable_implique_une_direction(asset, trending, ranging, random_walk):
+    """`actionable` et `direction` ne doivent jamais se contredire."""
+    for df in (trending, ranging, random_walk):
+        sig = St.analyze(asset, df, timeframe="1h")
+        assert sig.actionable == (sig.direction != "neutre")
+        if sig.actionable:
+            assert sig.direction == sig.bias
+            assert sig.score >= St.SETTINGS.signal_threshold
+            assert sig.expected_r >= St.MIN_EXPECTED_R
+
+
+def test_le_biais_suit_le_signe_du_score(asset, trending):
+    sig = St.analyze(asset, trending, timeframe="1h")
+    if sig.raw_score > 0:
+        assert sig.bias in {"long", "neutre"}
+    elif sig.raw_score < 0:
+        assert sig.bias in {"short", "neutre"}
 
 
 def test_les_poids_somment_a_un_par_regime():

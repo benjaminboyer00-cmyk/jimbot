@@ -15,6 +15,16 @@ import {
   type Signal,
 } from "@/lib/data";
 
+import {
+  ApiSection,
+  Memecoins,
+  NewsSummary,
+  Reports,
+  TradeJournal,
+  Watchlist,
+  WorldContext,
+} from "./sections";
+
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
@@ -64,89 +74,14 @@ export default async function Page() {
         </div>
 
         {snap.risk_off && snap.risk_off.count > 0 && (
-          <section>
-            <h2>Contexte mondial</h2>
-            <div className="climate">
-              <div className="climate-head">
-                <span
-                  className={
-                    snap.risk_off.level > 0.25
-                      ? "down"
-                      : snap.risk_off.level < -0.25
-                        ? "up"
-                        : "muted"
-                  }
-                  style={{ fontSize: 22, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}
-                >
-                  {snap.risk_off.level > 0 ? "+" : ""}
-                  {fmtNum(snap.risk_off.level)}
-                </span>
-                <div>
-                  <strong>
-                    {snap.risk_off.level > 0.25
-                      ? "Tension en hausse"
-                      : snap.risk_off.level < -0.25
-                        ? "Détente"
-                        : "Climat neutre"}
-                  </strong>
-                  <div className="muted" style={{ fontSize: 12 }}>
-                    {snap.risk_off.level > 0.25
-                      ? "Rotation attendue vers les valeurs refuges (or, dollar, volatilité) ; pression sur les indices et la crypto."
-                      : snap.risk_off.level < -0.25
-                        ? "Rotation attendue vers les actifs de risque ; pression sur les valeurs refuges."
-                        : "Aucun biais directionnel marqué."}
-                  </div>
-                </div>
-              </div>
-              <div className="tablewrap" style={{ marginTop: 12 }}>
-                <table>
-                  <thead>
-                    <tr>
-                      <th className="num">Tension</th>
-                      <th>Fait marquant</th>
-                      <th>Source</th>
-                      <th>Termes</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {snap.risk_off.top.slice(0, 6).map((t, i) => (
-                      <tr key={i}>
-                        <td className={`num ${t.risk > 0 ? "down" : "up"}`}>
-                          {t.risk > 0 ? "+" : ""}
-                          {fmtNum(t.risk, 1)}
-                        </td>
-                        <td className="wide">
-                          {t.url ? (
-                            <a href={t.url} target="_blank" rel="noopener noreferrer">
-                              {t.title}
-                            </a>
-                          ) : (
-                            t.title
-                          )}
-                        </td>
-                        <td className="muted">{t.source}</td>
-                        <td className="muted">
-                          {t.terms.slice(0, 3).map((x) => (
-                            <span key={x} className="pill" style={{ marginRight: 4 }}>
-                              {x}
-                            </span>
-                          ))}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <p className="note">
-                Indice calculé par lexique pondéré sur {snap.risk_off.count} article(s)
-                porteurs, en anglais et en français, sur une échelle de −1 (apaisement) à
-                +1 (escalade). Il est ensuite appliqué à chaque actif via son bêta de
-                valeur refuge : une escalade fait monter l’or et la volatilité, et pèse
-                sur les indices et la crypto.
-              </p>
-            </div>
-          </section>
+          <WorldContext riskOff={snap.risk_off} />
         )}
+
+        <NewsSummary
+          summary={snap.news_summary ?? ""}
+          engine={snap.news_engine}
+          speeches={snap.speeches ?? []}
+        />
 
         {report?.briefing && (
           <section>
@@ -177,6 +112,8 @@ export default async function Page() {
             </div>
           )}
         </section>
+
+        <Watchlist items={snap.watchlist ?? []} />
 
         <section>
           <h2>Univers suivi · {counts.analysed} actifs</h2>
@@ -301,128 +238,14 @@ export default async function Page() {
             </>
           )}
 
-          {trades.length > 0 ? (
-            <>
-              <h3 style={{ marginTop: 24 }}>Derniers trades fermés</h3>
-              <div className="tablewrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Symbole</th>
-                      <th>Sens</th>
-                      <th className="num">Entrée</th>
-                      <th className="num">Sortie</th>
-                      <th className="num">PnL</th>
-                      <th className="num">R</th>
-                      <th>Motif</th>
-                      <th>Régime</th>
-                      <th className="num">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {trades.slice(0, 20).map((t, i) => (
-                      <tr key={`${t.symbol}-${t.closed_at}-${i}`}>
-                        <td style={{ fontWeight: 600 }}>{t.symbol}</td>
-                        <td className={t.direction === "long" ? "up" : "down"}>
-                          {t.direction === "long" ? "achat" : "vente"}
-                        </td>
-                        <td className="num">{fmtPrice(t.entry)}</td>
-                        <td className="num">{fmtPrice(t.exit)}</td>
-                        <td className={`num ${t.pnl >= 0 ? "up" : "down"}`}>
-                          {t.pnl >= 0 ? "+" : ""}
-                          {fmtNum(t.pnl)}
-                        </td>
-                        <td className={`num ${t.r_multiple >= 0 ? "up" : "down"}`}>
-                          {t.r_multiple >= 0 ? "+" : ""}
-                          {fmtNum(t.r_multiple)}
-                        </td>
-                        <td className="muted">{t.reason}</td>
-                        <td className="muted">{REGIME_LABELS[t.regime] ?? t.regime}</td>
-                        <td className="num muted">{t.closed_at.slice(0, 10)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <p className="note">
-                Frais et glissement sont appliqués à l’entrée comme à la sortie.
-                Lorsqu’une même bougie touche le stop et l’objectif, le stop est
-                retenu&nbsp;: sans données infra-bougie, l’hypothèse favorable
-                relèverait de l’auto-illusion.
-              </p>
-            </>
-          ) : (
-            <div className="empty" style={{ marginTop: 20 }}>
-              Aucun trade fermé. Les statistiques apparaîtront dès qu’un
-              historique existera — un taux de réussite sur trois trades n’a
-              aucune valeur.
-            </div>
-          )}
+          <TradeJournal trades={trades} />
         </section>
 
-        <section>
-          <h2>
-            Memecoins ·{" "}
-            <span className="muted" style={{ textTransform: "none", letterSpacing: 0 }}>
-              {snap.meme_report?.retained ?? snap.memecoins.length} retenu(s) sur{" "}
-              {snap.meme_report?.screened ?? 0} criblé(s)
-            </span>
-          </h2>
-          {snap.memecoins.length ? (
-            <div className="tablewrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Jeton</th>
-                    <th>Chaîne</th>
-                    <th className="num">Prix</th>
-                    <th className="num">Liquidité</th>
-                    <th className="num">Volume 24h</th>
-                    <th className="num">24h</th>
-                    <th className="num">Âge</th>
-                    <th className="num">Robustesse</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {snap.memecoins.map((m) => (
-                    <tr key={`${m.chain}-${m.symbol}`}>
-                      <td style={{ fontWeight: 600 }}>
-                        {m.url ? (
-                          <a href={m.url} target="_blank" rel="noopener noreferrer">
-                            {m.symbol}
-                          </a>
-                        ) : (
-                          m.symbol
-                        )}
-                      </td>
-                      <td className="muted">{m.chain}</td>
-                      <td className="num">{fmtPrice(m.price_usd)}</td>
-                      <td className="num">{fmtCompact(m.liquidity_usd)} $</td>
-                      <td className="num">{fmtCompact(m.volume_24h)} $</td>
-                      <td className={`num ${m.change_24h >= 0 ? "up" : "down"}`}>
-                        {m.change_24h >= 0 ? "+" : ""}
-                        {fmtNum(m.change_24h, 1)} %
-                      </td>
-                      <td className="num muted">{(m.age_hours / 24).toFixed(0)} j</td>
-                      <td className="num">{fmtNum(m.health_score, 0)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="empty">
-              Aucun jeton ne passe le filtre de survie sur ce cycle. C’est le cas
-              courant&nbsp;: la liquidité exigée croît à mesure que le pool est
-              jeune.
-            </div>
-          )}
-          <p className="note">
-            La robustesse mesure la profondeur de liquidité, l’activité et la
-            maturité du pool — donc la capacité à sortir d’une position. Elle ne
-            prédit aucune performance.
-          </p>
-        </section>
+        <Reports reports={snap.reports ?? []} />
+
+        <ApiSection />
+
+        <Memecoins items={snap.memecoins} report={snap.meme_report ?? {}} />
 
         {snap.news.length > 0 && (
           <section>
@@ -431,7 +254,8 @@ export default async function Page() {
               <table>
                 <thead>
                   <tr>
-                    <th className="num">Sentiment</th>
+                    <th>Type</th>
+                    <th className="num">Score</th>
                     <th>Titre</th>
                     <th>Source</th>
                     <th>Actifs</th>
@@ -439,41 +263,67 @@ export default async function Page() {
                   </tr>
                 </thead>
                 <tbody>
-                  {snap.news.slice(0, 22).map((n, i) => (
-                    <tr key={i}>
-                      <td className={`num ${n.sentiment > 0 ? "up" : n.sentiment < 0 ? "down" : "muted"}`}>
-                        {n.sentiment > 0 ? "+" : ""}
-                        {fmtNum(n.sentiment, 1)}
-                      </td>
-                      <td className="wide">
-                        {n.url ? (
-                          <a href={n.url} target="_blank" rel="noopener noreferrer">
-                            {n.title}
-                          </a>
-                        ) : (
-                          n.title
-                        )}
-                      </td>
-                      <td className="muted">{n.source}</td>
-                      <td className="muted">
-                        {n.assets.slice(0, 2).map((a) => (
-                          <span key={a} className="pill" style={{ marginRight: 4 }}>
-                            {a}
-                          </span>
-                        ))}
-                      </td>
-                      <td className="num muted">{n.age_hours.toFixed(0)} h</td>
-                    </tr>
-                  ))}
+                  {snap.news.slice(0, 24).map((n, i) => {
+                    // Un article géopolitique porte une tension, pas un
+                    // sentiment de marché : afficher « 0,0 » sur une dépêche de
+                    // guerre la ferait passer pour neutre. On montre donc la
+                    // mesure qui s'applique réellement à l'article.
+                    const monde = n.category === "monde" && (n.risk ?? 0) !== 0;
+                    const valeur = monde ? (n.risk ?? 0) : n.sentiment;
+                    // Une tension positive est une escalade, donc défavorable
+                    // au risque : le code couleur s'inverse par rapport au
+                    // sentiment de marché.
+                    const favorable = monde ? valeur < 0 : valeur > 0;
+                    return (
+                      <tr key={i}>
+                        <td className="muted">
+                          <span className="pill">{monde ? "tension" : "marché"}</span>
+                        </td>
+                        <td
+                          className={`num ${
+                            valeur === 0 ? "muted" : favorable ? "up" : "down"
+                          }`}
+                        >
+                          {valeur > 0 ? "+" : ""}
+                          {fmtNum(valeur, 1)}
+                        </td>
+                        <td className="wide">
+                          {n.url ? (
+                            <a href={n.url} target="_blank" rel="noopener noreferrer">
+                              {n.title}
+                            </a>
+                          ) : (
+                            n.title
+                          )}
+                        </td>
+                        <td className="muted">{n.source}</td>
+                        <td className="muted">
+                          {(monde ? (n.risk_terms ?? []) : n.assets)
+                            .slice(0, 2)
+                            .map((a) => (
+                              <span key={a} className="pill" style={{ marginRight: 4 }}>
+                                {a}
+                              </span>
+                            ))}
+                        </td>
+                        <td className="num muted">{n.age_hours.toFixed(0)} h</td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
             <p className="note">
-              Sentiment calculé par lexique pondéré, pas par modèle de langage&nbsp;:
-              chaque terme reconnu porte un poids fixe, les tournures
-              contextuelles inversent le sens («&nbsp;short liquidations&nbsp;» est
-              haussier), et le score décroît avec l’ancienneté. Le procédé est
-              reproductible et vérifiable.
+              Deux mesures distinctes selon la nature de l’article. Le{" "}
+              <strong>sentiment de marché</strong> est positif quand la nouvelle
+              est favorable à l’actif cité. La <strong>tension</strong> est
+              positive lors d’une escalade géopolitique — ce qui est défavorable
+              aux actifs de risque mais favorable à l’or et à la volatilité,
+              d’où le code couleur inversé. Les deux sont calculés par lexique
+              pondéré, en anglais et en français, avec inversion sur les
+              tournures contextuelles («&nbsp;short liquidations&nbsp;» est
+              haussier, une attaque «&nbsp;averted&nbsp;» n’est pas une
+              escalade).
             </p>
           </section>
         )}
