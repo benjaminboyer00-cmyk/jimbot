@@ -5,7 +5,7 @@
  * redéploiement Vercel : le dashboard est donc toujours servi avec les
  * données du dernier scan, sans base de données ni API intermédiaire.
  */
-import { readFile } from "node:fs/promises";
+import fs from "node:fs/promises";
 import path from "node:path";
 
 export type Factor = {
@@ -132,9 +132,37 @@ export type Performance = {
 
 const DATA_DIR = path.join(process.cwd(), "data");
 
+/**
+ * Base distante des fichiers de données.
+ *
+ * Le moteur committe `data/*.json` toutes les 15 minutes. Si le dashboard
+ * lisait ces fichiers depuis son propre bundle, il faudrait un redéploiement
+ * à chaque scan — soit 96 déploiements par jour, alors que le plan Hobby de
+ * Vercel en autorise 100. On lirait aussi des données figées à l'instant du
+ * build.
+ *
+ * On lit donc directement le dépôt à chaque requête : le dashboard est
+ * toujours à jour et le déploiement ne bouge que lorsque le code change.
+ */
+const REMOTE_BASE =
+  process.env.JIMBOT_DATA_URL ??
+  "https://raw.githubusercontent.com/benjaminboyer00-cmyk/jimbot/main/data";
+
 async function readJson<T>(name: string, fallback: T): Promise<T> {
+  // 1) Source distante, sans cache pour refléter le dernier scan.
+  if (REMOTE_BASE) {
+    try {
+      const res = await fetch(`${REMOTE_BASE}/${name}.json`, { cache: "no-store" });
+      if (res.ok) return (await res.json()) as T;
+    } catch {
+      // Réseau indisponible : on tente le fichier local ci-dessous.
+    }
+  }
+
+  // 2) Repli sur le fichier local, utile en développement et si GitHub est
+  //    injoignable au moment du rendu.
   try {
-    const raw = await readFile(path.join(DATA_DIR, `${name}.json`), "utf8");
+    const raw = await fs.readFile(path.join(DATA_DIR, `${name}.json`), "utf8");
     return JSON.parse(raw) as T;
   } catch {
     // Fichier absent avant le premier scan, ou JSON invalide : le dashboard

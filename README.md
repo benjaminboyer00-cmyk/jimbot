@@ -18,10 +18,15 @@ daily_report.py (1j) ──┼─→  data/*.json  ─→  dashboard Next.js
                        └─→  Discord (webhook)
 ```
 
-Chaque exécution committe ses résultats dans `data/`, ce qui déclenche un
-redéploiement Vercel : le dashboard reflète toujours le dernier scan, sans base
-de données ni API intermédiaire. L'historique git devient l'historique du bot —
-chaque signal est horodaté et non falsifiable a posteriori.
+Chaque exécution committe ses résultats dans `data/`. Le dashboard lit ces
+fichiers **directement depuis le dépôt à chaque requête**, sans base de données
+ni API intermédiaire : il reflète donc toujours le dernier scan sans qu'un
+redéploiement soit nécessaire. C'est délibéré — faire redéployer Vercel à
+chaque scan représenterait 96 déploiements par jour, alors que le plan Hobby en
+autorise 100.
+
+L'historique git devient l'historique du bot : chaque signal est horodaté et
+non falsifiable a posteriori.
 
 | Composant | Rôle |
 |---|---|
@@ -129,8 +134,15 @@ pourront pas committer leurs résultats.
 
 Importer le dépôt sur [vercel.com/new](https://vercel.com/new). Framework
 détecté automatiquement (Next.js), répertoire racine `/`, aucune variable
-d'environnement requise pour le dashboard. Chaque commit du bot redéclenche un
-déploiement.
+d'environnement requise.
+
+Si le dépôt est un fork ou porte un autre nom, définir `JIMBOT_DATA_URL` sur la
+base brute de vos données, par exemple
+`https://raw.githubusercontent.com/<compte>/<dépôt>/main/data`.
+
+`vercel.json` contient un `ignoreCommand` qui annule la construction lorsque
+seuls `data/` et `reports/` ont changé : les commits de scan ne consomment donc
+aucun déploiement.
 
 ### 4. Premier lancement
 
