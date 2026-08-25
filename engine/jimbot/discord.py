@@ -113,6 +113,17 @@ def should_alert(symbol: str, direction: str) -> bool:
 
 
 def mark_alerted(symbol: str, direction: str) -> None:
+    """Enregistre l'envoi pour le délai anti-spam.
+
+    Une simulation ne marque rien : sinon un test en `--dry-run` consommerait
+    le budget anti-spam réel, et l'état — étant committé — empêcherait la
+    véritable exécution de publier l'alerte. C'est exactement ce qui s'est
+    produit : un essai local a bloqué la première alerte géopolitique en
+    production pendant six heures.
+    """
+    if SETTINGS.dry_run:
+        log.debug("[DRY RUN] délai anti-spam non consommé pour %s:%s", symbol, direction)
+        return
     sent = read("alerts_sent", {}) or {}
     sent[f"{symbol}:{direction}"] = now_iso()
     # Purge les entrées trop vieilles pour rester pertinentes.
@@ -294,6 +305,10 @@ def should_alert_context(key: str, cooldown_min: int = 240) -> bool:
 
 
 def mark_context_alerted(key: str) -> None:
+    """Idem pour les alertes de contexte : une simulation ne consomme rien."""
+    if SETTINGS.dry_run:
+        log.debug("[DRY RUN] délai anti-spam non consommé pour %s", key)
+        return
     sent = read("context_sent", {}) or {}
     sent[key] = now_iso()
     cutoff = time.time() - 7 * 86400

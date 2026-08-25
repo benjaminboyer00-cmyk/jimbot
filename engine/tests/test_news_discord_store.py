@@ -365,3 +365,44 @@ def test_valeur_illisible_ne_fait_pas_echouer(monkeypatch):
     from jimbot import config
     monkeypatch.setenv("JIMBOT_TEST_SEUIL", "soixante")
     assert config._env_float("JIMBOT_TEST_SEUIL", 58.0) == 58.0
+
+
+# --------------------------------------------------------------------------
+# Anti-spam : une simulation ne doit rien consommer
+# --------------------------------------------------------------------------
+def test_le_mode_simulation_ne_consomme_pas_le_delai(monkeypatch, store_temporaire):
+    """Un essai en --dry-run ne doit pas bloquer une alerte réelle.
+
+    Le cas s'est produit : un test local a marqué l'alerte géopolitique comme
+    envoyée, l'état a été committé, et l'exécution suivante en production l'a
+    respecté — l'alerte n'est jamais partie.
+    """
+    import dataclasses
+    from jimbot import discord
+
+    monkeypatch.setattr(discord, "read", store_temporaire.read)
+    monkeypatch.setattr(discord, "write", store_temporaire.write)
+    # `Settings` est un dataclass gelé : on substitue une copie modifiée.
+    monkeypatch.setattr(discord, "SETTINGS",
+                        dataclasses.replace(discord.SETTINGS, dry_run=True))
+
+    discord.mark_context_alerted("geo:escalade:0.7")
+    discord.mark_alerted("XAUUSD", "long")
+
+    assert store_temporaire.read("context_sent", {}) is None or \
+           store_temporaire.read("context_sent", {}) == {}
+    assert discord.should_alert_context("geo:escalade:0.7")
+    assert discord.should_alert("XAUUSD", "long")
+
+
+def test_un_envoi_reel_consomme_bien_le_delai(monkeypatch, store_temporaire):
+    import dataclasses
+    from jimbot import discord
+
+    monkeypatch.setattr(discord, "read", store_temporaire.read)
+    monkeypatch.setattr(discord, "write", store_temporaire.write)
+    monkeypatch.setattr(discord, "SETTINGS",
+                        dataclasses.replace(discord.SETTINGS, dry_run=False))
+
+    discord.mark_context_alerted("geo:escalade:0.7")
+    assert not discord.should_alert_context("geo:escalade:0.7")
