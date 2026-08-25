@@ -25,9 +25,10 @@ chaque signal est horodaté et non falsifiable a posteriori.
 
 | Composant | Rôle |
 |---|---|
-| `engine/jimbot/indicators.py` | RSI, MACD, ATR, ADX, Bollinger, Donchian, OBV, VWAP, régression glissante — réimplémentés en numpy/pandas, sans TA-Lib |
+| `engine/jimbot/indicators.py` | RSI, MACD, ATR, ADX, Bollinger, Donchian, OBV, VWAP, Keltner, Supertrend, Ichimoku, chandelier, choppiness, ratio de variance, MFI, divergences — réimplémentés en numpy/pandas, sans TA-Lib |
 | `engine/jimbot/stats.py` | Régime de marché, exposant de Hurst (analyse R/S), corrélations, Sharpe, drawdown |
-| `engine/jimbot/strategy.py` | Scoring six facteurs, pondéré par le régime détecté |
+| `engine/jimbot/strategy.py` | Scoring sept facteurs, pondéré par le régime détecté |
+| `engine/jimbot/levels.py` | Structure de marché et optimisation des niveaux par espérance mathématique |
 | `engine/jimbot/risk.py` | Dimensionnement par risque fixe, demi-Kelly, plafonds de portefeuille et de corrélation |
 | `engine/jimbot/paper.py` | Exécution simulée avec frais et glissement, statistiques de performance |
 | `engine/jimbot/narrator.py` | Rédaction hybride : chiffres calculés en Python, mise en phrases par Claude |
@@ -40,14 +41,62 @@ Le moteur détermine d'abord **le régime de marché** — tendance, range ou
 chaotique — puis applique le jeu de pondérations correspondant. C'est le point
 central : un croisement de moyennes mobiles est pertinent en tendance et
 trompeur en range ; un RSI en survente signale un achat en range et une
-continuation baissière en tendance. Six facteurs sont notés indépendamment
-dans `[-1, +1]`, combinés selon le régime, puis modulés par la qualité de ce
-régime et l'accord avec l'unité de temps supérieure.
+continuation baissière en tendance. Sept facteurs sont notés indépendamment
+dans `[-1, +1]` — tendance, momentum, retour à la moyenne, volume, cassure,
+structure, sentiment — combinés selon le régime, puis modulés par la qualité de
+ce régime et l'accord avec l'unité de temps supérieure.
 
 Chaque point de score est traçable jusqu'à la formule qui l'a produit : le
 rapport et le dashboard affichent la contribution de chaque facteur.
 
-Les niveaux d'invalidation sont calés sur l'ATR, pas sur un pourcentage fixe.
+### Niveaux optimisés par espérance mathématique
+
+Les stops et objectifs ne sont pas des multiples d'ATR arbitraires. Le moteur
+identifie la structure réellement respectée par le marché — points pivots,
+zones de congestion, retracements de Fibonacci, point de contrôle du volume —
+puis évalue les couples stop/objectif adossés à cette structure et retient
+celui qui **maximise l'espérance**.
+
+Le point de départ est un résultat exact : pour une marche aléatoire sans
+dérive, la probabilité d'atteindre l'objectif avant le stop vaut
+`d_stop / (d_stop + d_objectif)`, ce qui rend l'espérance **rigoureusement
+nulle quel que soit le ratio rendement/risque**. Aucun réglage de R/R ne crée
+d'avantage à lui seul. Celui-ci ne peut venir que de trois sources, toutes
+modélisées explicitement :
+
+1. la capacité du signal à prédire la direction, **décroissante avec la
+   distance de l'objectif** — un signal technique a un horizon fini ;
+2. la solidité du niveau structurel qui adosse le stop ;
+3. l'absence d'obstacle entre le prix et l'objectif.
+
+S'y ajoutent une pénalité pour les stops situés dans le bruit ordinaire de la
+bougie, et une pour les objectifs exigeant de franchir une résistance. **Un
+plan dont l'espérance reste négative est écarté même à forte conviction** :
+c'est le principal apport de cette couche, et elle rejette régulièrement des
+signaux que le seul score aurait validés.
+
+### Contexte mondial
+
+Les actualités ne se limitent pas aux marchés. Le moteur suit 18 flux, dont
+BBC World, NYT, Al Jazeera, Guardian, AP, France 24, Le Monde et les
+communiqués officiels de la Fed et de la BCE, et en extrait deux axes que le
+sentiment classique ne peut pas représenter :
+
+- **l'axe risque-on / risque-off** : une escalade géopolitique n'a pas le même
+  signe selon l'actif. Chaque instrument porte un *bêta de valeur refuge* — +0.9
+  pour l'or, +1.0 pour le VIX, −0.9 pour le Nasdaq, −0.55 pour Bitcoin — qui
+  détermine le sens et l'intensité de l'effet ;
+- **l'axe monétaire** : l'or ne réagit pas aux bénéfices d'entreprise mais aux
+  taux réels. Le moteur détecte les prises de parole officielles (Powell,
+  Lagarde, FOMC, Jackson Hole…), en mesure la tonalité accommodante ou
+  restrictive, et publie une alerte Discord dédiée avec l'effet attendu chiffré
+  par actif.
+
+Les deux lexiques existent en anglais et en français — sans quoi les flux
+France 24 et Le Monde seraient entièrement ignorés.
+
+### Risque
+
 Le dimensionnement part du risque accepté, pas du montant investi : la taille
 découle de la distance au stop, et plusieurs plafonds — risque total, exposition
 unitaire par classe, risque cumulé entre actifs corrélés — priment sur le score.
@@ -99,7 +148,7 @@ Puis, sur GitHub, onglet **Actions** → *Scan de marché* → **Run workflow**.
 .venv/bin/python engine/scan.py --no-alert    # analyse seule
 .venv/bin/python engine/scan.py --dry-run     # simule aussi les envois
 .venv/bin/python engine/daily_report.py       # rapport PDF + publication
-.venv/bin/python -m pytest engine/tests -v    # 96 tests, sans réseau
+.venv/bin/python -m pytest engine/tests -v    # 135 tests, sans réseau
 npm run dev                                   # dashboard sur localhost:3000
 ```
 
@@ -148,7 +197,7 @@ L'univers suivi et les profils de risque par classe d'actif sont dans
 | Binance API publique | OHLCV crypto | non |
 | Yahoo Finance (endpoint chart) | forex, indices, matières premières | non |
 | DexScreener | découverte et criblage des memecoins | non |
-| Flux RSS (CoinDesk, Cointelegraph, Decrypt, TheBlock, FXStreet, CNBC, Yahoo) | actualités | non |
+| 18 flux RSS (CoinDesk, Cointelegraph, Decrypt, TheBlock, FXStreet, MarketWatch, NYT, BBC, Al Jazeera, Guardian, AP, France 24, Le Monde, Fed, BCE…) | actualités marchés et monde | non |
 | API Anthropic | rédaction des analyses | facultative |
 
 ## Limites connues
@@ -158,10 +207,18 @@ L'univers suivi et les profils de risque par classe d'actif sont dans
 - **L'exposant de Hurst est biaisé à la hausse** sur les historiques courts
   (biais d'Anis-Lloyd) : mesuré à ~0.57 sur des marches aléatoires de 400
   bougies là où la théorie donne 0.50. Il ne doit être lu qu'en comparaison.
-- **Le sentiment repose sur un lexique anglophone** : il ne couvre ni les
-  sources francophones ni l'ironie. Son influence est bornée à ±1 et pondérée
+- **Le sentiment repose sur des lexiques pondérés**, anglais et français. Il ne
+  détecte ni l'ironie ni l'implicite. Son influence est bornée à ±1 et pondérée
   par le nombre d'articles et leur fraîcheur, précisément pour qu'une dépêche
   isolée ne puisse pas déplacer un signal.
+- **Les bêtas de valeur refuge sont des constantes**, pas des estimations
+  glissantes : ils reflètent le comportement historique moyen des actifs, qui
+  peut se rompre (Bitcoin s'est déjà comporté à la fois comme actif de risque
+  et comme refuge selon les périodes).
+- **L'horizon d'avantage du signal est un paramètre**, fixé à 5 ATR. C'est le
+  réglage le plus influent du module de niveaux, et le seul qui mériterait
+  d'être estimé sur les données plutôt que posé a priori — ce qui exigera
+  plusieurs centaines de trades fermés.
 - **Les memecoins retenus sont rares** — souvent aucun. C'est le filtre qui
   fonctionne, pas une panne : les exigences de liquidité croissent à mesure que
   le pool est jeune.

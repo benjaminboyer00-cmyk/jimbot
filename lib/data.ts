@@ -35,6 +35,16 @@ export type Signal = {
   news_score: number;
   news_count: number;
   warnings: string[];
+  win_prob: number;
+  expected_r: number;
+  stop_basis: string;
+  target_basis: string;
+};
+
+export type RiskOff = {
+  level: number;
+  count: number;
+  top: { title: string; source: string; risk: number; terms: string[]; url: string }[];
 };
 
 export type Position = {
@@ -93,6 +103,7 @@ export type Snapshot = {
   regimes: Record<string, number>;
   memecoins: Memecoin[];
   meme_report: { screened?: number; retained?: number; near_misses?: unknown[] };
+  risk_off?: RiskOff;
   news: Article[];
   portfolio: {
     capital: number;

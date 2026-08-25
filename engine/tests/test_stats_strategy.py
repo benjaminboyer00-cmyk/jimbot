@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 from jimbot import stats as S
+from jimbot import levels as L
 from jimbot import strategy as St
 from jimbot.config import UNIVERSE
 
@@ -114,7 +115,7 @@ def test_analyse_produit_un_signal_coherent(asset, trending):
     sig = St.analyze(asset, trending, timeframe="1h", generated_at="2026-01-01T00:00:00Z")
     assert 0 <= sig.score <= 100
     assert sig.direction in {"long", "short", "neutre"}
-    assert len(sig.factors) == 6
+    assert len(sig.factors) == 7
     assert sig.price > 0
 
 
@@ -122,7 +123,11 @@ def test_niveaux_coherents_pour_un_achat(asset, trending):
     sig = St.analyze(asset, trending, timeframe="1h")
     if sig.direction == "long":
         assert sig.stop < sig.entry < sig.target
-        assert sig.rr == pytest.approx(2.0, abs=0.01)
+        # Le R/R n'est plus figé : il est choisi par l'optimiseur d'espérance
+        # dans les bornes du module `levels`.
+        assert L.MIN_RR <= sig.rr <= L.MAX_RR
+        assert sig.expected_r >= St.MIN_EXPECTED_R
+        assert sig.stop_basis and sig.target_basis
 
 
 def test_niveaux_coherents_pour_une_vente(asset):

@@ -211,3 +211,124 @@ def test_les_flexions_courantes_sont_reconnues():
     autoriser le préfixage libre qui produit les faux positifs."""
     for titre in ("massive outflow recorded", "massive outflows recorded"):
         assert news.score_text(titre)[0] < 0
+
+
+# --------------------------------------------------------------------------
+# Axe géopolitique
+# --------------------------------------------------------------------------
+@pytest.mark.parametrize("titre,attendu", [
+    ("Israel launches airstrike on Iranian nuclear facility, escalation feared", 1),
+    ("Russia announces mobilization, troops deployed near border", 1),
+    ("New sanctions and export ban target the energy sector", 1),
+    ("Ceasefire agreement reached, sanctions lifted", -1),
+    ("Peace deal signed after diplomatic breakthrough", -1),
+    ("Frappes russes sur Kiev, escalade militaire", 1),
+    ("Cessez-le-feu signé, désescalade au Proche-Orient", -1),
+    ("Company publishes quarterly newsletter", 0),
+])
+def test_tension_geopolitique(titre, attendu):
+    """Le lexique doit fonctionner en anglais comme en français : sans les
+    termes français, les flux France 24 et Le Monde seraient ignorés."""
+    score, _ = news.score_geopolitics(titre)
+    signe = 0 if abs(score) < 0.5 else (1 if score > 0 else -1)
+    assert signe == attendu
+
+
+def test_escalade_evitee_n_est_pas_une_escalade():
+    reelle, _ = news.score_geopolitics("Missile attack on the capital")
+    evitee, _ = news.score_geopolitics("Missile attack averted after talks")
+    assert reelle > 0 > evitee
+
+
+def test_risk_off_borne_et_signe():
+    def articles(risque, n=4):
+        return [news.Article(
+            title="t", source="s", url="", published="p", age_hours=1.0,
+            sentiment=0.0, matched=[], assets=[], category="monde",
+            risk=risque, risk_terms=["war"]) for _ in range(n)]
+    escalade = news.risk_off_level(articles(6.0))
+    apaisement = news.risk_off_level(articles(-6.0))
+    assert 0 < escalade["level"] <= 1.0
+    assert -1.0 <= apaisement["level"] < 0
+
+
+def test_risk_off_ignore_les_articles_sans_terme():
+    """Diluer par les dépêches neutres rendrait un jour de crise
+    indiscernable d'un jour calme."""
+    neutres = [news.Article(title="t", source="s", url="", published="p",
+                            age_hours=1.0, sentiment=0.0, matched=[], assets=[],
+                            category="monde", risk=0.0, risk_terms=[])
+               for _ in range(50)]
+    tendu = news.Article(title="war", source="s", url="", published="p",
+                         age_hours=1.0, sentiment=0.0, matched=[], assets=[],
+                         category="monde", risk=6.0, risk_terms=["war"])
+    assert news.risk_off_level(neutres + [tendu])["level"] > 0.2
+
+
+def test_beta_refuge_inverse_le_signe_selon_l_actif():
+    """Une escalade doit être haussière pour l'or et baissière pour le Nasdaq."""
+    arts = [news.Article(title="war escalation", source="s", url="", published="p",
+                         age_hours=1.0, sentiment=0.0, matched=[], assets=[],
+                         category="monde", risk=6.0, risk_terms=["war"])
+            for _ in range(5)]
+    agg = news.sentiment_by_asset(arts, ["XAUUSD", "NDX", "VIX", "BTC-USD"])
+    assert agg["XAUUSD"]["geo"] > 0
+    assert agg["VIX"]["geo"] > 0
+    assert agg["NDX"]["geo"] < 0
+    assert agg["BTC-USD"]["geo"] < 0
+
+
+def test_tous_les_actifs_demandes_sont_couverts():
+    """L'axe géopolitique ne cite aucun actif : sans la liste explicite, il
+    n'atteindrait presque personne."""
+    arts = [news.Article(title="war", source="s", url="", published="p",
+                         age_hours=1.0, sentiment=0.0, matched=[], assets=[],
+                         category="monde", risk=5.0, risk_terms=["war"])]
+    agg = news.sentiment_by_asset(arts, ["XAUUSD", "SPX", "BTC-USD"])
+    assert set(agg) >= {"XAUUSD", "SPX", "BTC-USD"}
+
+
+# --------------------------------------------------------------------------
+# Discours de politique monétaire
+# --------------------------------------------------------------------------
+def test_discours_restrictif_detecte():
+    r = news.score_speech("Powell says rates will stay higher for longer amid sticky inflation")
+    assert r["is_speech"] and r["speaker"] == "powell"
+    assert r["tone"] < 0 and r["importance"] > 0.5
+
+
+def test_discours_accommodant_detecte():
+    r = news.score_speech("Fed Chair Powell signals rate cut, dovish remarks")
+    assert r["tone"] > 0 and r["importance"] > 0.5
+
+
+def test_simple_mention_n_est_pas_un_discours():
+    """Citer la Fed dans un éditorial ne constitue pas une prise de parole."""
+    r = news.score_speech("Analyst thinks the Fed is wrong about inflation")
+    assert r["importance"] == 0.0
+
+
+def test_orateur_sans_tonalite_reste_sans_importance():
+    r = news.score_speech("Powell attends the annual banking conference")
+    assert r["speaker"] == "powell"
+    assert r["importance"] == 0.0, "c'est le propos qui compte, pas le nom"
+
+
+def test_or_est_le_plus_sensible_a_la_politique_monetaire():
+    assert news.MONETARY_BETA["XAUUSD"] == max(news.MONETARY_BETA.values())
+
+
+def test_dollar_reagit_a_l_inverse_de_l_or():
+    assert news.MONETARY_BETA["DXY"] < 0 < news.MONETARY_BETA["XAUUSD"]
+
+
+def test_alerte_discours_au_dela_du_seuil():
+    arts = [news.Article(
+        title="Powell signals rate cut, dovish tone", source="Fed", url="",
+        published="p", age_hours=1.0, sentiment=0.0, matched=[], assets=[],
+        category="monde", risk=0.0, risk_terms=[],
+        speech=news.score_speech("Powell signals rate cut, dovish tone"))]
+    majeurs = news.major_speeches(arts)
+    assert majeurs and majeurs[0]["speaker"] == "powell"
+    # L'effet attendu est calculé, jamais rédigé.
+    assert majeurs[0]["impact"]["XAUUSD"] > 0

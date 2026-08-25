@@ -63,6 +63,91 @@ export default async function Page() {
           <Kpi label="Trades fermés" value={String(perf.trades)} />
         </div>
 
+        {snap.risk_off && snap.risk_off.count > 0 && (
+          <section>
+            <h2>Contexte mondial</h2>
+            <div className="climate">
+              <div className="climate-head">
+                <span
+                  className={
+                    snap.risk_off.level > 0.25
+                      ? "down"
+                      : snap.risk_off.level < -0.25
+                        ? "up"
+                        : "muted"
+                  }
+                  style={{ fontSize: 22, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}
+                >
+                  {snap.risk_off.level > 0 ? "+" : ""}
+                  {fmtNum(snap.risk_off.level)}
+                </span>
+                <div>
+                  <strong>
+                    {snap.risk_off.level > 0.25
+                      ? "Tension en hausse"
+                      : snap.risk_off.level < -0.25
+                        ? "Détente"
+                        : "Climat neutre"}
+                  </strong>
+                  <div className="muted" style={{ fontSize: 12 }}>
+                    {snap.risk_off.level > 0.25
+                      ? "Rotation attendue vers les valeurs refuges (or, dollar, volatilité) ; pression sur les indices et la crypto."
+                      : snap.risk_off.level < -0.25
+                        ? "Rotation attendue vers les actifs de risque ; pression sur les valeurs refuges."
+                        : "Aucun biais directionnel marqué."}
+                  </div>
+                </div>
+              </div>
+              <div className="tablewrap" style={{ marginTop: 12 }}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th className="num">Tension</th>
+                      <th>Fait marquant</th>
+                      <th>Source</th>
+                      <th>Termes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {snap.risk_off.top.slice(0, 6).map((t, i) => (
+                      <tr key={i}>
+                        <td className={`num ${t.risk > 0 ? "down" : "up"}`}>
+                          {t.risk > 0 ? "+" : ""}
+                          {fmtNum(t.risk, 1)}
+                        </td>
+                        <td className="wide">
+                          {t.url ? (
+                            <a href={t.url} target="_blank" rel="noopener noreferrer">
+                              {t.title}
+                            </a>
+                          ) : (
+                            t.title
+                          )}
+                        </td>
+                        <td className="muted">{t.source}</td>
+                        <td className="muted">
+                          {t.terms.slice(0, 3).map((x) => (
+                            <span key={x} className="pill" style={{ marginRight: 4 }}>
+                              {x}
+                            </span>
+                          ))}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="note">
+                Indice calculé par lexique pondéré sur {snap.risk_off.count} article(s)
+                porteurs, en anglais et en français, sur une échelle de −1 (apaisement) à
+                +1 (escalade). Il est ensuite appliqué à chaque actif via son bêta de
+                valeur refuge : une escalade fait monter l’or et la volatilité, et pèse
+                sur les indices et la crypto.
+              </p>
+            </div>
+          </section>
+        )}
+
         {report?.briefing && (
           <section>
             <h2>Briefing</h2>
@@ -465,6 +550,20 @@ function SignalCard({ s }: { s: Signal }) {
         <Level label="Objectif" value={fmtPrice(s.target)} />
         <Level label="R/R" value={fmtNum(s.rr)} />
       </div>
+      {s.stop_basis && (
+        <div className="plan-basis">
+          <div>
+            <span className="muted">P(gain)</span> {(s.win_prob * 100).toFixed(0)} %{" · "}
+            <span className="muted">espérance</span>{" "}
+            <span className={s.expected_r > 0 ? "up" : "down"}>
+              {s.expected_r >= 0 ? "+" : ""}
+              {fmtNum(s.expected_r, 3)} R
+            </span>
+          </div>
+          <div className="muted">stop ← {s.stop_basis}</div>
+          <div className="muted">objectif ← {s.target_basis}</div>
+        </div>
+      )}
 
       <div className="factors">
         {top.map((f) => (
