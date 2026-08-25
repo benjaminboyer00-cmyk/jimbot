@@ -148,7 +148,7 @@ Puis, sur GitHub, onglet **Actions** → *Scan de marché* → **Run workflow**.
 .venv/bin/python engine/scan.py --no-alert    # analyse seule
 .venv/bin/python engine/scan.py --dry-run     # simule aussi les envois
 .venv/bin/python engine/daily_report.py       # rapport PDF + publication
-.venv/bin/python -m pytest engine/tests -v    # 135 tests, sans réseau
+.venv/bin/python -m pytest engine/tests -v    # 153 tests, sans réseau
 npm run dev                                   # dashboard sur localhost:3000
 ```
 
@@ -194,7 +194,7 @@ L'univers suivi et les profils de risque par classe d'actif sont dans
 
 | Source | Usage | Clé requise |
 |---|---|---|
-| Binance API publique | OHLCV crypto | non |
+| Crypto : `data-api.binance.vision`, Binance, Coinbase, Kraken (chaîne de repli) | OHLCV crypto | non |
 | Yahoo Finance (endpoint chart) | forex, indices, matières premières | non |
 | DexScreener | découverte et criblage des memecoins | non |
 | 18 flux RSS (CoinDesk, Cointelegraph, Decrypt, TheBlock, FXStreet, MarketWatch, NYT, BBC, Al Jazeera, Guardian, AP, France 24, Le Monde, Fed, BCE…) | actualités marchés et monde | non |
@@ -225,6 +225,11 @@ L'univers suivi et les profils de risque par classe d'actif sont dans
 - **Le portefeuille papier n'a pas de données infra-bougie** : quand une même
   bougie touche le stop et l'objectif, le stop est retenu. L'hypothèse inverse
   gonflerait artificiellement les résultats.
+- **Binance géo-bloque les adresses IP américaines** (HTTP 451), donc les
+  runners GitHub. Les données crypto passent par une chaîne de repli —
+  `data-api.binance.vision`, puis Binance, Coinbase et Kraken — de sorte
+  qu'aucun fournisseur ne constitue un point de défaillance unique. Les prix
+  diffèrent légèrement d'une place à l'autre, ce qui est normal.
 - **Aucun backtest historique long** n'est fourni : les statistiques se
   construisent en avançant, ce qui évite tout surapprentissage rétrospectif
   mais impose d'attendre avant de juger la stratégie.

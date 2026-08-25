@@ -13,7 +13,7 @@ import pandas as pd
 
 from . import risk, stats
 from .config import MEMECOIN_CHAINS, SETTINGS, UNIVERSE, Asset
-from .datasources import binance, dexscreener, news as news_src, yahoo
+from .datasources import crypto, dexscreener, news as news_src, yahoo
 from .datasources.base import DataError
 from .paper import Portfolio, performance
 from .store import now_iso, read, write, append_history, MAX_SIGNALS_HISTORY, MAX_CLOSED_TRADES
@@ -30,8 +30,8 @@ def load_candles(asset: Asset) -> tuple[pd.DataFrame | None, pd.DataFrame | None
     """Charge l'unité de temps principale et l'unité supérieure d'un actif."""
     try:
         if asset.source == "binance":
-            main = binance.klines(asset.ref, TF_MAIN, SETTINGS.lookback)
-            htf = binance.klines(asset.ref, "4h", 300)
+            main = crypto.klines(asset.ref, TF_MAIN, SETTINGS.lookback)
+            htf = crypto.klines(asset.ref, "4h", 300)
         else:
             main = yahoo.chart(asset.ref, TF_MAIN, SETTINGS.lookback)
             htf = yahoo.chart(asset.ref, "1d", 300)
