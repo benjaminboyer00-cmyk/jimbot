@@ -1,0 +1,280 @@
+{
+  "generated_at": "2026-08-25T17:57:43+00:00",
+  "horizon": 48,
+  "holdout_calendaire": {
+    "coupure": "2026-05-19T06:00:00+00:00",
+    "poids_ajustes": {
+      "trend": -0.308,
+      "momentum": -0.0799,
+      "mean_reversion": 0.1782,
+      "volume": 0.0,
+      "breakout": -0.206,
+      "structure": -0.2278
+    },
+    "train": {
+      "observations": 10244,
+      "actifs": [
+        "AVAX-USD",
+        "BNB-USD",
+        "BTC-USD",
+        "DOGE-USD",
+        "DXY",
+        "ETH-USD",
+        "EURUSD",
+        "GBPUSD",
+        "LINK-USD",
+        "NDX",
+        "SOL-USD",
+        "SPX",
+        "USDJPY",
+        "XAUUSD",
+        "XRP-USD"
+      ],
+      "ic": 0.0632,
+      "t": 6.41,
+      "significatif": true
+    },
+    "test": {
+      "observations": 6826,
+      "actifs": [
+        "AVAX-USD",
+        "BNB-USD",
+        "BTC-USD",
+        "DOGE-USD",
+        "DXY",
+        "ETH-USD",
+        "EURUSD",
+        "GBPUSD",
+        "LINK-USD",
+        "NDX",
+        "SOL-USD",
+        "SPX",
+        "USDJPY",
+        "XAUUSD",
+        "XRP-USD"
+      ],
+      "ic": 0.0557,
+      "t": 4.61,
+      "significatif": true
+    }
+  },
+  "holdout_par_actif": {
+    "poids_ajustes": {
+      "trend": -0.3389,
+      "momentum": 0.0,
+      "mean_reversion": 0.1481,
+      "volume": 0.0,
+      "breakout": -0.1886,
+      "structure": -0.3244
+    },
+    "train": {
+      "observations": 10230,
+      "ic": 0.0599,
+      "t": 6.07,
+      "significatif": true
+    },
+    "test": {
+      "observations": 6840,
+      "ic": 0.066,
+      "t": 5.47,
+      "significatif": true
+    }
+  },
+  "walk_forward": {
+    "plis": [
+      {
+        "bloc": 1,
+        "periode_test": [
+          "2026-02-05",
+          "2026-04-01"
+        ],
+        "train_obs": 3414,
+        "poids": {
+          "trend": 0.0,
+          "momentum": 0.0,
+          "mean_reversion": 0.0,
+          "volume": 0.0,
+          "breakout": 0.0,
+          "structure": 0.0
+        },
+        "in_sample": {
+          "observations": 3414,
+          "ic": null,
+          "note": "échantillon insuffisant"
+        },
+        "hors_echantillon": {
+          "observations": 3414,
+          "ic": null,
+          "note": "échantillon insuffisant"
+        }
+      },
+      {
+        "bloc": 2,
+        "periode_test": [
+          "2026-04-01",
+          "2026-05-19"
+        ],
+        "train_obs": 6828,
+        "poids": {
+          "trend": -0.4055,
+          "momentum": 0.0,
+          "mean_reversion": 0.1506,
+          "volume": 0.0,
+          "breakout": -0.141,
+          "structure": -0.3029
+        },
+        "in_sample": {
+          "observations": 6828,
+          "ic": 0.0776,
+          "t": 6.43,
+          "significatif": true
+        },
+        "hors_echantillon": {
+          "observations": 3416,
+          "ic": 0.0447,
+          "t": 2.61,
+          "significatif": true
+        }
+      },
+      {
+        "bloc": 3,
+        "periode_test": [
+          "2026-05-19",
+          "2026-07-06"
+        ],
+        "train_obs": 10244,
+        "poids": {
+          "trend": -0.308,
+          "momentum": -0.0799,
+          "mean_reversion": 0.1782,
+          "volume": 0.0,
+          "breakout": -0.206,
+          "structure": -0.2278
+        },
+        "in_sample": {
+          "observations": 10244,
+          "ic": 0.0632,
+          "t": 6.41,
+          "significatif": true
+        },
+        "hors_echantillon": {
+          "observations": 3413,
+          "ic": -0.016,
+          "t": -0.93,
+          "significatif": false
+        }
+      },
+      {
+        "bloc": 4,
+        "periode_test": [
+          "2026-07-06",
+          "2026-08-23"
+        ],
+        "train_obs": 13657,
+        "poids": {
+          "trend": -0.3491,
+          "momentum": 0.0,
+          "mean_reversion": 0.1583,
+          "volume": 0.0,
+          "breakout": -0.1958,
+          "structure": -0.2968
+        },
+        "in_sample": {
+          "observations": 13657,
+          "ic": 0.0404,
+          "t": 4.73,
+          "significatif": true
+        },
+        "hors_echantillon": {
+          "observations": 3413,
+          "ic": 0.1542,
+          "t": 9.11,
+          "significatif": true
+        }
+      }
+    ],
+    "resume": {
+      "ic_moyen_hors_echantillon": 0.061,
+      "ic_median": 0.0447,
+      "blocs_positifs": "2/3",
+      "ecart_type": 0.0863
+    },
+    "stabilite_des_poids": {
+      "par_facteur": {
+        "breakout": {
+          "moyenne": -0.1357,
+          "ecart_type": 0.0822,
+          "signe_stable": true,
+          "valeurs": [
+            0.0,
+            -0.141,
+            -0.206,
+            -0.196
+          ]
+        },
+        "mean_reversion": {
+          "moyenne": 0.1218,
+          "ecart_type": 0.071,
+          "signe_stable": true,
+          "valeurs": [
+            0.0,
+            0.151,
+            0.178,
+            0.158
+          ]
+        },
+        "momentum": {
+          "moyenne": -0.02,
+          "ecart_type": 0.0346,
+          "signe_stable": true,
+          "valeurs": [
+            0.0,
+            0.0,
+            -0.08,
+            0.0
+          ]
+        },
+        "structure": {
+          "moyenne": -0.2069,
+          "ecart_type": 0.123,
+          "signe_stable": true,
+          "valeurs": [
+            0.0,
+            -0.303,
+            -0.228,
+            -0.297
+          ]
+        },
+        "trend": {
+          "moyenne": -0.2656,
+          "ecart_type": 0.1572,
+          "signe_stable": true,
+          "valeurs": [
+            0.0,
+            -0.406,
+            -0.308,
+            -0.349
+          ]
+        },
+        "volume": {
+          "moyenne": 0.0,
+          "ecart_type": 0.0,
+          "signe_stable": true,
+          "valeurs": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      "correlation_entre_blocs": 0.955
+    }
+  },
+  "reference_retour_a_la_moyenne": {
+    "observations": 17070,
+    "ic": 0.0317,
+    "t": 4.15,
+    "significatif": true
+  }
+}

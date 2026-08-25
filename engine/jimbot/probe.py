@@ -39,7 +39,18 @@ WINDOW = 400
 # Horizons de mesure, en bougies. Un facteur peut porter de l'information à
 # court terme et n'en avoir aucune à moyen terme — c'est précisément ce qu'on
 # veut savoir pour régler l'horizon d'avantage.
-HORIZONS = (6, 12, 24, 48)
+#
+# Ils sont propres à chaque unité de temps : 48 bougies représentent deux jours
+# en horaire et deux mois en journalier. Comparer les deux sans les adapter
+# n'aurait aucun sens. Les valeurs retenues couvrent, dans chaque cas, de
+# quelques heures à quelques semaines de marché.
+HORIZONS_PAR_INTERVALLE: dict[str, tuple[int, ...]] = {
+    "15m": (8, 24, 48, 96),
+    "1h": (6, 12, 24, 48),
+    "4h": (3, 6, 12, 30),
+    "1d": (2, 5, 10, 20),
+}
+HORIZONS = HORIZONS_PAR_INTERVALLE["1h"]
 
 # Le sentiment est exclu : il n'est pas reconstituable sur l'historique.
 FACTORS = {
@@ -53,11 +64,13 @@ FACTORS = {
 
 
 def probe_asset(asset: Asset, df: pd.DataFrame, *, step: int = 4,
-                window: int = WINDOW) -> list[dict]:
+                window: int = WINDOW,
+                horizons: tuple[int, ...] | None = None) -> list[dict]:
     """Enregistre facteurs et rendements futurs, à chaque pas, sans filtre."""
+    horizons = horizons or HORIZONS
     rows: list[dict] = []
     n = len(df)
-    horizon_max = max(HORIZONS)
+    horizon_max = max(horizons)
     if n < window + horizon_max + 10:
         return rows
 
@@ -77,12 +90,15 @@ def probe_asset(asset: Asset, df: pd.DataFrame, *, step: int = 4,
             continue
 
         prix = close[i]
+        # L'horodatage est indispensable à la validation hors échantillon :
+        # les actifs ne couvrent pas les mêmes périodes, et un découpage par
+        # position mélangerait des époques différentes d'un actif à l'autre.
         ligne = {"symbol": asset.symbol, "klass": asset.klass,
                  "regime": regime.name, "quality": regime.quality,
-                 "index": i, **valeurs}
+                 "index": i, "t": df.index[i].isoformat(), **valeurs}
         # Rendement futur en unités d'ATR : comparable entre actifs de
         # volatilités très différentes.
-        for h in HORIZONS:
+        for h in horizons:
             ligne[f"fwd_{h}"] = float((close[i + h] - prix) / atr_v)
         rows.append(ligne)
 
@@ -105,7 +121,8 @@ def _spearman(a: pd.Series, b: pd.Series) -> float:
     return float(a.rank().corr(b.rank(), method="pearson"))
 
 
-def information_coefficients(rows: list[dict]) -> dict:
+def information_coefficients(rows: list[dict],
+                            horizons: tuple[int, ...] | None = None) -> dict:
     """Corrélation de chaque facteur avec le rendement futur.
 
     On utilise la corrélation de rang (Spearman) plutôt que de Pearson :
@@ -116,13 +133,16 @@ def information_coefficients(rows: list[dict]) -> dict:
         return {"note": "échantillon insuffisant"}
 
     df = pd.DataFrame(rows)
-    out: dict = {"observations": len(df), "par_facteur": {}}
+    horizons = horizons or tuple(
+        int(c.removeprefix("fwd_")) for c in df.columns if c.startswith("fwd_"))
+    out: dict = {"observations": len(df), "horizons": list(horizons),
+                 "par_facteur": {}}
 
     for nom in FACTORS:
         if nom not in df.columns:
             continue
         entree = {}
-        for h in HORIZONS:
+        for h in horizons:
             col = f"fwd_{h}"
             sub = df[[nom, col]].dropna()
             # Un facteur constant n'a pas de rang : la corrélation serait NaN.

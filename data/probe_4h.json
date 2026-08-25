@@ -1,0 +1,357 @@
+{
+  "generated_at": "2026-08-25T18:07:30+00:00",
+  "parametres": {
+    "bars": 5000,
+    "step": 2,
+    "interval": "4h",
+    "horizons": [
+      3,
+      6,
+      12,
+      30
+    ],
+    "actifs": 15
+  },
+  "coefficients": {
+    "observations": 28881,
+    "horizons": [
+      3,
+      6,
+      12,
+      30
+    ],
+    "par_facteur": {
+      "trend": {
+        "horizons": {
+          "h3": {
+            "ic": -0.0105,
+            "t": -1.78,
+            "n": 28881,
+            "significatif": false
+          },
+          "h6": {
+            "ic": -0.0058,
+            "t": -0.98,
+            "n": 28881,
+            "significatif": false
+          },
+          "h12": {
+            "ic": -0.0101,
+            "t": -1.71,
+            "n": 28881,
+            "significatif": false
+          },
+          "h30": {
+            "ic": 0.0081,
+            "t": 1.37,
+            "n": 28881,
+            "significatif": false
+          }
+        },
+        "meilleur_horizon": "h3",
+        "ic_max": -0.0105,
+        "significatif": false
+      },
+      "momentum": {
+        "horizons": {
+          "h3": {
+            "ic": 0.0003,
+            "t": 0.05,
+            "n": 28881,
+            "significatif": false
+          },
+          "h6": {
+            "ic": 0.009,
+            "t": 1.52,
+            "n": 28881,
+            "significatif": false
+          },
+          "h12": {
+            "ic": -0.0091,
+            "t": -1.54,
+            "n": 28881,
+            "significatif": false
+          },
+          "h30": {
+            "ic": -0.0151,
+            "t": -2.57,
+            "n": 28881,
+            "significatif": true
+          }
+        },
+        "meilleur_horizon": "h30",
+        "ic_max": -0.0151,
+        "significatif": true
+      },
+      "mean_reversion": {
+        "horizons": {
+          "h3": {
+            "ic": 0.0035,
+            "t": 0.6,
+            "n": 28881,
+            "significatif": false
+          },
+          "h6": {
+            "ic": -0.0,
+            "t": -0.0,
+            "n": 28881,
+            "significatif": false
+          },
+          "h12": {
+            "ic": 0.0149,
+            "t": 2.53,
+            "n": 28881,
+            "significatif": true
+          },
+          "h30": {
+            "ic": 0.0135,
+            "t": 2.29,
+            "n": 28881,
+            "significatif": true
+          }
+        },
+        "meilleur_horizon": "h12",
+        "ic_max": 0.0149,
+        "significatif": true
+      },
+      "volume": {
+        "horizons": {
+          "h3": {
+            "ic": 0.0122,
+            "t": 2.08,
+            "n": 28881,
+            "significatif": true
+          },
+          "h6": {
+            "ic": 0.0219,
+            "t": 3.73,
+            "n": 28881,
+            "significatif": true
+          },
+          "h12": {
+            "ic": 0.0275,
+            "t": 4.67,
+            "n": 28881,
+            "significatif": true
+          },
+          "h30": {
+            "ic": 0.0118,
+            "t": 2.0,
+            "n": 28881,
+            "significatif": false
+          }
+        },
+        "meilleur_horizon": "h12",
+        "ic_max": 0.0275,
+        "significatif": true
+      },
+      "breakout": {
+        "horizons": {
+          "h3": {
+            "ic": -0.0028,
+            "t": -0.47,
+            "n": 28881,
+            "significatif": false
+          },
+          "h6": {
+            "ic": -0.0016,
+            "t": -0.27,
+            "n": 28881,
+            "significatif": false
+          },
+          "h12": {
+            "ic": -0.0167,
+            "t": -2.84,
+            "n": 28881,
+            "significatif": true
+          },
+          "h30": {
+            "ic": -0.0171,
+            "t": -2.9,
+            "n": 28881,
+            "significatif": true
+          }
+        },
+        "meilleur_horizon": "h30",
+        "ic_max": -0.0171,
+        "significatif": true
+      },
+      "structure": {
+        "horizons": {
+          "h3": {
+            "ic": -0.0084,
+            "t": -1.42,
+            "n": 28881,
+            "significatif": false
+          },
+          "h6": {
+            "ic": -0.0044,
+            "t": -0.74,
+            "n": 28881,
+            "significatif": false
+          },
+          "h12": {
+            "ic": -0.005,
+            "t": -0.85,
+            "n": 28881,
+            "significatif": false
+          },
+          "h30": {
+            "ic": 0.0115,
+            "t": 1.95,
+            "n": 28881,
+            "significatif": false
+          }
+        },
+        "meilleur_horizon": "h30",
+        "ic_max": 0.0115,
+        "significatif": false
+      }
+    }
+  },
+  "par_regime": {
+    "chaotique": {
+      "observations": 8390,
+      "trend": {
+        "ic": -0.014,
+        "t": -1.28
+      },
+      "momentum": {
+        "ic": -0.0395,
+        "t": -3.62
+      },
+      "mean_reversion": {
+        "ic": 0.0348,
+        "t": 3.19
+      },
+      "volume": {
+        "ic": 0.0218,
+        "t": 2.0
+      },
+      "breakout": {
+        "ic": -0.0356,
+        "t": -3.26
+      },
+      "structure": {
+        "ic": -0.0167,
+        "t": -1.53
+      }
+    },
+    "range": {
+      "observations": 8438,
+      "trend": {
+        "ic": 0.0527,
+        "t": 4.85
+      },
+      "momentum": {
+        "ic": 0.0373,
+        "t": 3.43
+      },
+      "mean_reversion": {
+        "ic": -0.0419,
+        "t": -3.85
+      },
+      "volume": {
+        "ic": 0.0452,
+        "t": 4.16
+      },
+      "breakout": {
+        "ic": 0.0284,
+        "t": 2.61
+      },
+      "structure": {
+        "ic": 0.0738,
+        "t": 6.79
+      }
+    },
+    "tendance_baissière": {
+      "observations": 5956,
+      "trend": {
+        "ic": -0.0532,
+        "t": -4.11
+      },
+      "momentum": {
+        "ic": -0.0474,
+        "t": -3.66
+      },
+      "mean_reversion": {
+        "ic": 0.0614,
+        "t": 4.75
+      },
+      "volume": {
+        "ic": -0.0083,
+        "t": -0.64
+      },
+      "breakout": {
+        "ic": -0.0611,
+        "t": -4.72
+      },
+      "structure": {
+        "ic": -0.0477,
+        "t": -3.69
+      }
+    },
+    "tendance_haussière": {
+      "observations": 6097,
+      "trend": {
+        "ic": 0.0335,
+        "t": 2.62
+      },
+      "momentum": {
+        "ic": 0.044,
+        "t": 3.44
+      },
+      "mean_reversion": {
+        "ic": -0.0382,
+        "t": -2.98
+      },
+      "volume": {
+        "ic": 0.0483,
+        "t": 3.78
+      },
+      "breakout": {
+        "ic": 0.0336,
+        "t": 2.63
+      },
+      "structure": {
+        "ic": 0.0232,
+        "t": 1.81
+      }
+    }
+  },
+  "poids_derives": {
+    "chaotique": {
+      "trend": 0.0,
+      "momentum": -0.3594,
+      "mean_reversion": 0.3167,
+      "volume": 0.0,
+      "breakout": -0.3239,
+      "structure": 0.0
+    },
+    "range": {
+      "trend": 0.1887,
+      "momentum": 0.1335,
+      "mean_reversion": -0.15,
+      "volume": 0.1618,
+      "breakout": 0.1017,
+      "structure": 0.2642
+    },
+    "tendance_baissière": {
+      "trend": -0.1965,
+      "momentum": -0.175,
+      "mean_reversion": 0.2267,
+      "volume": 0.0,
+      "breakout": -0.2256,
+      "structure": -0.1761
+    },
+    "tendance_haussière": {
+      "trend": 0.1695,
+      "momentum": 0.2227,
+      "mean_reversion": -0.1933,
+      "volume": 0.2444,
+      "breakout": 0.17,
+      "structure": 0.0
+    }
+  },
+  "note": "Le coefficient d'information est la corrélation de rang entre la valeur d'un facteur et le rendement futur normalisé par l'ATR. Un IC de 0.02 à 0.05 est exploitable, au-delà de 0.10 il est inhabituel, un IC nul signifie que le facteur est du bruit. Le sentiment est absent : le flux de presse historique n'est pas reconstituable."
+}

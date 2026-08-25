@@ -27,22 +27,25 @@ from jimbot.store import now_iso, write  # noqa: E402
 log = logging.getLogger("jimbot.probe")
 
 
-def load(asset: Asset, bars: int):
+def load(asset: Asset, bars: int, interval: str = "1h"):
     try:
         if asset.source == "binance":
-            return crypto.klines_history(asset.ref, "1h", bars)
-        return yahoo.chart(asset.ref, "1h", bars)
+            return crypto.klines_history(asset.ref, interval, bars)
+        if interval == "4h":
+            # Yahoo ne propose pas cette granularité : on agrège l'horaire.
+            return yahoo.resample_4h(yahoo.chart(asset.ref, "1h", bars * 4))
+        return yahoo.chart(asset.ref, interval, bars)
     except DataError as e:
         log.warning("%s ignoré : %s", asset.symbol, e)
         return None
 
 
 def _worker(args):
-    asset, records, step = args
+    asset, records, step, horizons = args
     import pandas as pd
     df = pd.DataFrame(records)
     df.index = pd.to_datetime(df.pop("t"), utc=True)
-    return probe.probe_asset(asset, df, step=step)
+    return probe.probe_asset(asset, df, step=step, horizons=horizons)
 
 
 def main() -> int:
@@ -50,21 +53,27 @@ def main() -> int:
     parser.add_argument("--bars", type=int, default=5000)
     parser.add_argument("--step", type=int, default=4)
     parser.add_argument("--workers", type=int, default=8)
+    parser.add_argument("--interval", type=str, default="1h",
+                        choices=sorted(probe.HORIZONS_PAR_INTERVALLE))
+    parser.add_argument("--out", type=str, default="probe",
+                        help="nom du fichier de sortie dans data/")
     args = parser.parse_args()
+
+    horizons = probe.HORIZONS_PAR_INTERVALLE[args.interval]
 
     logging.basicConfig(level=logging.INFO,
                         format="%(asctime)s %(levelname)-7s %(message)s",
                         datefmt="%H:%M:%S")
 
-    log.info("--- chargement ---")
+    log.info("--- chargement (%s, horizons %s) ---", args.interval, horizons)
     charges = []
     for asset in UNIVERSE:
-        df = load(asset, args.bars)
+        df = load(asset, args.bars, args.interval)
         if df is None or len(df) < probe.WINDOW + 80:
             continue
         plat = df.copy()
         plat.index.name = "t"
-        charges.append((asset, plat.reset_index().to_dict("list"), args.step))
+        charges.append((asset, plat.reset_index().to_dict("list"), args.step, horizons))
     if not charges:
         log.error("aucun historique")
         return 1
@@ -85,15 +94,20 @@ def main() -> int:
 
     # Les observations sont écrites avant l'analyse : une erreur dans le
     # calcul ne doit pas faire perdre plusieurs minutes de simulation.
-    write("probe_raw", {"generated_at": now_iso(), "rows": rows[:20000]})
+    write(f"{args.out}_raw", {"generated_at": now_iso(),
+                             "interval": args.interval,
+                             "horizons": list(horizons),
+                             "rows": rows[:20000]})
 
-    ics = probe.information_coefficients(rows)
-    par_regime = probe.ic_by_regime(rows, horizon=24)
+    ics = probe.information_coefficients(rows, horizons)
+    par_regime = probe.ic_by_regime(rows, horizon=horizons[-2])
     poids = probe.derived_weights(par_regime)
 
-    write("probe", {
+    write(args.out, {
         "generated_at": now_iso(),
-        "parametres": {"bars": args.bars, "step": args.step, "actifs": len(charges)},
+        "parametres": {"bars": args.bars, "step": args.step,
+                       "interval": args.interval, "horizons": list(horizons),
+                       "actifs": len(charges)},
         "coefficients": ics,
         "par_regime": par_regime,
         "poids_derives": poids,
@@ -110,11 +124,11 @@ def main() -> int:
     print(f"{'POUVOIR PRÉDICTIF PAR FACTEUR':^78}")
     print(f"{f'{len(rows)} observations':^78}")
     print("=" * 78)
-    print(f"  {'facteur':<16} " + " ".join(f"{f'h{h}':>11}" for h in probe.HORIZONS))
+    print(f"  {'facteur':<16} " + " ".join(f"{f'h{h}':>11}" for h in horizons))
     for nom, v in sorted(ics.get("par_facteur", {}).items(),
                          key=lambda kv: -abs(kv[1]["ic_max"])):
         cellules = []
-        for h in probe.HORIZONS:
+        for h in horizons:
             e = v["horizons"].get(f"h{h}")
             if e is None:
                 cellules.append(f"{'—':>11}")
@@ -142,7 +156,7 @@ def main() -> int:
         note = p.get("_note", "")
         print(f"    {regime:<22} {retenus if retenus else note}")
     print("=" * 78)
-    log.info("rapport écrit dans %s", DATA_DIR / "probe.json")
+    log.info("rapport écrit dans %s", DATA_DIR / f"{args.out}.json")
     return 0
 
 

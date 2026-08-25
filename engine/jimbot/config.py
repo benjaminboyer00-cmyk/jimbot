@@ -91,9 +91,24 @@ CONTEXT_ONLY: list[Asset] = [
     Asset("VIX", "yahoo", "^VIX", "index", "VIX"),
 ]
 
-# Les memecoins ne sont pas listés en dur : ils sont découverts dynamiquement
-# via DexScreener puis filtrés (voir datasources/dexscreener.py).
+# Les memecoins sont découverts dynamiquement via DexScreener puis filtrés
+# (voir datasources/dexscreener.py). Ils sont **criblés et affichés, jamais
+# tradés**, et cette exclusion est délibérée pour trois raisons mesurées :
+#
+# 1. DexScreener ne fournit aucun historique de bougies. Sans OHLCV, il n'y a
+#    ni ATR, ni régime, ni niveau structurel — donc aucun stop calculable et
+#    aucun dimensionnement possible.
+# 2. Leurs frais atteignent 125 points de base. Le coût rapporté au risque
+#    vaut `frais × prix / distance_au_stop` : sur un stop de 2 %, cela fait
+#    0.625 R, quand l'avantage mesuré sur l'univers principal vaut environ
+#    0.03 R. L'espérance serait négative de deux ordres de grandeur.
+# 3. Le filtre de survie retient un jeton par cycle en moyenne : la largeur
+#    nécessaire à un avantage aussi mince n'existe pas.
+#
+# Le profil de risque « meme » de RISK reste défini pour le jour où une source
+# d'historique existerait, mais il n'est référencé par aucun actif.
 MEMECOIN_CHAINS = ["solana", "base"]
+MEMECOINS_TRADABLES = False
 
 
 @dataclass(frozen=True)

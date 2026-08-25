@@ -88,3 +88,26 @@ def test_le_sentiment_est_exclu_de_la_sonde():
     """Le flux de presse historique n'est pas reconstituable : mesurer le
     sentiment sur le passé produirait un chiffre sans signification."""
     assert "sentiment" not in probe.FACTORS
+
+
+# --------------------------------------------------------------------------
+# Les memecoins sont criblés, jamais tradés
+# --------------------------------------------------------------------------
+def test_aucun_memecoin_dans_l_univers_analyse():
+    """Le screener alimente l'affichage, pas le moteur.
+
+    Sans historique de bougies il n'y a ni ATR ni stop calculable, et avec
+    125 points de base de frais le coût rapporté au risque dépasse de deux
+    ordres de grandeur l'avantage mesuré.
+    """
+    from jimbot.config import MEMECOINS_TRADABLES, UNIVERSE
+    assert MEMECOINS_TRADABLES is False
+    assert not any(a.klass == "meme" for a in UNIVERSE)
+
+
+def test_le_cout_memecoin_ecrase_l_avantage_mesure():
+    from jimbot.levels import MAX_EDGE, cost_in_r
+    # Stop à 2 % du prix, cas favorable pour un memecoin.
+    cout = cost_in_r(1.0, 0.02, "meme")
+    # 0.625 R de frais contre un avantage plafonné à 0.12 : plus de cinq fois.
+    assert cout > 4 * MAX_EDGE, "l'exclusion doit rester justifiée par les chiffres"
