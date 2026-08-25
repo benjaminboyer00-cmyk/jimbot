@@ -227,6 +227,8 @@ async function readJson<T>(name: string, fallback: T): Promise<T> {
 
 export const getSnapshot = () => readJson<Snapshot | null>("latest", null);
 export const getTrades = () => readJson<Trade[]>("trades", []);
+export const getProbe = () =>
+  readJson<import("@/app/sections").Probe | null>("probe", null);
 export const getBacktest = () =>
   readJson<import("@/app/sections").Backtest | null>("backtest", null);
 export const getLastReport = () =>

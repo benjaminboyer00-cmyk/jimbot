@@ -26,21 +26,20 @@ from .config import Asset, RISK, SETTINGS
 
 # Constante de calibrage du score.
 #
-# La somme pondérée des six facteurs est bornée dans [-1, +1] par construction,
-# mais elle n'atteint jamais ces bornes en pratique : il faudrait que tous les
-# facteurs saturent simultanément dans le même sens. Mesuré sur l'univers
-# suivi, sa valeur absolue moyenne est ~0.13 et son maximum ~0.30. Laissée
-# telle quelle et multipliée par 100, elle produirait un score plafonnant
-# autour de 30, sur lequel aucun seuil au-dessus de 30 ne pourrait jamais se
-# déclencher.
+# La somme pondérée des facteurs est bornée dans [-1, +1] par construction,
+# mais sa distribution réelle dépend entièrement des pondérations. Le
+# calibrage doit donc être mesuré, pas supposé, et refait chaque fois que les
+# poids changent.
 #
-# On applique donc une compression tanh calibrée pour que :
-#   - une lecture ordinaire      (0.13) donne ~35/100
-#   - une confluence nette       (0.24) donne ~58/100, le seuil de signal
-#   - une confluence exceptionnelle (0.35) donne ~75/100
-# tanh conserve la monotonie et sature progressivement : un score de 95
-# reste atteignable mais exige un alignement quasi total des six facteurs.
-SCORE_SCALE = 0.36
+# Valeur dérivée de 17 070 observations (`engine/probe_run.py`) : le 90e
+# percentile de |somme pondérée| vaut 0.628, et SCORE_SCALE = 0.947 fait
+# correspondre ce percentile au seuil de 58. Un signal est donc émis sur les
+# 10 % de lectures les plus nettes, ce qui est le sens voulu d'un seuil.
+#
+# La valeur précédente, 0.36, avait été calibrée sur les anciennes
+# pondérations. Conservée après leur inversion, elle plaçait 73,5 % des
+# observations au-dessus du seuil — celui-ci ne sélectionnait plus rien.
+SCORE_SCALE = 0.947
 
 # Espérance minimale, en multiples de risque, pour qu'un signal soit retenu.
 # Un score élevé ne suffit pas : si la structure ne laisse aucun objectif
@@ -52,25 +51,52 @@ MIN_EXPECTED_R = 0.02
 # Pondérations par régime : la même donnée ne vaut pas la même chose partout.
 # Chaque colonne somme à 1.0.
 # --------------------------------------------------------------------------
-WEIGHTS: dict[str, dict[str, float]] = {
-    "tendance_haussière": {
-        "trend": 0.26, "momentum": 0.20, "breakout": 0.14, "structure": 0.16,
-        "volume": 0.10, "mean_reversion": -0.04, "sentiment": 0.10,
-    },
-    "tendance_baissière": {
-        "trend": 0.26, "momentum": 0.20, "breakout": 0.14, "structure": 0.16,
-        "volume": 0.10, "mean_reversion": -0.04, "sentiment": 0.10,
-    },
-    "range": {
-        "trend": 0.06, "momentum": 0.08, "breakout": 0.04, "structure": 0.14,
-        "volume": 0.10, "mean_reversion": 0.44, "sentiment": 0.14,
-    },
-    "chaotique": {
-        "trend": 0.15, "momentum": 0.15, "breakout": 0.08, "structure": 0.16,
-        "volume": 0.15, "mean_reversion": 0.15, "sentiment": 0.16,
-    },
+# Pondérations dérivées de la mesure, et non plus supposées.
+#
+# La version précédente distinguait quatre jeux de poids selon le régime,
+# posés a priori et jamais vérifiés. La sonde de pouvoir prédictif
+# (`engine/probe_run.py`, 17 070 observations sur 15 actifs) les a démentis
+# sur deux points :
+#
+# 1. **Les facteurs de suivi de tendance prédisent à l'envers.** Coefficients
+#    d'information à 48 bougies : trend -0.065 (t=-7.0), structure -0.064,
+#    breakout -0.037 — tous significatifs, et le signe se confirme sur les
+#    quatre horizons mesurés. Une lecture haussière du prix est suivie, en
+#    moyenne, d'un rendement négatif. Le seul facteur dont le signe était
+#    correct est le retour à la moyenne (+0.033).
+#
+#    C'est l'explication du défaut central relevé par le backtest : le score
+#    ne discriminait pas parce que son facteur dominant était inversé.
+#
+# 2. **Le régime ne justifie pas des jeux de poids distincts.** Seuls les
+#    régimes « chaotique » et « range » présentent des coefficients
+#    significatifs, et ils portent les mêmes signes que la mesure globale.
+#    Quatre jeux de poids revenaient donc à ajuster des paramètres sur du
+#    bruit. Un jeu unique est retenu : moins de paramètres, moins de
+#    surajustement, et il reste soutenu par les données.
+#
+# Le régime continue de moduler la *confiance* via `confidence_mult` — un
+# marché sans structure reste moins exploitable — mais plus la hiérarchie
+# des facteurs.
+#
+# Les poids sont proportionnels aux coefficients mesurés, les facteurs non
+# significatifs (volume, momentum) étant mis à zéro plutôt que conservés au
+# prétexte qu'ils existent. Le sentiment garde un poids modeste : il n'est pas
+# mesurable sur l'historique, faute de flux de presse reconstituable.
+MEASURED_WEIGHTS: dict[str, float] = {
+    "trend": -0.295,
+    "structure": -0.290,
+    "breakout": -0.165,
+    "mean_reversion": +0.150,
+    "volume": 0.0,
+    "momentum": 0.0,
+    "sentiment": +0.100,
 }
 
+WEIGHTS: dict[str, dict[str, float]] = {
+    regime: dict(MEASURED_WEIGHTS)
+    for regime in ("tendance_haussière", "tendance_baissière", "range", "chaotique")
+}
 
 @dataclass
 class Factor:

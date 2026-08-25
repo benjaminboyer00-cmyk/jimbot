@@ -801,3 +801,116 @@ export function Validation({ bt }: { bt?: Backtest }) {
     </section>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* Pouvoir prédictif des facteurs                                      */
+/* ------------------------------------------------------------------ */
+export type Probe = {
+  generated_at: string;
+  parametres: { bars: number; step: number; actifs: number };
+  coefficients: {
+    observations: number;
+    par_facteur: Record<
+      string,
+      {
+        ic_max: number;
+        meilleur_horizon: string;
+        significatif: boolean;
+        horizons: Record<string, { ic: number; t: number; significatif: boolean }>;
+      }
+    >;
+  };
+  note: string;
+};
+
+const HORIZONS = ["h6", "h12", "h24", "h48"];
+
+export function FactorPower({ probe }: { probe?: Probe }) {
+  const facteurs = probe?.coefficients?.par_facteur;
+  if (!facteurs || !Object.keys(facteurs).length) return null;
+
+  const lignes = Object.entries(facteurs).sort(
+    (a, b) => Math.abs(b[1].ic_max) - Math.abs(a[1].ic_max),
+  );
+
+  return (
+    <section>
+      <h2>Pouvoir prédictif des facteurs</h2>
+      <p style={{ maxWidth: "76ch", marginBottom: 14 }}>
+        À chaque pas et <strong>sans aucun filtre</strong>, la valeur de chaque
+        facteur est enregistrée avec le rendement effectivement réalisé
+        ensuite, normalisé par l’ATR. Le coefficient d’information est la
+        corrélation de rang entre les deux : il dit si le facteur porte une
+        information, indépendamment du reste du moteur.{" "}
+        {probe.coefficients.observations.toLocaleString("fr-FR")} observations
+        sur {probe.parametres.actifs} actifs.
+      </p>
+
+      <div className="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Facteur</th>
+              {HORIZONS.map((h) => (
+                <th key={h} className="num">
+                  {h.replace("h", "")} bougies
+                </th>
+              ))}
+              <th>Lecture</th>
+            </tr>
+          </thead>
+          <tbody>
+            {lignes.map(([nom, v]) => (
+              <tr key={nom}>
+                <td style={{ fontWeight: 600 }}>{nom.replace("_", " ")}</td>
+                {HORIZONS.map((h) => {
+                  const e = v.horizons[h];
+                  if (!e) return <td key={h} className="num muted">—</td>;
+                  return (
+                    <td
+                      key={h}
+                      className={`num ${
+                        !e.significatif ? "muted" : e.ic > 0 ? "up" : "down"
+                      }`}
+                    >
+                      {e.ic >= 0 ? "+" : ""}
+                      {fmtNum(e.ic, 4)}
+                      {e.significatif ? " *" : ""}
+                    </td>
+                  );
+                })}
+                <td className="muted wide">
+                  {!v.significatif
+                    ? "aucune information mesurable — poids nul"
+                    : v.ic_max < 0
+                      ? "prédit à l’envers — le poids est négatif"
+                      : "prédit dans le bon sens"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <p className="note">
+        <strong>*</strong> = statistiquement distinguable du bruit (|t| &gt; 2).
+        Un coefficient de 0.02 à 0.05 est exploitable en gestion quantitative,
+        au-delà de 0.10 il est inhabituel, un coefficient nul signifie que le
+        facteur est du bruit.
+        <br />
+        <br />
+        Cette mesure a renversé la conception du moteur. Les trois facteurs de
+        suivi de tendance — tendance, structure, cassure — ressortent{" "}
+        <strong>négatifs et significatifs</strong> : une lecture haussière du
+        prix est suivie, en moyenne, d’un rendement négatif. Le seul facteur
+        dont le signe était correct est le retour à la moyenne. Les
+        pondérations ont été réécrites à partir de ces coefficients au lieu
+        d’être supposées, et le score composite est passé d’un pouvoir
+        prédictif nul à un coefficient de +0.063 à 48 bougies.
+        <br />
+        <br />
+        {probe.note}
+      </p>
+    </section>
+  );
+}

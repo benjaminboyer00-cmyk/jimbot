@@ -40,6 +40,7 @@ non falsifiable a posteriori.
 | `engine/jimbot/report.py` | Rapport PDF (ReportLab + matplotlib) |
 | `engine/jimbot/calendar.py` | Échéances à venir : règles de calendrier et annonces de presse |
 | `engine/jimbot/backtest.py` | Validation walk-forward et calibration du modèle |
+| `engine/jimbot/probe.py` | Mesure du pouvoir prédictif de chaque facteur |
 | `app/` | Dashboard Next.js et routes d'API |
 | `metatrader/` | Expert Advisor MQL5 prêt à l'emploi |
 
@@ -179,8 +180,9 @@ Puis, sur GitHub, onglet **Actions** → *Scan de marché* → **Run workflow**.
 .venv/bin/python engine/scan.py --no-alert    # analyse seule
 .venv/bin/python engine/scan.py --dry-run     # simule aussi les envois
 .venv/bin/python engine/daily_report.py       # rapport PDF + publication
-.venv/bin/python -m pytest engine/tests -v    # 201 tests, sans réseau
+.venv/bin/python -m pytest engine/tests -v    # 210 tests, sans réseau
 .venv/bin/python engine/backtest_run.py       # validation walk-forward (~10 min)
+.venv/bin/python engine/probe_run.py          # pouvoir prédictif des facteurs (~5 min)
 npm run dev                                   # dashboard sur localhost:3000
 ```
 
@@ -292,11 +294,60 @@ Trois enseignements ont directement modifié le code :
    affaissements lents : un moteur de tendance y achète les sommets. Il reste
    suivi pour le contexte et les corrélations.
 
-**La faiblesse qui subsiste est la plus sérieuse : le score ne discrimine
-pas.** La corrélation entre conviction et espérance réalisée est de -0.33.
-Une conviction de 85 ne vaut pas mieux qu'une conviction de 60. C'est affiché
-sur le dashboard plutôt que dissimulé, parce que c'est la question qui décide
-si ce système a une valeur.
+## Ce que la sonde a révélé
+
+Le backtest disait que le score ne discriminait pas, sans dire pourquoi. Le
+module `probe.py` répond à la question qui vient avant : **qu'est-ce qui, dans
+ce moteur, porte réellement de l'information ?**
+
+Il enregistre à chaque pas la valeur de chaque facteur — sans aucun filtre,
+contrairement au backtest qui n'observe que les trades retenus — puis le
+rendement effectivement réalisé, normalisé par l'ATR. La corrélation de rang
+entre les deux est le coefficient d'information.
+
+Mesuré sur 17 070 observations et 15 actifs :
+
+| facteur | 6 bougies | 12 | 24 | 48 |
+|---|---|---|---|---|
+| trend | −0.025* | −0.029* | −0.045* | **−0.065*** |
+| structure | −0.021* | −0.027* | −0.042* | **−0.064*** |
+| breakout | −0.007 | −0.009 | −0.020* | −0.037* |
+| mean_reversion | +0.010 | +0.009 | +0.019* | **+0.033*** |
+| volume | −0.015 | −0.009 | −0.001 | −0.012 |
+| momentum | −0.004 | +0.006 | −0.003 | −0.005 |
+
+`*` = |t| > 2.
+
+**Les trois facteurs de suivi de tendance prédisent à l'envers**, et le signe
+se confirme sur les quatre horizons. Une lecture haussière du prix est suivie,
+en moyenne, d'un rendement négatif. Le seul facteur dont le signe était
+correct est le retour à la moyenne. Voilà pourquoi le score ne discriminait
+pas : son facteur dominant était inversé.
+
+Quatre changements en découlent, tous mesurés plutôt que supposés :
+
+1. **Les pondérations sont dérivées des coefficients**, avec les signes
+   mesurés et un poids nul pour les facteurs non significatifs. Le score
+   composite passe d'un pouvoir prédictif nul à **+0.063 à 48 bougies
+   (t = 8.30)**.
+2. **Un seul jeu de pondérations remplace les quatre jeux par régime.** Seuls
+   « chaotique » et « range » présentaient des coefficients significatifs, et
+   avec les mêmes signes que la mesure globale : quatre jeux revenaient à
+   ajuster des paramètres sur du bruit. Le régime module toujours la
+   confiance, mais plus la hiérarchie des facteurs.
+3. **`SCORE_SCALE` est recalibré** sur le 90e percentile mesuré (0.628).
+   Conservé après l'inversion des poids, l'ancien calibrage plaçait 73,5 % des
+   lectures au-dessus du seuil.
+4. **`MAX_EDGE` passe à 0.12**, dérivé de l'excès de rendement observé
+   au-delà du seuil (+0.155 ATR sur 24 bougies, soit ~3.1 points de
+   probabilité), avec une décote de moitié.
+
+**La limite qui subsiste est de nature économique, pas statistique.**
+L'avantage mesuré (~3 points de probabilité) est du même ordre que les frais
+de transaction sur un stop de 2 ATR. Le moteur ne retient donc que les rares
+configurations où l'avantage les dépasse — 35 trades en sept mois sur quinze
+actifs. C'est peu, mais c'est honnête : abaisser la barre reviendrait à
+échanger un avantage réel contre des commissions.
 
 ## Limites connues
 

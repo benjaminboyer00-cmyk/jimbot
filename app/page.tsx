@@ -5,6 +5,7 @@
  */
 import {
   getBacktest,
+  getProbe,
   getLastReport,
   getSnapshot,
   getTrades,
@@ -18,6 +19,7 @@ import {
 
 import {
   Agenda,
+  FactorPower,
   Validation,
   ApiSection,
   Memecoins,
@@ -31,11 +33,12 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const [snap, trades, report, backtest] = await Promise.all([
+  const [snap, trades, report, backtest, probe] = await Promise.all([
     getSnapshot(),
     getTrades(),
     getLastReport(),
     getBacktest(),
+    getProbe(),
   ]);
 
   if (!snap) {
@@ -248,6 +251,8 @@ export default async function Page() {
         </section>
 
         <Validation bt={backtest ?? undefined} />
+
+        <FactorPower probe={probe ?? undefined} />
 
         <Reports reports={snap.reports ?? []} />
 

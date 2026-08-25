@@ -38,8 +38,14 @@ log = logging.getLogger("jimbot.levels")
 # Distance minimale et maximale du stop, en ATR. En deçà, le bruit ordinaire
 # suffit à le déclencher ; au-delà, la position devient trop petite pour que
 # le trade ait un intérêt.
-MIN_STOP_ATR = 0.8
-MAX_STOP_ATR = 3.5
+# Bornes revues à la hausse d'après la mesure. Le coût de transaction rapporté
+# au risque vaut `frais × prix / distance_au_stop` : un stop deux fois plus
+# large le divise par deux. Or l'avantage mesuré (~3 points de probabilité)
+# est du même ordre que les frais sur un stop de 2 ATR — c'est ce qui rendait
+# presque tous les plans non rentables. Élargir la fourchette laisse
+# l'optimiseur trouver le point où l'avantage dépasse les coûts.
+MIN_STOP_ATR = 1.2
+MAX_STOP_ATR = 5.0
 
 # Marge appliquée au-delà du niveau structurel retenu. Les stops massés
 # exactement sur un plus-bas visible sont la cible privilégiée des balayages
@@ -50,20 +56,25 @@ STOP_BUFFER_ATR = 0.25
 MIN_RR = 1.0
 MAX_RR = 5.0
 
-# Avantage maximal, en points de probabilité, qu'un signal parfait (score 100)
-# peut ajouter à la probabilité de ruine du joueur.
+# Avantage maximal, en points de probabilité, qu'un signal parfait peut
+# ajouter à la probabilité de ruine du joueur.
 #
-# Cette constante valait 0.18, posée a priori. Le backtest walk-forward
-# (3 004 trades, 16 actifs, `engine/backtest_run.py`) l'a démentie sans
-# ambiguïté : pour un R/R moyen de 1.78, le seuil de rentabilité sans aucun
-# avantage est de 35.9 % de réussite, et le moteur en réalise 35.6 %. L'écart
-# est de -0.4 point — le signal technique n'apporte, sur cet historique,
-# aucun pouvoir prédictif mesurable.
+# Histoire de cette constante, qui résume la démarche du projet :
 #
-# La valeur est donc ramenée à une allocation résiduelle. Ce n'est pas de la
-# prudence rhétorique : afficher une espérance positive quand la mesure dit
-# l'inverse rendrait tout le reste du système trompeur.
-MAX_EDGE = 0.02
+# - 0.18 au départ, posée a priori, sans aucune mesure ;
+# - ramenée à 0.02 quand le backtest a montré que le moteur réalisait 35.6 %
+#   de réussite pour un seuil de rentabilité sans avantage de 35.9 % — le
+#   signal n'apportait rien ;
+# - remontée à 0.12 après que la sonde de pouvoir prédictif a révélé que les
+#   facteurs de suivi de tendance prédisaient à l'envers. Une fois leurs
+#   signes corrigés, le score au-delà du seuil précède un rendement supérieur
+#   de +0.155 ATR à la moyenne sur 24 bougies, soit environ 3.1 points de
+#   probabilité pour un stop de 2 ATR et un objectif de 3 ATR.
+#
+# La valeur retenue applique une décote de moitié à cette mesure : elle
+# provient d'un seul échantillon, et sous-estimer l'avantage est la seule
+# erreur qui ne coûte rien.
+MAX_EDGE = 0.12
 
 # Horizon de l'avantage, en ATR. C'est le paramètre décisif de tout le module.
 #
@@ -91,15 +102,16 @@ MAX_EDGE = 0.02
 # rentabilité : ce sont deux choses différentes. C'est la seconde qui doit
 # guider ce réglage, puisqu'il sert à choisir un objectif.
 #
-# Un horizon de 4.5 ATR place l'optimum autour d'un R/R de 1.25 pour un stop
-# de 2 ATR, soit une distance totale d'environ 4.5 ATR — cohérent avec la
-# zone mesurée. Une valeur de 2.5, essayée d'abord, poussait l'optimiseur
-# contre la borne basse du R/R, ce qui est une dégénérescence.
+# La sonde de pouvoir prédictif tranche plus nettement que le backtest : le
+# coefficient d'information du score croît de façon monotone avec l'horizon,
+# de +0.022 à 6 bougies jusqu'à +0.063 à 48, sans plafonner. L'avantage ne
+# s'épuise donc pas à court terme — il se déploie au contraire lentement.
 #
-# Réglage à réviser à mesure que l'échantillon grossit : 207 trades ne
-# permettent pas de trancher finement, et sur-ajuster sur cet échantillon
-# serait précisément l'erreur que le backtest sert à éviter.
-EDGE_HORIZON_ATR = 4.5
+# L'amplitude cumulée d'un marché croît en racine du temps : 48 bougies
+# correspondent à environ 7 ATR de parcours. C'est la valeur retenue, et elle
+# constitue une borne basse puisque la mesure ne montre aucun essoufflement à
+# cet horizon.
+EDGE_HORIZON_ATR = 7.0
 
 # Le modèle de ruine du joueur est invariant d'échelle : à ratio
 # rendement/risque égal, il juge un stop à 1 ATR aussi sûr qu'un stop à 3 ATR.

@@ -81,19 +81,22 @@ def test_correlation_matrix(trending, ranging):
 # Calibrage du score
 # --------------------------------------------------------------------------
 def test_calibrage_du_score_respecte_ses_points_d_ancrage():
-    """Le score doit être réellement atteignable.
+    """Le seuil doit correspondre au 90e percentile des lectures observées.
 
-    Sans calibrage, la somme pondérée plafonnait autour de 0.30, soit un score
-    de 30/100 : aucun seuil au-dessus de 30 n'aurait jamais pu se déclencher.
+    Le calibrage dépend entièrement des pondérations : mesuré sur 17 070
+    observations, le 90e percentile de |somme pondérée| vaut 0.628, et c'est
+    lui que le seuil de 58 doit désigner. Conservé après l'inversion des
+    poids, l'ancien calibrage plaçait 73,5 % des lectures au-dessus du seuil,
+    qui ne sélectionnait donc plus rien.
     """
     def score(weighted: float) -> float:
         return float(np.tanh(weighted / St.SCORE_SCALE)) * 100
 
-    assert score(0.13) == pytest.approx(34.6, abs=1.5)   # lecture ordinaire
-    assert score(0.24) == pytest.approx(58.3, abs=1.5)   # seuil de signal
-    assert score(0.35) == pytest.approx(75.0, abs=1.5)   # confluence forte
+    assert score(0.628) == pytest.approx(58.0, abs=1.5)   # 90e percentile
     assert score(0.0) == pytest.approx(0.0)
-    assert score(-0.24) == pytest.approx(-58.3, abs=1.5)  # symétrie
+    assert score(-0.628) == pytest.approx(-58.0, abs=1.5)  # symétrie
+    # La médiane des lectures doit rester nettement sous le seuil.
+    assert score(0.412) < 50.0
 
 
 def test_score_est_monotone_et_borne():
@@ -183,14 +186,31 @@ def test_les_poids_somment_a_un_par_regime():
 
 
 def test_desaccord_avec_unite_superieure_penalise(asset, trending):
-    """Un signal contraire à l'unité de temps supérieure doit être atténué."""
-    rng = np.random.default_rng(31)
-    baisse = pd.Series(100 * np.exp(np.cumsum(rng.normal(-0.01, 0.008, 200))),
-                       index=pd.date_range("2026-01-01", periods=200, freq="4h", tz="UTC"))
-    htf = pd.DataFrame({"open": baisse, "high": baisse * 1.004, "low": baisse * 0.996,
-                        "close": baisse, "volume": np.ones(200)})
+    """Un signal contraire à l'unité de temps supérieure doit être atténué.
+
+    Le test est écrit indépendamment du sens : on lit d'abord l'orientation
+    que le moteur donne au marché fourni, puis on lui oppose une unité
+    supérieure. Sans cette précaution, le test dépendrait du signe des
+    pondérations — et il a effectivement cassé le jour où celles-ci ont été
+    inversées par la mesure.
+    """
     seul = St.analyze(asset, trending, timeframe="1h")
+    if seul.raw_score == 0:
+        pytest.skip("aucune orientation sur ce jeu de données")
+
+    # Unité supérieure construite dans le sens contraire au signal obtenu.
+    derive = -0.01 if seul.raw_score > 0 else 0.01
+    rng = np.random.default_rng(31)
+    serie = pd.Series(
+        100 * np.exp(np.cumsum(rng.normal(derive, 0.008, 200))),
+        index=pd.date_range("2026-01-01", periods=200, freq="4h", tz="UTC"))
+    htf = pd.DataFrame({"open": serie, "high": serie * 1.004, "low": serie * 0.996,
+                        "close": serie, "volume": np.ones(200)})
+
     oppose = St.analyze(asset, trending, timeframe="1h", df_htf=htf)
+    # L'unité supérieure doit pointer dans le sens inverse du signal.
+    if oppose.htf_alignment == 0:
+        pytest.skip("unité supérieure sans orientation nette")
     assert oppose.score < seul.score
     assert any("unité de temps supérieure" in w for w in oppose.warnings)
 

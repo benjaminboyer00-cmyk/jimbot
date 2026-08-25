@@ -1,0 +1,58 @@
+name: Pouvoir prédictif
+
+on:
+  schedule:
+    # Dimanche 05:30 UTC, après la validation historique.
+    - cron: "30 5 * * 0"
+  workflow_dispatch:
+    inputs:
+      bars:
+        description: "Profondeur d'historique"
+        default: "5000"
+      step:
+        description: "Pas d'échantillonnage"
+        default: "4"
+
+concurrency:
+  group: jimbot-data
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: engine/requirements.txt
+      - run: pip install -r engine/requirements.txt
+
+      - name: Mesurer le pouvoir prédictif des facteurs
+        run: |
+          python engine/probe_run.py \
+            --bars "${{ inputs.bars || 5000 }}" \
+            --step "${{ inputs.step || 4 }}" \
+            --workers 4
+
+      - name: Publier
+        run: |
+          git config user.name  "jimbot"
+          git config user.email "jimbot@users.noreply.github.com"
+          # Les observations brutes ne sont pas versionnées : plusieurs Mo
+          # réécrits chaque semaine pour une information déjà résumée.
+          rm -f data/probe_raw.json
+          git add data/probe.json
+          if git diff --staged --quiet; then echo "aucun changement"; exit 0; fi
+          git commit -m "sonde: $(date -u '+%Y-%m-%d')"
+          for attempt in 1 2 3; do
+            git pull --rebase -X theirs --autostash origin "${GITHUB_REF_NAME}" && \
+            git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            sleep 5
+          done
+          exit 1
