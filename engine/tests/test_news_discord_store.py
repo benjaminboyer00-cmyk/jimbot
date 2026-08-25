@@ -332,3 +332,36 @@ def test_alerte_discours_au_dela_du_seuil():
     assert majeurs and majeurs[0]["speaker"] == "powell"
     # L'effet attendu est calculé, jamais rédigé.
     assert majeurs[0]["impact"]["XAUUSD"] > 0
+
+
+# --------------------------------------------------------------------------
+# Lecture de la configuration
+# --------------------------------------------------------------------------
+def test_variable_vide_traitee_comme_absente(monkeypatch):
+    """GitHub Actions exporte `FOO: ${{ vars.FOO }}` comme chaîne vide quand
+    la variable de dépôt n'existe pas. `os.getenv(nom, defaut)` renvoie alors
+    "" et non le défaut, et `float("")` faisait échouer toutes les exécutions
+    planifiées."""
+    from jimbot import config
+    monkeypatch.setenv("JIMBOT_TEST_SEUIL", "")
+    assert config._env_float("JIMBOT_TEST_SEUIL", 58.0) == 58.0
+    assert config._env("JIMBOT_TEST_SEUIL", "defaut") == "defaut"
+
+
+def test_variable_absente_utilise_le_defaut(monkeypatch):
+    from jimbot import config
+    monkeypatch.delenv("JIMBOT_TEST_ABSENT", raising=False)
+    assert config._env_float("JIMBOT_TEST_ABSENT", 12.5) == 12.5
+
+
+def test_variable_definie_est_lue(monkeypatch):
+    from jimbot import config
+    monkeypatch.setenv("JIMBOT_TEST_SEUIL", "72.5")
+    assert config._env_float("JIMBOT_TEST_SEUIL", 58.0) == 72.5
+
+
+def test_valeur_illisible_ne_fait_pas_echouer(monkeypatch):
+    """Une saisie erronée ne doit pas interrompre un scan."""
+    from jimbot import config
+    monkeypatch.setenv("JIMBOT_TEST_SEUIL", "soixante")
+    assert config._env_float("JIMBOT_TEST_SEUIL", 58.0) == 58.0

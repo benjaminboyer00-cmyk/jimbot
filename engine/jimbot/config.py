@@ -1,6 +1,7 @@
 """Configuration centrale : univers d'actifs, paramètres de risque, chemins."""
 from __future__ import annotations
 
+import logging
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -8,6 +9,35 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = ROOT / "data"
 REPORTS_DIR = ROOT / "reports"
+
+
+def _env(name: str, default: str) -> str:
+    """Lit une variable d'environnement en traitant le vide comme absent.
+
+    GitHub Actions exporte `FOO: ${{ vars.FOO }}` comme une chaîne **vide**
+    lorsque la variable de dépôt n'est pas définie — la variable existe donc,
+    et `os.getenv(name, default)` renvoie "" au lieu du défaut. `float("")`
+    lève alors une ValueError et l'exécution échoue entièrement.
+    """
+    value = os.getenv(name)
+    return value if value not in (None, "") else default
+
+
+def _env_float(name: str, default: float) -> float:
+    try:
+        return float(_env(name, str(default)))
+    except ValueError:
+        # Une valeur mal saisie ne doit pas interrompre un scan : on retombe
+        # sur le défaut en le signalant.
+        logging.getLogger("jimbot.config").warning(
+            "%s='%s' illisible, valeur par défaut %s retenue",
+            name, os.getenv(name), default)
+        return default
+
+
+def _env_int(name: str, default: int) -> int:
+    return int(_env_float(name, float(default)))
+
 
 
 @dataclass(frozen=True)
@@ -98,21 +128,21 @@ class Settings:
     """Réglages runtime, surchargeables par variables d'environnement."""
 
     # Un signal n'est émis qu'au-delà de ce score absolu (0-100).
-    signal_threshold: float = float(os.getenv("JIMBOT_SIGNAL_THRESHOLD", "58"))
+    signal_threshold: float = field(default_factory=lambda: _env_float("JIMBOT_SIGNAL_THRESHOLD", 58.0))
     # Un signal n'est publié sur Discord qu'au-delà de ce score.
-    alert_threshold: float = float(os.getenv("JIMBOT_ALERT_THRESHOLD", "68"))
+    alert_threshold: float = field(default_factory=lambda: _env_float("JIMBOT_ALERT_THRESHOLD", 68.0))
     # Score au-delà duquel on ping un rôle Discord.
-    ping_threshold: float = float(os.getenv("JIMBOT_PING_THRESHOLD", "80"))
+    ping_threshold: float = field(default_factory=lambda: _env_float("JIMBOT_PING_THRESHOLD", 80.0))
     # Capital de départ du portefeuille papier.
-    paper_capital: float = float(os.getenv("JIMBOT_PAPER_CAPITAL", "10000"))
+    paper_capital: float = field(default_factory=lambda: _env_float("JIMBOT_PAPER_CAPITAL", 10000.0))
     # Anti-spam : pas de nouvelle alerte sur le même actif avant N minutes.
-    alert_cooldown_min: int = int(os.getenv("JIMBOT_ALERT_COOLDOWN_MIN", "180"))
+    alert_cooldown_min: int = field(default_factory=lambda: _env_int("JIMBOT_ALERT_COOLDOWN_MIN", 180))
     # Nombre de bougies chargées par actif.
-    lookback: int = int(os.getenv("JIMBOT_LOOKBACK", "400"))
+    lookback: int = field(default_factory=lambda: _env_int("JIMBOT_LOOKBACK", 400))
 
-    discord_webhook: str = field(default_factory=lambda: os.getenv("DISCORD_WEBHOOK_URL", ""))
-    discord_role_id: str = field(default_factory=lambda: os.getenv("DISCORD_ROLE_ID", ""))
-    anthropic_key: str = field(default_factory=lambda: os.getenv("ANTHROPIC_API_KEY", ""))
+    discord_webhook: str = field(default_factory=lambda: _env("DISCORD_WEBHOOK_URL", ""))
+    discord_role_id: str = field(default_factory=lambda: _env("DISCORD_ROLE_ID", ""))
+    anthropic_key: str = field(default_factory=lambda: _env("ANTHROPIC_API_KEY", ""))
     dry_run: bool = field(default_factory=lambda: os.getenv("JIMBOT_DRY_RUN", "") == "1")
 
 

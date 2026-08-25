@@ -14,11 +14,13 @@ from __future__ import annotations
 import logging
 import os
 
-from .config import SETTINGS
+from .config import SETTINGS, _env
 
 log = logging.getLogger("jimbot.narrator")
 
-MODEL = os.getenv("JIMBOT_LLM_MODEL", "claude-opus-5")
+# Même précaution que dans config : une variable exportée vide par
+# GitHub Actions ne doit pas écraser le défaut.
+MODEL = _env("JIMBOT_LLM_MODEL", "claude-opus-5")
 
 SYSTEM = """Tu es l'analyste de marché de Jimbot. Tu rédiges en français, pour \
 un lecteur qui connaît le trading.
