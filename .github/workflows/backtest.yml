@@ -1,0 +1,61 @@
+name: Validation historique
+
+on:
+  schedule:
+    # Dimanche 04:00 UTC : marchés fermés, aucune concurrence avec les scans.
+    - cron: "0 4 * * 0"
+  workflow_dispatch:
+    inputs:
+      bars:
+        description: "Profondeur d'historique, en bougies"
+        default: "5000"
+      step:
+        description: "Pas d'avancement, en bougies"
+        default: "2"
+
+concurrency:
+  group: jimbot-data
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    # Le walk-forward est gourmand : une analyse complète par pas, sur tout
+    # l'univers.
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: engine/requirements.txt
+      - run: pip install -r engine/requirements.txt
+
+      - name: Rejouer le moteur sur l'historique
+        run: |
+          python engine/backtest_run.py \
+            --bars "${{ inputs.bars || 5000 }}" \
+            --step "${{ inputs.step || 2 }}" \
+            --workers 4
+
+      - name: Publier les résultats
+        run: |
+          git config user.name  "jimbot"
+          git config user.email "jimbot@users.noreply.github.com"
+          git add data/backtest.json
+          if git diff --staged --quiet; then
+            echo "aucun changement"
+            exit 0
+          fi
+          git commit -m "validation: $(date -u '+%Y-%m-%d')"
+          for attempt in 1 2 3; do
+            git pull --rebase -X theirs --autostash origin "${GITHUB_REF_NAME}" && \
+            git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            sleep 5
+          done
+          echo "::error::publication impossible"
+          exit 1

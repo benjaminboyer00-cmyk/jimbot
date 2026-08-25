@@ -83,13 +83,40 @@ def test_avantage_decroit_avec_la_distance_de_l_objectif():
 
 
 def test_optimum_est_interieur():
-    """L'espérance doit atteindre son maximum ailleurs qu'aux bornes."""
+    """L'espérance doit atteindre son maximum ailleurs qu'aux bornes.
+
+    Un optimum au bord signale un modèle dégénéré, et les deux bords ont été
+    rencontrés en pratique : sans décroissance de l'avantage, l'optimiseur
+    retenait toujours le R/R maximal ; avec un horizon trop court, il s'est
+    collé au R/R minimal.
+    """
     atr, stop = 1.0, 2.0
     ratios = np.arange(1.0, 6.01, 0.25)
     esperances = [L.expected_r(
         L.win_probability(stop, rr * stop, 85.0, 0.8, atr), rr) for rr in ratios]
     meilleur = int(np.argmax(esperances))
     assert 0 < meilleur < len(ratios) - 1, "optimum au bord = modèle dégénéré"
+
+
+def test_les_couts_reduisent_l_esperance():
+    """Le modèle ignorait les frais : un stop touché coûte en réalité plus
+    d'1 R, ce qui rendait toute espérance affichée trop optimiste."""
+    sans = L.expected_r(0.4, 2.0, cost_r=0.0)
+    avec = L.expected_r(0.4, 2.0, cost_r=0.1)
+    assert avec == pytest.approx(sans - 0.1)
+
+
+def test_le_cout_en_R_croit_quand_le_stop_se_resserre():
+    """À frais constants, un stop deux fois plus serré coûte deux fois plus
+    cher rapporté au risque — c'est ce qui rend les stops très fins perdants."""
+    large = L.cost_in_r(100.0, 2.0, "crypto")
+    serre = L.cost_in_r(100.0, 0.5, "crypto")
+    assert serre == pytest.approx(large * 4, rel=1e-6)
+    assert L.cost_in_r(100.0, 0.0, "crypto") == 0.0
+
+
+def test_les_memecoins_coutent_plus_cher_que_le_forex():
+    assert L.cost_in_r(1.0, 0.05, "meme") > L.cost_in_r(1.0, 0.05, "forex")
 
 
 def test_stop_adosse_a_la_structure_est_favorise():

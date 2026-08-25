@@ -39,6 +39,7 @@ non falsifiable a posteriori.
 | `engine/jimbot/narrator.py` | Rédaction hybride : chiffres calculés en Python, mise en phrases par Claude |
 | `engine/jimbot/report.py` | Rapport PDF (ReportLab + matplotlib) |
 | `engine/jimbot/calendar.py` | Échéances à venir : règles de calendrier et annonces de presse |
+| `engine/jimbot/backtest.py` | Validation walk-forward et calibration du modèle |
 | `app/` | Dashboard Next.js et routes d'API |
 | `metatrader/` | Expert Advisor MQL5 prêt à l'emploi |
 
@@ -178,7 +179,8 @@ Puis, sur GitHub, onglet **Actions** → *Scan de marché* → **Run workflow**.
 .venv/bin/python engine/scan.py --no-alert    # analyse seule
 .venv/bin/python engine/scan.py --dry-run     # simule aussi les envois
 .venv/bin/python engine/daily_report.py       # rapport PDF + publication
-.venv/bin/python -m pytest engine/tests -v    # 196 tests, sans réseau
+.venv/bin/python -m pytest engine/tests -v    # 201 tests, sans réseau
+.venv/bin/python engine/backtest_run.py       # validation walk-forward (~10 min)
 npm run dev                                   # dashboard sur localhost:3000
 ```
 
@@ -258,6 +260,44 @@ L'univers suivi et les profils de risque par classe d'actif sont dans
 | 18 flux RSS (CoinDesk, Cointelegraph, Decrypt, TheBlock, FXStreet, MarketWatch, NYT, BBC, Al Jazeera, Guardian, AP, France 24, Le Monde, Fed, BCE…) | actualités marchés et monde | non |
 | API Anthropic | rédaction des analyses | facultative |
 
+## Ce que dit la validation historique
+
+Le moteur est rejoué bougie par bougie sur l'historique, sans qu'aucune donnée
+future ne puisse entrer dans la décision (`engine/backtest_run.py`, relancé
+chaque dimanche par GitHub Actions). Les résultats sont affichés sur le
+dashboard plutôt que rangés dans un fichier.
+
+**Aucun avantage n'est démontré à ce jour.** Sur 207 trades simulés,
+l'espérance réalisée est de +0.057 R avec un intervalle de confiance à 95 %
+de [-0.126 ; +0.240] R : il contient zéro. Il faudrait environ 2 200 trades
+pour trancher.
+
+Trois enseignements ont directement modifié le code :
+
+1. **Les frais étaient absents du calcul d'espérance.** Un stop touché coûte
+   -1.046 R et non -1.000 R, et le coût rapporté au risque explose quand le
+   stop est serré : à frais constants, un stop à 0.3 % du prix consomme 0.33 R.
+   C'est ce qui rendait le forex et les indices structurellement perdants —
+   leurs ATR de 0.05 à 0.2 % imposent des stops que les frais dévorent. Une
+   fois les coûts intégrés, le modèle est calibré : il prédit 38.0 % de
+   réussite, il en réalise 38.2 %.
+
+2. **L'avantage supposé du signal n'existait pas.** `MAX_EDGE` valait 0.18,
+   posé a priori. Mesuré : pour un R/R moyen de 1.78, le seuil de rentabilité
+   sans aucun avantage est de 35.9 % de réussite et le moteur en réalisait
+   35.6 %. La constante est ramenée à 0.02.
+
+3. **Le VIX est retiré de l'univers négociable** — 171 trades, 10.5 % de
+   réussite, -0.735 R. Un indice de volatilité alterne pics violents et
+   affaissements lents : un moteur de tendance y achète les sommets. Il reste
+   suivi pour le contexte et les corrélations.
+
+**La faiblesse qui subsiste est la plus sérieuse : le score ne discrimine
+pas.** La corrélation entre conviction et espérance réalisée est de -0.33.
+Une conviction de 85 ne vaut pas mieux qu'une conviction de 60. C'est affiché
+sur le dashboard plutôt que dissimulé, parce que c'est la question qui décide
+si ce système a une valeur.
+
 ## Limites connues
 
 - **Volume forex indisponible** via Yahoo : le facteur volume est neutralisé
@@ -288,9 +328,13 @@ L'univers suivi et les profils de risque par classe d'actif sont dans
   `data-api.binance.vision`, puis Binance, Coinbase et Kraken — de sorte
   qu'aucun fournisseur ne constitue un point de défaillance unique. Les prix
   diffèrent légèrement d'une place à l'autre, ce qui est normal.
-- **Aucun backtest historique long** n'est fourni : les statistiques se
-  construisent en avançant, ce qui évite tout surapprentissage rétrospectif
-  mais impose d'attendre avant de juger la stratégie.
+- **Le backtest ne rejoue pas l'actualité.** Le flux de presse historique
+  n'est pas reconstituable, donc le facteur de sentiment y est neutralisé :
+  seule la partie technique est mesurée.
+- **L'échantillon est petit et récent.** 207 trades sur quelques mois à
+  quelques années, dans un seul contexte de marché. Sur-ajuster les constantes
+  sur cet échantillon serait exactement l'erreur que le backtest sert à éviter,
+  d'où des corrections volontairement prudentes.
 
 ## Avertissement
 

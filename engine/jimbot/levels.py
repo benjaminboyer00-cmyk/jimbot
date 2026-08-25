@@ -51,10 +51,19 @@ MIN_RR = 1.0
 MAX_RR = 5.0
 
 # Avantage maximal, en points de probabilité, qu'un signal parfait (score 100)
-# peut ajouter à la probabilité de ruine du joueur. Volontairement modeste :
-# prétendre qu'un score technique déplace la probabilité de plus de 18 points
-# serait malhonnête.
-MAX_EDGE = 0.18
+# peut ajouter à la probabilité de ruine du joueur.
+#
+# Cette constante valait 0.18, posée a priori. Le backtest walk-forward
+# (3 004 trades, 16 actifs, `engine/backtest_run.py`) l'a démentie sans
+# ambiguïté : pour un R/R moyen de 1.78, le seuil de rentabilité sans aucun
+# avantage est de 35.9 % de réussite, et le moteur en réalise 35.6 %. L'écart
+# est de -0.4 point — le signal technique n'apporte, sur cet historique,
+# aucun pouvoir prédictif mesurable.
+#
+# La valeur est donc ramenée à une allocation résiduelle. Ce n'est pas de la
+# prudence rhétorique : afficher une espérance positive quand la mesure dit
+# l'inverse rendrait tout le reste du système trompeur.
+MAX_EDGE = 0.02
 
 # Horizon de l'avantage, en ATR. C'est le paramètre décisif de tout le module.
 #
@@ -70,20 +79,43 @@ MAX_EDGE = 0.18
 # arbitrairement lointain. On la fait donc décroître exponentiellement avec
 # la distance de l'objectif, ce qui restitue un optimum intérieur.
 #
-# Ordre de grandeur : un mouvement de 5 ATR demande une vingtaine de bougies
-# (l'amplitude cumulée croît en racine du temps), horizon au-delà duquel un
-# signal horaire n'a plus grand-chose à dire.
-EDGE_HORIZON_ATR = 5.0
+# Deux mesures du backtest se contredisent en apparence, et il faut les
+# distinguer :
+#
+# - le *biais de calibration* (écart entre probabilité prédite et fréquence
+#   observée) croît avec la distance, ce qui suggère un horizon court ;
+# - l'*espérance réalisée* est maximale pour des objectifs situés entre 3.5 et
+#   5.3 ATR (+0.28 et +0.23 R), et négative en deçà comme au-delà.
+#
+# La première mesure porte sur la justesse de la prédiction, la seconde sur la
+# rentabilité : ce sont deux choses différentes. C'est la seconde qui doit
+# guider ce réglage, puisqu'il sert à choisir un objectif.
+#
+# Un horizon de 4.5 ATR place l'optimum autour d'un R/R de 1.25 pour un stop
+# de 2 ATR, soit une distance totale d'environ 4.5 ATR — cohérent avec la
+# zone mesurée. Une valeur de 2.5, essayée d'abord, poussait l'optimiseur
+# contre la borne basse du R/R, ce qui est une dégénérescence.
+#
+# Réglage à réviser à mesure que l'échantillon grossit : 207 trades ne
+# permettent pas de trancher finement, et sur-ajuster sur cet échantillon
+# serait précisément l'erreur que le backtest sert à éviter.
+EDGE_HORIZON_ATR = 4.5
 
 # Le modèle de ruine du joueur est invariant d'échelle : à ratio
 # rendement/risque égal, il juge un stop à 1 ATR aussi sûr qu'un stop à 3 ATR.
 # C'est faux dans les deux sens, et les trois corrections ci-dessous rétablissent
 # ce que la structure apporte réellement.
 
-# 1. Un stop adossé à un niveau réellement respecté est moins souvent touché
-#    que ne le prédit une marche aléatoire : le niveau dévie le prix. Bonus
-#    maximal, en points de probabilité, pour un support de solidité 1.
-STRUCTURE_EDGE = 0.10
+# 1. On supposait qu'un stop adossé à un niveau respecté était moins souvent
+#    touché : le niveau dévierait le prix. Le backtest ne soutient pas cette
+#    hypothèse, et l'explication la plus probable est qu'elle est inversée —
+#    un stop placé derrière un support visible se trouve précisément là où
+#    s'accumulent les stops de tout le monde, ce qui en fait une cible de
+#    liquidité plutôt qu'un abri.
+#    Le bonus est ramené à une valeur quasi nulle plutôt que supprimé : la
+#    profondeur du niveau reste un critère de sélection utile entre deux
+#    candidats, mais elle ne justifie plus de promettre un gain.
+STRUCTURE_EDGE = 0.02
 
 # 2. En deçà de ce seuil, le stop est dans le bruit ordinaire de la bougie et
 #    sera touché par une simple mèche, indépendamment de la thèse.
@@ -326,12 +358,34 @@ def win_probability(stop_dist: float, target_dist: float, score: float,
     return float(np.clip(p, 0.02, 0.98))
 
 
-def expected_r(win_prob: float, rr: float) -> float:
-    """Espérance du trade en multiples de risque.
+def cost_in_r(price: float, stop_dist: float, klass: str) -> float:
+    """Coût de l'aller-retour, exprimé en multiples de risque.
 
-    Convention : une perte coûte exactement 1 R, un gain rapporte `rr` R.
+    Le point aveugle du modèle initial. L'espérance était calculée comme si
+    entrer et sortir était gratuit ; le backtest a montré qu'un stop touché
+    coûte en réalité -1.046 R et non -1.000 R, et qu'un objectif atteint
+    rapporte moins que son ratio nominal.
+
+    Le coût est d'autant plus lourd que le stop est serré : à frais constants,
+    un stop à 0.5 % du prix les supporte quatre fois plus mal qu'un stop à
+    2 %. C'est ce qui rend les stops très serrés perdants même quand la
+    probabilité de les éviter semble bonne.
     """
-    return win_prob * rr - (1.0 - win_prob)
+    from .paper import _cost_bps
+
+    if stop_dist <= 0 or price <= 0:
+        return 0.0
+    return (_cost_bps(klass) / 10_000.0) * price / stop_dist
+
+
+def expected_r(win_prob: float, rr: float, cost_r: float = 0.0) -> float:
+    """Espérance du trade en multiples de risque, coûts déduits.
+
+    Convention : une perte coûte 1 R plus les frais, un gain rapporte `rr` R
+    moins les frais. Les frais étant payés dans les deux cas, ils se
+    retranchent simplement de l'espérance.
+    """
+    return win_prob * rr - (1.0 - win_prob) - cost_r
 
 
 # --------------------------------------------------------------------------
@@ -340,7 +394,8 @@ def expected_r(win_prob: float, rr: float) -> float:
 def optimal_plan(df: pd.DataFrame, direction: str, score: float,
                  *, regime_quality: float = 0.5,
                  fallback_atr_mult: float = 2.0,
-                 fallback_rr: float = 2.0) -> Plan:
+                 fallback_rr: float = 2.0,
+                 klass: str = "crypto") -> Plan:
     """Construit le plan de trade maximisant l'espérance mathématique.
 
     La recherche est contrainte par la structure : les stops candidats sont
@@ -351,7 +406,8 @@ def optimal_plan(df: pd.DataFrame, direction: str, score: float,
     price = S._last(df["close"])
     atr_v = S._last(I.atr(df["high"], df["low"], df["close"]))
     if not np.isfinite(atr_v) or atr_v <= 0 or price <= 0 or direction == "neutre":
-        return _fallback_plan(price, atr_v, direction, fallback_atr_mult, fallback_rr)
+        return _fallback_plan(price, atr_v, direction, fallback_atr_mult,
+                              fallback_rr, klass)
 
     structure = build_structure(df)
     # Pour un achat, le stop se place sous un support et l'objectif sous une
@@ -361,7 +417,8 @@ def optimal_plan(df: pd.DataFrame, direction: str, score: float,
 
     stop_candidates = _stop_candidates(price, atr_v, direction, stop_side)
     if not stop_candidates:
-        return _fallback_plan(price, atr_v, direction, fallback_atr_mult, fallback_rr)
+        return _fallback_plan(price, atr_v, direction, fallback_atr_mult,
+                              fallback_rr, klass)
 
     evaluated: list[Plan] = []
     for stop, stop_dist, stop_basis, stop_strength in stop_candidates:
@@ -370,7 +427,7 @@ def optimal_plan(df: pd.DataFrame, direction: str, score: float,
             p = win_probability(stop_dist, abs(target - price), score,
                                 regime_quality, atr_v,
                                 stop_strength=stop_strength, obstacle=obstacle)
-            ev = expected_r(p, rr)
+            ev = expected_r(p, rr, cost_in_r(price, stop_dist, klass))
             evaluated.append(Plan(
                 entry=round(price, 8), stop=round(stop, 8), target=round(target, 8),
                 rr=round(rr, 2), stop_atr=round(stop_dist / atr_v, 2),
@@ -378,7 +435,8 @@ def optimal_plan(df: pd.DataFrame, direction: str, score: float,
                 stop_basis=stop_basis, target_basis=target_basis, alternatives=[]))
 
     if not evaluated:
-        return _fallback_plan(price, atr_v, direction, fallback_atr_mult, fallback_rr)
+        return _fallback_plan(price, atr_v, direction, fallback_atr_mult,
+                              fallback_rr, klass)
 
     # Plusieurs stops candidats peuvent produire des couples (stop, objectif)
     # identiques : on déduplique avant de classer, sinon la liste
@@ -481,7 +539,8 @@ def _target_candidates(price: float, atr_v: float, direction: str,
 
 
 def _fallback_plan(price: float, atr_v: float, direction: str,
-                   atr_mult: float, rr_target: float) -> Plan:
+                   atr_mult: float, rr_target: float,
+                   klass: str = "crypto") -> Plan:
     """Plan de repli en pure volatilité, quand la structure est inexploitable."""
     if direction == "neutre" or not np.isfinite(atr_v) or atr_v <= 0 or price <= 0:
         return Plan(round(price, 8), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -491,7 +550,8 @@ def _fallback_plan(price: float, atr_v: float, direction: str,
     stop = price + sign * dist
     target = price - sign * dist * rr_target
     p = win_probability(dist, dist * rr_target, 50.0)
+    ev = expected_r(p, rr_target, cost_in_r(price, dist, klass))
     return Plan(round(price, 8), round(stop, 8), round(target, 8), round(rr_target, 2),
-                round(atr_mult, 2), round(p, 3), round(expected_r(p, rr_target), 3),
+                round(atr_mult, 2), round(p, 3), round(ev, 3),
                 f"volatilité pure ({atr_mult:.1f} ATR)",
                 f"multiple de risque ({rr_target:.1f} R)", [])

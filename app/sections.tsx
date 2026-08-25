@@ -644,3 +644,160 @@ export function Agenda({
     </section>
   );
 }
+
+/* ------------------------------------------------------------------ */
+/* Validation historique                                               */
+/* ------------------------------------------------------------------ */
+export type Backtest = {
+  generated_at: string;
+  parametres: { bars: number; step: number; window: number; actifs: number };
+  calibration: {
+    trades: number;
+    win_rate_global: number;
+    prob_predite_moyenne: number;
+    esperance_realisee: number;
+    esperance_predite: number;
+    facteur_de_profit: number | null;
+    drawdown_max_R?: number;
+    ic95?: [number, number];
+    verdict?: string;
+    significatif?: boolean;
+    trades_necessaires?: number;
+    correlation_score_esperance?: number;
+    par_tranche_de_score?: {
+      tranche: string;
+      trades: number;
+      win_rate: number;
+      prob_predite: number;
+      esperance_realisee: number;
+    }[];
+  };
+  limites: string[];
+};
+
+export function Validation({ bt }: { bt?: Backtest }) {
+  if (!bt?.calibration?.trades) return null;
+  const c = bt.calibration;
+  const positif = c.esperance_realisee > 0;
+
+  return (
+    <section>
+      <h2>Validation historique</h2>
+      <p style={{ maxWidth: "76ch", marginBottom: 14 }}>
+        Le moteur est rejoué bougie par bougie sur {bt.parametres.bars} bougies
+        d’historique et {bt.parametres.actifs} actifs, sans qu’aucune donnée
+        future ne puisse entrer dans la décision. Le marché tranche ensuite sur
+        les bougies suivantes. C’est la seule mesure qui dise si le système a un
+        avantage réel.
+      </p>
+
+      <div className="kpis">
+        <div className="kpi">
+          <div className="kpi-value">{c.trades}</div>
+          <div className="kpi-label">Trades simulés</div>
+        </div>
+        <div className="kpi">
+          <div className="kpi-value">{fmtNum(c.win_rate_global, 1)} %</div>
+          <div className="kpi-label">Réussite observée</div>
+        </div>
+        <div className="kpi">
+          <div className="kpi-value muted">{fmtNum(c.prob_predite_moyenne, 1)} %</div>
+          <div className="kpi-label">Prédite par le modèle</div>
+        </div>
+        <div className={`kpi`}>
+          <div className={`kpi-value ${positif ? "up" : "down"}`}>
+            {c.esperance_realisee >= 0 ? "+" : ""}
+            {fmtNum(c.esperance_realisee, 3)} R
+          </div>
+          <div className="kpi-label">Espérance réalisée</div>
+        </div>
+        <div className="kpi">
+          <div className="kpi-value">
+            {c.facteur_de_profit === null ? "—" : fmtNum(c.facteur_de_profit, 2)}
+          </div>
+          <div className="kpi-label">Facteur de profit</div>
+        </div>
+        <div className="kpi">
+          <div className="kpi-value down">
+            {c.drawdown_max_R ? `${fmtNum(c.drawdown_max_R, 1)} R` : "—"}
+          </div>
+          <div className="kpi-label">Drawdown max</div>
+        </div>
+      </div>
+
+      {c.verdict && (
+        <div className={c.significatif ? "warn" : "verdict"} style={{ maxWidth: "76ch" }}>
+          <strong>Verdict statistique :</strong> {c.verdict}
+          {c.ic95 && (
+            <>
+              {" "}Intervalle de confiance à 95 % :{" "}
+              <code>
+                [{c.ic95[0] >= 0 ? "+" : ""}
+                {fmtNum(c.ic95[0], 3)} ; {c.ic95[1] >= 0 ? "+" : ""}
+                {fmtNum(c.ic95[1], 3)}] R
+              </code>
+              {c.ic95[0] < 0 && c.ic95[1] > 0 && (
+                <> — l’intervalle contient zéro, donc aucun avantage n’est démontré.</>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {c.par_tranche_de_score && c.par_tranche_de_score.length > 0 && (
+        <>
+          <h3 style={{ marginTop: 20 }}>Le score discrimine-t-il ?</h3>
+          <div className="tablewrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tranche de score</th>
+                  <th className="num">Trades</th>
+                  <th className="num">Réussite</th>
+                  <th className="num">Prédite</th>
+                  <th className="num">Espérance réalisée</th>
+                </tr>
+              </thead>
+              <tbody>
+                {c.par_tranche_de_score.map((t) => (
+                  <tr key={t.tranche}>
+                    <td style={{ fontWeight: 600 }}>{t.tranche}</td>
+                    <td className="num">{t.trades}</td>
+                    <td className="num">{fmtNum(t.win_rate, 1)} %</td>
+                    <td className="num muted">{fmtNum(t.prob_predite, 1)} %</td>
+                    <td className={`num ${t.esperance_realisee > 0 ? "up" : "down"}`}>
+                      {t.esperance_realisee >= 0 ? "+" : ""}
+                      {fmtNum(t.esperance_realisee, 3)} R
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {typeof c.correlation_score_esperance === "number" && (
+            <p className="note">
+              Corrélation entre le score et l’espérance réalisée :{" "}
+              <strong>
+                {c.correlation_score_esperance >= 0 ? "+" : ""}
+                {fmtNum(c.correlation_score_esperance, 3)}
+              </strong>
+              .{" "}
+              {c.correlation_score_esperance < 0.3
+                ? "Une conviction plus élevée ne se traduit pas par un meilleur résultat : c’est la faiblesse la plus sérieuse du moteur, et elle est affichée plutôt que masquée."
+                : "Une conviction plus élevée s’accompagne d’un meilleur résultat, ce qui est la propriété qui justifie l’existence d’un seuil."}
+            </p>
+          )}
+        </>
+      )}
+
+      <p className="note">
+        {bt.limites.map((l, i) => (
+          <span key={i}>
+            {l}
+            <br />
+          </span>
+        ))}
+      </p>
+    </section>
+  );
+}

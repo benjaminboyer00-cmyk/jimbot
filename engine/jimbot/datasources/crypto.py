@@ -157,6 +157,49 @@ def klines(ref: str, interval: str = "1h", limit: int = 400) -> Candles:
                     + " | ".join(erreurs))
 
 
+def klines_history(ref: str, interval: str = "1h", bars: int = 5000) -> Candles:
+    """Historique long, obtenu en remontant le temps par pages.
+
+    Les API plafonnent à 1000 bougies par appel ; on pagine vers le passé avec
+    `endTime`. Réservé au backtest : la production n'a besoin que de la fenêtre
+    d'analyse courante.
+    """
+    ms = {"15m": 900_000, "1h": 3_600_000, "4h": 14_400_000, "1d": 86_400_000}[interval]
+    host = "https://data-api.binance.vision"
+    frames: list[pd.DataFrame] = []
+    end: int | None = None
+
+    while sum(len(f) for f in frames) < bars:
+        params = {"symbol": ref, "interval": BINANCE_INTERVALS[interval], "limit": 1000}
+        if end is not None:
+            params["endTime"] = end
+        try:
+            raw = http_get_json(f"{host}/api/v3/klines", params)
+        except DataError as e:
+            log.warning("historique %s interrompu : %s", ref, e)
+            break
+        if not isinstance(raw, list) or not raw:
+            break
+
+        df = pd.DataFrame(raw, columns=[
+            "open_time", "open", "high", "low", "close", "volume", "close_time",
+            "quote_volume", "trades", "taker_base", "taker_quote", "ignore"])
+        df.index = pd.to_datetime(df["open_time"], unit="ms", utc=True)
+        frames.append(normalize(df))
+
+        first_open = int(raw[0][0])
+        # On repart juste avant la plus ancienne bougie reçue.
+        end = first_open - ms
+        if len(raw) < 1000:
+            break   # début de l'historique disponible
+
+    if not frames:
+        raise DataError(f"aucun historique pour {ref}")
+    out = pd.concat(frames).sort_index()
+    out = out[~out.index.duplicated(keep="last")]
+    return out.tail(bars)
+
+
 def ticker_24h(ref: str) -> dict:
     """Statistiques glissantes 24 h, via le premier fournisseur disponible."""
     for host in ("https://data-api.binance.vision", "https://api.binance.com"):

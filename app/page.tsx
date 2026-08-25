@@ -4,6 +4,7 @@
  * redéploiement — le dashboard reflète donc toujours le dernier scan.
  */
 import {
+  getBacktest,
   getLastReport,
   getSnapshot,
   getTrades,
@@ -17,6 +18,7 @@ import {
 
 import {
   Agenda,
+  Validation,
   ApiSection,
   Memecoins,
   NewsSummary,
@@ -29,10 +31,11 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const [snap, trades, report] = await Promise.all([
+  const [snap, trades, report, backtest] = await Promise.all([
     getSnapshot(),
     getTrades(),
     getLastReport(),
+    getBacktest(),
   ]);
 
   if (!snap) {
@@ -243,6 +246,8 @@ export default async function Page() {
 
           <TradeJournal trades={trades} />
         </section>
+
+        <Validation bt={backtest ?? undefined} />
 
         <Reports reports={snap.reports ?? []} />
 

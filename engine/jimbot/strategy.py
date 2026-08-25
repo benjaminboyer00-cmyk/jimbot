@@ -487,4 +487,5 @@ def _build_plan(asset: Asset, df: pd.DataFrame, direction: str, score: float,
         regime_quality=float(regime.quality),
         fallback_atr_mult=profile.atr_stop_mult,
         fallback_rr=profile.rr_target,
+        klass=asset.klass,
     )

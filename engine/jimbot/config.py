@@ -77,6 +77,17 @@ UNIVERSE: list[Asset] = [
     Asset("SPX", "yahoo", "^GSPC", "index", "S&P 500"),
     Asset("NDX", "yahoo", "^IXIC", "index", "Nasdaq Composite"),
     Asset("DXY", "yahoo", "DX-Y.NYB", "index", "Dollar Index"),
+]
+
+# Actifs suivis pour le contexte uniquement : ils alimentent les corrélations
+# et les bêtas de valeur refuge, mais ne donnent jamais lieu à un signal.
+#
+# Le VIX y figure sur la foi du backtest : 171 trades simulés, 10.5 % de
+# réussite, -0.735 R d'espérance — de très loin le pire de l'univers. Le
+# résultat est cohérent avec sa nature : un indice de volatilité alterne
+# pics violents et affaissements lents, si bien qu'un moteur qui suit la
+# tendance y achète systématiquement les sommets.
+CONTEXT_ONLY: list[Asset] = [
     Asset("VIX", "yahoo", "^VIX", "index", "VIX"),
 ]
 
