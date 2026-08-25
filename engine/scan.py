@@ -65,6 +65,17 @@ def main() -> int:
     if args.no_alert:
         log.info("alertes désactivées (--no-alert)")
     else:
+        # Le contexte passe avant les signaux : un discours de banque centrale
+        # ou une escalade géopolitique explique souvent les signaux qui suivent.
+        from jimbot.datasources import news as news_src
+        for speech in news_src.major_speeches(data["articles"]):
+            if discord.send_speech_alert(speech):
+                log.info("alerte discours publiée : %s (ton %+.1f, importance %.2f)",
+                         speech["speaker"], speech["tone"], speech["importance"])
+        if discord.send_geopolitical_alert(data.get("risk_off", {})):
+            log.info("alerte géopolitique publiée : tension %+.2f",
+                     data["risk_off"]["level"])
+
         to_alert = [s for s in signals
                     if s["direction"] != "neutre" and s["score"] >= SETTINGS.alert_threshold]
         log.info("--- %d alerte(s) au-dessus du seuil de %.0f ---",

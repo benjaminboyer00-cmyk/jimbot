@@ -267,3 +267,154 @@ def _split(text: str, limit: int) -> list[str]:
     if current:
         chunks.append(current)
     return chunks
+
+
+# --------------------------------------------------------------------------
+# Alertes de contexte : discours et géopolitique
+# --------------------------------------------------------------------------
+COLOR_GOLD = 0x8A6D2F     # or mat, pour les alertes de politique monétaire
+COLOR_ALERT = 0x8B5A2B    # terre de Sienne, pour la géopolitique
+
+
+def should_alert_context(key: str, cooldown_min: int = 240) -> bool:
+    """Anti-doublon des alertes de contexte, indépendant des alertes de signal.
+
+    Un même discours est repris par plusieurs médias pendant des heures : sans
+    ce garde-fou, le salon recevrait la même alerte une dizaine de fois.
+    """
+    sent = read("context_sent", {}) or {}
+    last = sent.get(key)
+    if not last:
+        return True
+    try:
+        elapsed = (datetime.now(timezone.utc) - datetime.fromisoformat(last)).total_seconds() / 60
+    except ValueError:
+        return True
+    return elapsed >= cooldown_min
+
+
+def mark_context_alerted(key: str) -> None:
+    sent = read("context_sent", {}) or {}
+    sent[key] = now_iso()
+    cutoff = time.time() - 7 * 86400
+    write("context_sent", {k: v for k, v in sent.items() if _ts(v) > cutoff})
+
+
+def send_speech_alert(speech: dict) -> bool:
+    """Publie une alerte sur un discours de politique monétaire.
+
+    L'or est mis en avant parce que c'est l'actif dont la réaction à la
+    rhétorique monétaire est la plus directe et la plus fiable : il ne dépend
+    d'aucun bénéfice, seulement des taux réels et de la confiance dans la
+    monnaie.
+    """
+    # Clé stable : le même orateur avec la même tonalité ne réalerte pas.
+    key = f"discours:{speech['speaker']}:{'accommodant' if speech['tone'] > 0 else 'restrictif'}"
+    if not should_alert_context(key):
+        log.info("%s : alerte de discours ignorée (doublon récent)", key)
+        return False
+
+    accommodant = speech["tone"] > 0
+    ton = "ACCOMMODANT" if accommodant else "RESTRICTIF"
+    sens_or = "haussier" if accommodant else "baissier"
+
+    impacts = speech.get("impact", {})
+    lignes = []
+    for sym, eff in sorted(impacts.items(), key=lambda kv: -abs(kv[1]))[:6]:
+        fleche = "▲" if eff > 0 else "▼" if eff < 0 else "■"
+        lignes.append(f"{fleche} `{sym:<8}` {eff:+.2f}")
+
+    embed = {
+        "title": f"◆ Discours {ton} — {speech['speaker'].title()}",
+        "description": _truncate(speech["title"], MAX_EMBED_DESC),
+        "color": COLOR_GOLD,
+        "fields": [
+            {"name": "Tonalité monétaire", "value": f"**{speech['tone']:+.1f}**", "inline": True},
+            {"name": "Importance", "value": f"{speech['importance']:.2f}/1.00", "inline": True},
+            {"name": "Ancienneté", "value": f"{speech['age_hours']:.0f} h", "inline": True},
+            {"name": "Termes relevés",
+             "value": _truncate(", ".join(speech["terms"]) or "—", MAX_FIELD_VALUE),
+             "inline": False},
+            {"name": "Effet attendu par actif (sensibilité aux taux)",
+             "value": _truncate("\n".join(lignes) or "—", MAX_FIELD_VALUE),
+             "inline": False},
+            {"name": "Or (XAUUSD)",
+             "value": f"Biais **{sens_or}** — l'or est l'actif le plus directement "
+                      f"lié aux taux réels.",
+             "inline": False},
+        ],
+        "footer": {"text": "Jimbot · effet calculé à partir de la tonalité et de la "
+                           "sensibilité aux taux · pas un conseil en investissement"},
+        "timestamp": now_iso(),
+    }
+
+    content = ""
+    if speech["importance"] >= 0.8 and SETTINGS.discord_role_id:
+        content = f"<@&{SETTINGS.discord_role_id}> discours à fort impact"
+
+    ok = _post({
+        "content": content,
+        "embeds": [embed],
+        "allowed_mentions": {"parse": [], "roles": [SETTINGS.discord_role_id] if content else []},
+    })
+    if ok:
+        mark_context_alerted(key)
+    return ok
+
+
+def send_geopolitical_alert(risk_off: dict, threshold: float = 0.35) -> bool:
+    """Publie une alerte quand la tension mondiale franchit un seuil.
+
+    L'intérêt pratique : une escalade fait monter l'or et la volatilité, et
+    pèse sur les indices et la crypto. L'alerte donne le sens de la rotation,
+    pas une recommandation.
+    """
+    niveau = risk_off.get("level", 0.0)
+    if abs(niveau) < threshold:
+        return False
+
+    escalade = niveau > 0
+    key = f"geo:{'escalade' if escalade else 'apaisement'}:{round(abs(niveau), 1)}"
+    if not should_alert_context(key, cooldown_min=360):
+        log.info("%s : alerte géopolitique ignorée (doublon récent)", key)
+        return False
+
+    titre = ("▲ Tension géopolitique en hausse" if escalade
+             else "▼ Détente géopolitique")
+    rotation = ("Rotation vers les valeurs refuges : or, dollar et volatilité "
+                "favorisés ; indices et crypto sous pression."
+                if escalade else
+                "Rotation vers les actifs de risque : indices et crypto favorisés ; "
+                "valeurs refuges sous pression.")
+
+    faits = [f"• {t['title'][:110]} — *{t['source']}* ({t['risk']:+.1f})"
+             for t in risk_off.get("top", [])[:5]]
+
+    embed = {
+        "title": titre,
+        "description": rotation,
+        "color": COLOR_ALERT,
+        "fields": [
+            {"name": "Indice de tension", "value": f"**{niveau:+.2f}** sur [-1, +1]", "inline": True},
+            {"name": "Articles porteurs", "value": str(risk_off.get("count", 0)), "inline": True},
+            {"name": "Faits marquants",
+             "value": _truncate("\n".join(faits) or "—", MAX_FIELD_VALUE),
+             "inline": False},
+        ],
+        "footer": {"text": "Jimbot · indice calculé par lexique pondéré · "
+                           "pas un conseil en investissement"},
+        "timestamp": now_iso(),
+    }
+
+    content = ""
+    if abs(niveau) >= 0.6 and SETTINGS.discord_role_id:
+        content = f"<@&{SETTINGS.discord_role_id}> mouvement géopolitique majeur"
+
+    ok = _post({
+        "content": content,
+        "embeds": [embed],
+        "allowed_mentions": {"parse": [], "roles": [SETTINGS.discord_role_id] if content else []},
+    })
+    if ok:
+        mark_context_alerted(key)
+    return ok
