@@ -30,7 +30,7 @@ from . import indicators as I
 from . import stats as S
 from .config import Asset
 from .strategy import (factor_breakout, factor_momentum, factor_mean_reversion,
-                       factor_structure, factor_trend, factor_volume)
+                       factor_structure, factor_trend, factor_volume, htf_bias)
 
 log = logging.getLogger("jimbot.probe")
 
@@ -81,6 +81,15 @@ def probe_asset(asset: Asset, df: pd.DataFrame, *, step: int = 4,
         try:
             regime = S.detect_regime(past)
             valeurs = {nom: fn(past).value for nom, fn in FACTORS.items()}
+            # Le biais d'unité supérieure sert de porte au score : il faut
+            # savoir s'il prédit dans le bon sens, faute de quoi il pénalise
+            # précisément les signaux corrects. On l'approxime en agrégeant la
+            # fenêtre passée par quatre, ce que fait la production en chargeant
+            # une granularité supérieure.
+            htf = past.resample("4h").agg(
+                {"open": "first", "high": "max", "low": "min",
+                 "close": "last", "volume": "sum"}).dropna(subset=["close"])
+            valeurs["htf"] = htf_bias(htf)[0] if len(htf) >= 60 else 0.0
             atr_v = S._last(I.atr(past["high"], past["low"], past["close"]))
         except Exception as e:  # noqa: BLE001
             log.debug("%s @%d : %s", asset.symbol, i, e)

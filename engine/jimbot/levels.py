@@ -458,7 +458,23 @@ def optimal_plan(df: pd.DataFrame, direction: str, score: float,
         key = (round(pl.stop, 8), round(pl.target, 8))
         if key not in unique or pl.expected_r > unique[key].expected_r:
             unique[key] = pl
-    evaluated = sorted(unique.values(), key=lambda pl: -pl.expected_r)
+
+    # Départage. Trier sur la seule espérance suffit tant que celle-ci
+    # discrimine ; elle cesse de le faire dès que l'avantage tombe à zéro —
+    # ce qui arrive pour tout score inférieur à 50 — car l'espérance se réduit
+    # alors à `-coût`, identique pour tous les objectifs d'un même stop.
+    # Les candidats sont à égalité et l'ordre d'insertion tranche, ce qui
+    # collait le R/R contre sa borne basse sur l'ensemble de l'univers.
+    #
+    # On départage donc les quasi-égalités par la qualité structurelle : un
+    # objectif adossé à un niveau réel plutôt qu'à un simple multiple de
+    # risque, et à défaut un R/R proche de la zone où l'espérance mesurée est
+    # la meilleure (3.5 à 5.3 ATR de distance totale, soit environ 2 R).
+    def rang(pl: "Plan") -> tuple:
+        structurel = 0 if pl.target_basis.startswith("multiple de risque") else 1
+        return (round(pl.expected_r, 3), structurel, -abs(pl.rr - 2.0))
+
+    evaluated = sorted(unique.values(), key=rang, reverse=True)
     best = evaluated[0]
     # On conserve les meilleures alternatives : le rapport peut ainsi montrer
     # que le plan retenu a été choisi, et non simplement produit.

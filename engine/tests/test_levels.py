@@ -198,3 +198,28 @@ def test_le_plan_retenu_est_le_meilleur(marche):
 def test_serialisation(marche):
     import json
     json.dumps(L.optimal_plan(marche, "long", 75.0).to_dict())
+
+
+def test_departage_quand_l_esperance_ne_discrimine_plus(marche):
+    """Sans avantage, l'espérance vaut -coût pour tous les objectifs d'un même
+    stop : les candidats sont à égalité. Le départage ne doit alors pas coller
+    le R/R contre sa borne basse, comme il le faisait en se fiant à l'ordre
+    d'insertion."""
+    # Score de 40 : sous 50, la conviction est nulle donc l'avantage aussi.
+    plan = L.optimal_plan(marche, "long", 40.0, regime_quality=0.5)
+    if plan.stop <= 0:
+        pytest.skip("aucun plan sur ce jeu de données")
+    assert plan.rr > L.MIN_RR + 0.05, "R/R collé à la borne basse"
+
+
+def test_un_objectif_structurel_prime_sur_un_multiple_a_esperance_egale(marche):
+    """À espérance équivalente, viser un niveau réellement respecté vaut mieux
+    que viser un multiple de risque arbitraire."""
+    plan = L.optimal_plan(marche, "long", 40.0, regime_quality=0.5)
+    if plan.stop <= 0:
+        pytest.skip("aucun plan sur ce jeu de données")
+    egaux = [a for a in plan.alternatives
+             if abs(a["expected_r"] - plan.expected_r) < 0.001]
+    if egaux and plan.target_basis.startswith("multiple de risque"):
+        assert all(a["target_basis"].startswith("multiple de risque") for a in egaux), \
+            "un objectif structurel était disponible à espérance égale"
