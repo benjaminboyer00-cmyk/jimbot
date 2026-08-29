@@ -109,6 +109,7 @@ def main() -> int:
     calib = backtest.calibration(tous)
     distance = backtest.edge_by_distance(tous)
     structure = backtest.structure_effect(tous)
+    penalites = backtest.penalty_effects(tous)
 
     rapport = {
         "generated_at": now_iso(),
@@ -117,6 +118,7 @@ def main() -> int:
         "calibration": calib,
         "avantage_par_distance": distance,
         "effet_de_la_structure": structure,
+        "effet_des_penalites": penalites,
         "limites": [
             "Le sentiment de presse est neutralisé : le flux d'actualité "
             "historique n'est pas reconstituable. Seule la partie technique "
@@ -171,6 +173,21 @@ def main() -> int:
             print(f"  {cle.replace('_', ' '):<26} {v['trades']:>5} "
                   f"{v['win_rate']:>9.1f}% {v['seuil_rentabilite']:>7.1f}% "
                   f"{v['ecart_au_seuil']:>+7.1f}pt {v['esperance']:>+10.3f}")
+    if penalites and "note" not in penalites:
+        for titre, cle in (("DISTANCE DU STOP (ATR)", "par_distance_de_stop_atr"),
+                           ("OBSTACLE DEVANT L'OBJECTIF", "par_obstacle"),
+                           ("SOLIDITÉ DU NIVEAU DU STOP", "par_solidite_du_stop")):
+            lignes = penalites.get(cle) or []
+            if not lignes:
+                continue
+            print()
+            print(f"  {titre}")
+            print(f"  {'tranche':<12} {'n':>5} {'réussite':>10} {'seuil':>8} "
+                  f"{'écart':>9} {'prédit':>8} {'E réelle':>10}")
+            for t in lignes:
+                print(f"  {t['tranche']:<12} {t['trades']:>5} {t['win_rate']:>9.1f}% "
+                      f"{t['seuil_rentabilite']:>7.1f}% {t['ecart_au_seuil']:>+8.1f}pt "
+                      f"{t['prob_predite']:>7.1f}% {t['esperance']:>+10.3f}")
     print("=" * 74)
     log.info("rapport écrit dans %s", DATA_DIR / "backtest.json")
     return 0

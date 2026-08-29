@@ -118,25 +118,57 @@ EDGE_HORIZON_ATR = 7.0
 # C'est faux dans les deux sens, et les trois corrections ci-dessous rétablissent
 # ce que la structure apporte réellement.
 
-# 1. On supposait qu'un stop adossé à un niveau respecté était moins souvent
-#    touché : le niveau dévierait le prix. Le backtest ne soutient pas cette
-#    hypothèse, et l'explication la plus probable est qu'elle est inversée —
-#    un stop placé derrière un support visible se trouve précisément là où
-#    s'accumulent les stops de tout le monde, ce qui en fait une cible de
-#    liquidité plutôt qu'un abri.
-#    Le bonus est ramené à une valeur quasi nulle plutôt que supprimé : la
-#    profondeur du niveau reste un critère de sélection utile entre deux
-#    candidats, mais elle ne justifie plus de promettre un gain.
+# 1. Un stop adossé à un niveau réellement respecté. Mesuré sur 679 trades non
+#    filtrés : écart au seuil de rentabilité de +1.1 point sans niveau, +1.9
+#    avec un niveau faible, +2.9 avec un niveau moyen, puis -3.4 pour les
+#    niveaux les plus solides (sur 45 trades seulement, donc peu concluant).
+#    L'effet existe mais reste modeste et non monotone : la valeur de 0.02,
+#    déjà prudente, est conservée.
 STRUCTURE_EDGE = 0.02
 
-# 2. En deçà de ce seuil, le stop est dans le bruit ordinaire de la bougie et
-#    sera touché par une simple mèche, indépendamment de la thèse.
+# 2. Un stop trop serré est touché par le bruit ordinaire de la bougie.
+#    L'effet est réel — les stops de 1.2 à 1.6 ATR ressortent 2.8 points sous
+#    leur seuil de rentabilité, contre +4.5 points pour la tranche 1.6-2.2 —
+#    mais son ampleur était très surestimée. La pénalité valait 0.22, soit
+#    sept fois l'écart mesuré ; elle est ramenée à 0.05, ce qui reproduit
+#    environ 3 points au maximum de son application.
 NOISE_FLOOR_ATR = 1.6
-NOISE_PENALTY = 0.22
+NOISE_PENALTY = 0.05
 
-# 3. Un objectif qui exige de traverser une résistance solide est moins
-#    accessible qu'un objectif en espace dégagé, à distance égale.
-OBSTACLE_PENALTY = 0.13
+# 3. Un objectif exigeant de franchir une résistance. **Mesuré : aucun effet.**
+#    Le taux de réussite est plat selon l'obstacle (44.8 %, 39.6 %, 48.3 %,
+#    46.2 % du plus dégagé au plus encombré) et n'est même pas monotone, la
+#    tranche « moyen » faisant mieux que la tranche « aucun ». Pendant ce
+#    temps le modèle prédisait un effondrement de 45.7 % à 30.1 %.
+#
+#    Cette pénalité supposée, qui retranchait jusqu'à 0.195 de probabilité —
+#    plus que l'avantage maximal mesuré, lui, à 0.12 — était la principale
+#    cause du blocage des signaux. Elle est annulée.
+#
+#    L'obstacle reste calculé et exposé : il conserve une valeur descriptive
+#    pour le lecteur d'un plan, et permettra de refaire la mesure sur un
+#    échantillon plus large. Il n'entre simplement plus dans la décision.
+OBSTACLE_PENALTY = 0.0
+
+# 4. Malédiction du vainqueur, et pourquoi il ne faut PAS corriger la
+#    probabilité pour elle.
+#
+#    Sur l'échantillon complet, non filtré, le modèle est légèrement
+#    sous-confiant : il annonce 38 à 42 % de réussite pour 45 à 48 % observés.
+#    Sur les seuls trades retenus par le filtre d'espérance, il devient
+#    surconfiant : 27.9 % annoncés pour 21.7 % observés.
+#
+#    Ces deux constats ne se contredisent pas, ils décrivent un biais de
+#    sélection. Retenir les espérances les plus élevées revient à retenir les
+#    estimations les plus chanceuses, et le réalisé retombe vers sa moyenne.
+#    C'est la malédiction du vainqueur, et elle frappe tout système qui
+#    sélectionne sur une grandeur estimée.
+#
+#    Un décalage appliqué à la probabilité corrigerait le second constat en
+#    cassant le premier. La bonne réponse est d'exiger une marge à la
+#    sélection — voir `MIN_EXPECTED_R` dans `strategy.py` — plutôt que de
+#    déformer un modèle qui décrit correctement la population.
+CALIBRATION_OFFSET = 0.0
 
 
 @dataclass
@@ -166,6 +198,10 @@ class Plan:
     stop_basis: str        # niveau structurel ayant justifié le stop
     target_basis: str      # niveau structurel ayant justifié l'objectif
     alternatives: list[dict]  # autres couples évalués, pour audit
+    # Entrées des pénalités, conservées pour pouvoir les confronter aux faits :
+    # elles sont supposées, contrairement à l'avantage qui est mesuré.
+    stop_strength: float = 0.0
+    obstacle: float = 0.0
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -366,7 +402,8 @@ def win_probability(stop_dist: float, target_dist: float, score: float,
 
     obstacle_penalty = OBSTACLE_PENALTY * float(np.clip(obstacle, 0.0, 1.5))
 
-    p = p_base + edge + structure_bonus - noise_penalty - obstacle_penalty
+    p = (p_base + edge + structure_bonus
+         - noise_penalty - obstacle_penalty - CALIBRATION_OFFSET)
     return float(np.clip(p, 0.02, 0.98))
 
 
@@ -444,7 +481,8 @@ def optimal_plan(df: pd.DataFrame, direction: str, score: float,
                 entry=round(price, 8), stop=round(stop, 8), target=round(target, 8),
                 rr=round(rr, 2), stop_atr=round(stop_dist / atr_v, 2),
                 win_prob=round(p, 3), expected_r=round(ev, 3),
-                stop_basis=stop_basis, target_basis=target_basis, alternatives=[]))
+                stop_basis=stop_basis, target_basis=target_basis, alternatives=[],
+                stop_strength=round(stop_strength, 3), obstacle=round(obstacle, 3)))
 
     if not evaluated:
         return _fallback_plan(price, atr_v, direction, fallback_atr_mult,

@@ -70,6 +70,8 @@ class BacktestTrade:
     stop_atr: float
     stop_basis: str          # niveau structurel ayant justifié le stop
     target_basis: str
+    stop_strength: float     # solidité du niveau adossant le stop
+    obstacle: float          # résistance cumulée entre le prix et l'objectif
     index: int               # position de l'entrée dans la série
 
     def to_dict(self) -> dict:
@@ -162,6 +164,8 @@ def run_asset(asset: Asset, df: pd.DataFrame, *, step: int = STEP,
             mfe=mfe, mae=mae,
             stop_atr=round(risk / sig.atr, 2) if sig.atr > 0 else 0.0,
             stop_basis=sig.stop_basis, target_basis=sig.target_basis,
+            stop_strength=getattr(sig, "stop_strength", 0.0),
+            obstacle=getattr(sig, "obstacle", 0.0),
             index=i,
         ).to_dict())
 
@@ -311,6 +315,71 @@ def structure_effect(trades: list[dict]) -> dict:
         if isinstance(v, dict):
             v["ecart_au_seuil"] = round(v["win_rate"] - v["seuil_rentabilite"], 1)
     return out
+
+
+def penalty_effects(trades: list[dict]) -> dict:
+    """Confronte les deux pénalités supposées aux faits.
+
+    `NOISE_PENALTY` et `OBSTACLE_PENALTY` n'ont jamais été mesurées, alors
+    qu'elles retranchent jusqu'à 0.415 de probabilité — plus de trois fois
+    l'avantage maximal, lui mesuré, de 0.12. Un terme supposé peut donc
+    opposer son veto à un terme mesuré, ce qui est exactement l'erreur que ce
+    projet s'attache à corriger ailleurs.
+
+    La mesure exige un échantillon **non filtré** : lancer le backtest avec
+    `JIMBOT_MIN_EXPECTED_R=-999` pour que tout signal au-dessus du seuil de
+    score soit pris, quelle que soit son espérance.
+
+    Pour chaque tranche, on compare le taux de réussite observé au seuil de
+    rentabilité propre à la tranche — sans quoi on comparerait des groupes de
+    R/R différents.
+    """
+    if len(trades) < 60:
+        return {"note": "échantillon insuffisant"}
+
+    df = pd.DataFrame(trades)
+    df["gagne"] = (df["outcome"] == "cible").astype(int)
+
+    def tranches(colonne: str, decoupe) -> list[dict]:
+        if colonne not in df.columns or df[colonne].nunique() < 3:
+            return []
+        try:
+            df["_t"] = decoupe(df[colonne])
+        except ValueError:
+            return []
+        out = []
+        for tranche, sub in df.groupby("_t", observed=True):
+            if len(sub) < 15:
+                continue
+            rr = float(sub["rr"].mean())
+            seuil = 100.0 / (1.0 + rr)
+            win = float(sub["gagne"].mean()) * 100
+            out.append({
+                "tranche": str(tranche),
+                "trades": len(sub),
+                "win_rate": round(win, 1),
+                "seuil_rentabilite": round(seuil, 1),
+                # L'écart au seuil est la seule grandeur comparable entre
+                # tranches : il isole l'effet du critère mesuré.
+                "ecart_au_seuil": round(win - seuil, 1),
+                "esperance": round(float(sub["r_multiple"].mean()), 3),
+                "prob_predite": round(float(sub["win_prob"].mean()) * 100, 1),
+            })
+        return out
+
+    return {
+        "par_distance_de_stop_atr": tranches(
+            "stop_atr", lambda c: pd.cut(c, [0, 1.2, 1.6, 2.2, 3.0, 99],
+                                         labels=["<1.2", "1.2-1.6", "1.6-2.2",
+                                                 "2.2-3.0", ">3.0"])),
+        "par_obstacle": tranches(
+            "obstacle", lambda c: pd.cut(c, [-0.01, 0.01, 0.5, 1.0, 99],
+                                         labels=["aucun", "faible", "moyen", "fort"])),
+        "par_solidite_du_stop": tranches(
+            "stop_strength", lambda c: pd.cut(c, [-0.01, 0.01, 0.5, 0.9, 1.01],
+                                              labels=["aucune", "faible",
+                                                      "moyenne", "forte"])),
+    }
 
 
 def edge_by_distance(trades: list[dict], bins: int = 4) -> list[dict]:

@@ -134,10 +134,15 @@ def test_stop_dans_le_bruit_est_penalise():
     assert serre < large
 
 
-def test_obstacle_penalise_l_objectif():
-    degage = L.win_probability(2.0, 4.0, 80.0, 0.7, atr=1.0, obstacle=0.0)
-    bloque = L.win_probability(2.0, 4.0, 80.0, 0.7, atr=1.0, obstacle=1.2)
-    assert bloque < degage
+def test_la_probabilite_n_est_pas_deformee_pour_la_selection():
+    """Le modèle est correctement calibré sur la population complète — 38 à
+    42 % annoncés pour 45 à 48 % observés, donc légèrement conservateur. Sa
+    surconfiance apparente sur les trades retenus vient d'un biais de
+    sélection, qui s'absorbe au seuil d'espérance et non en déformant la
+    probabilité."""
+    assert L.CALIBRATION_OFFSET == 0.0
+    sans_avantage = L.win_probability(1.0, 1.0, score=50.0, regime_quality=0.0)
+    assert sans_avantage == pytest.approx(0.5, abs=1e-9)
 
 
 def test_probabilite_reste_bornee():
@@ -223,3 +228,34 @@ def test_un_objectif_structurel_prime_sur_un_multiple_a_esperance_egale(marche):
     if egaux and plan.target_basis.startswith("multiple de risque"):
         assert all(a["target_basis"].startswith("multiple de risque") for a in egaux), \
             "un objectif structurel était disponible à espérance égale"
+
+
+def test_les_penalites_ne_dominent_plus_l_avantage_mesure():
+    """L'avantage est mesuré, les pénalités étaient supposées.
+
+    Elles cumulaient jusqu'à 0.415 contre un avantage plafonné à 0.12 : un
+    chiffre inventé opposait son veto à un chiffre mesuré. Après mesure sur
+    679 trades non filtrés, la pénalité d'obstacle s'est révélée sans aucun
+    effet et celle de bruit sept fois surestimée.
+    """
+    penalites = L.NOISE_PENALTY + L.OBSTACLE_PENALTY * 1.5
+    assert penalites < L.MAX_EDGE, "les pénalités supposées dépassent l'avantage mesuré"
+
+
+def test_l_obstacle_n_entre_plus_dans_la_decision():
+    """Mesuré : le taux de réussite est plat selon l'obstacle, et pas même
+    monotone. La pénalité est annulée, mais la grandeur reste calculée."""
+    assert L.OBSTACLE_PENALTY == 0.0
+    degage = L.win_probability(2.0, 4.0, 80.0, 0.7, atr=1.0, obstacle=0.0)
+    bloque = L.win_probability(2.0, 4.0, 80.0, 0.7, atr=1.0, obstacle=1.5)
+    assert degage == pytest.approx(bloque)
+
+
+def test_le_bruit_penalise_encore_les_stops_tres_serres():
+    """L'effet est réel — 2.8 points sous le seuil pour les stops de 1.2 à
+    1.6 ATR — mais modeste."""
+    serre = L.win_probability(0.5, 2.0, 80.0, 0.7, atr=1.0)
+    normal = L.win_probability(2.0, 8.0, 80.0, 0.7, atr=1.0)
+    assert serre < normal
+    # L'écart doit rester de l'ordre de quelques points, pas de vingt.
+    assert normal - serre < 0.08

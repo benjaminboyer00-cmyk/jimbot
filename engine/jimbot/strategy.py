@@ -21,7 +21,7 @@ import pandas as pd
 from . import indicators as I
 from . import levels as L
 from . import stats as S
-from .config import Asset, RISK, SETTINGS
+from .config import Asset, RISK, SETTINGS, _env
 
 
 # Constante de calibrage du score.
@@ -45,7 +45,26 @@ SCORE_SCALE = 0.947
 # Un score élevé ne suffit pas : si la structure ne laisse aucun objectif
 # atteignable avant une résistance solide, le trade est mauvais quelle que
 # soit la conviction. C'est le principal apport de l'optimisation des niveaux.
-MIN_EXPECTED_R = 0.02
+# Espérance minimale exigée d'un plan, en multiples de risque.
+#
+# Ce seuil ne sert plus qu'à écarter les plans franchement défavorables, et
+# c'est délibéré. Mesuré sur 500 trades non filtrés, l'espérance estimée ne
+# classe pas correctement les trades : la tranche la mieux notée (+0.053 R
+# estimé) réalise -0.085 R, tandis que la tranche neutre (+0.001 R estimé)
+# réalise +0.176 R. La relation n'est pas seulement bruitée, elle n'est pas
+# monotone.
+#
+# Autrement dit, le score prédit bien la direction — coefficient
+# d'information de +0.063, validé hors échantillon — mais l'appareil qui
+# traduit ce signal en plan de trade ne parvient pas à en tirer une
+# sélection utile. Le défaut est dans la traduction, pas dans le signal.
+#
+# Régler finement un seuil sur une grandeur qui ne discrimine pas
+# reviendrait à ajuster le tirage au sort. Il est donc ramené à zéro : on
+# refuse ce qui est estimé perdant, sans prétendre hiérarchiser le reste.
+# La suite consiste à comparer cet optimiseur à un plan fixe et robuste —
+# stop à 2 ATR, objectif à 2 R — pour établir s'il apporte quoi que ce soit.
+MIN_EXPECTED_R = float(_env("JIMBOT_MIN_EXPECTED_R", "0.0"))
 
 # --------------------------------------------------------------------------
 # Pondérations par régime : la même donnée ne vaut pas la même chose partout.
@@ -149,6 +168,10 @@ class Signal:
     expected_r: float = 0.0    # espérance du trade, en multiples de risque
     stop_basis: str = ""       # niveau structurel justifiant le stop
     target_basis: str = ""     # niveau structurel justifiant l'objectif
+    # Entrées des pénalités : supposées, contrairement à l'avantage qui est
+    # mesuré. Conservées pour pouvoir les confronter aux faits.
+    stop_strength: float = 0.0
+    obstacle: float = 0.0
     plan_alternatives: list = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
 
@@ -489,6 +512,7 @@ def analyze(asset: Asset, df: pd.DataFrame, *, timeframe: str = "1h",
         news_count=news_count, generated_at=generated_at, warnings=warnings,
         win_prob=plan.win_prob, expected_r=plan.expected_r,
         stop_basis=plan.stop_basis, target_basis=plan.target_basis,
+        stop_strength=plan.stop_strength, obstacle=plan.obstacle,
         plan_alternatives=plan.alternatives,
     )
 
