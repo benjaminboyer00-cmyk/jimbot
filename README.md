@@ -186,15 +186,28 @@ Puis, sur GitHub, onglet **Actions** → *Scan de marché* → **Run workflow**.
 npm run dev                                   # dashboard sur localhost:3000
 ```
 
-## Consommation GitHub Actions
+## Cadence réelle, et pourquoi elle n'est pas celle qu'on déclare
 
-Un scan complet prend environ **75 secondes** en CI. À raison de 4 par heure :
+**L'ordonnanceur de GitHub Actions ne tient pas les planifications
+rapprochées.** La documentation le présente comme un service « au mieux », et
+la mesure le confirme sans ambiguïté : avec un cron `*/15`, la couverture
+observée sur 71 heures a été de **4,2 %** — 12 scans au lieu de 285, avec un
+écart médian de **7 heures** et des trous allant jusqu'à 11 heures. Pendant ce
+temps, le rapport quotidien se déclenchait normalement : ce sont bien les
+crons rapides qui sont visés.
 
-| Cadence | Exécutions / mois | Minutes / mois |
-|---|---|---|
-| 15 min (par défaut) | ~2 880 | ~3 600 |
-| 30 min | ~1 440 | ~1 800 |
-| 1 h | ~720 | ~900 |
+Le workflow déclare donc une cadence **horaire** et enchaîne quatre scans
+espacés de 15 minutes à chaque exécution, publiés au fil de l'eau. Même
+déclenchée avec deux heures de retard, une exécution couvre alors quatre
+points de marché au lieu d'un seul.
+
+Le dashboard affiche un avertissement dès que le dernier scan remonte à plus
+de 90 minutes : mieux vaut annoncer le trou que laisser croire à une
+surveillance continue.
+
+Sur un dépôt public, Actions reste gratuit et illimité. Sur un dépôt privé,
+compter environ 50 minutes par exécution horaire — soit bien au-delà du quota
+gratuit : passer alors le cron à `0 */4 * * *`.
 
 **Sur un dépôt public, Actions est gratuit et illimité** — c'est la
 configuration recommandée, d'autant que le dépôt ne contient aucun secret (ils

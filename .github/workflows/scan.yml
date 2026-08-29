@@ -2,10 +2,20 @@ name: Scan de marché
 
 on:
   schedule:
-    # Toutes les 15 minutes. L'ordonnanceur GitHub est « au mieux » : sous
-    # forte charge, une exécution peut être décalée de quelques minutes ou
-    # sautée. Le moteur est idempotent, un cycle manqué est sans conséquence.
-    - cron: "*/15 * * * *"
+    # Cadence déclarée : une fois par heure. Ce n'est PAS la cadence de scan,
+    # qui reste de 15 minutes grâce à la boucle interne ci-dessous.
+    #
+    # Le choix vient d'une mesure, pas d'une préférence. Avec un cron
+    # « */15 » la couverture réelle mesurée sur 71 heures a été de 4,2 % —
+    # 12 scans au lieu de 285, avec un écart médian de 7 heures. GitHub
+    # étrangle les planifications rapprochées, qui sont explicitement « au
+    # mieux » et abandonnées en charge. Le rapport quotidien, lui, se
+    # déclenchait normalement : ce sont bien les crons rapides qui sont visés.
+    #
+    # Une exécution horaire réalise donc quatre scans espacés de 15 minutes.
+    # Même déclenchée avec deux heures de retard, elle couvre quatre points de
+    # marché au lieu d'un seul.
+    - cron: "0 * * * *"
   workflow_dispatch:
     inputs:
       no_alert:
@@ -25,7 +35,7 @@ permissions:
 jobs:
   scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 70
     steps:
       - uses: actions/checkout@v4
 
@@ -39,6 +49,11 @@ jobs:
         run: pip install -r engine/requirements.txt
 
       - name: Scanner le marché
+        # Quatre scans espacés de 15 minutes, publiés au fil de l'eau : le
+        # dashboard reste frais et l'historique garde une trace de chaque
+        # passage. La boucle s'arrête d'elle-même avant la 55e minute pour ne
+        # pas retenir le verrou de concurrence, que le rapport quotidien
+        # partage.
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           DISCORD_ROLE_ID: ${{ secrets.DISCORD_ROLE_ID }}
@@ -47,28 +62,44 @@ jobs:
           JIMBOT_ALERT_THRESHOLD: ${{ vars.JIMBOT_ALERT_THRESHOLD }}
           JIMBOT_PING_THRESHOLD: ${{ vars.JIMBOT_PING_THRESHOLD }}
           JIMBOT_PAPER_CAPITAL: ${{ vars.JIMBOT_PAPER_CAPITAL }}
-        run: python engine/scan.py ${{ inputs.no_alert && '--no-alert' || '' }}
-
-      - name: Publier les résultats
         run: |
-          git config user.name  "jimbot"
-          git config user.email "jimbot@users.noreply.github.com"
+          DEBUT=$(date +%s)
+          OPTIONS="${{ inputs.no_alert && '--no-alert' || '' }}"
+          for i in 1 2 3 4; do
+            echo "::group::scan $i/4"
+            python engine/scan.py $OPTIONS || echo "::warning::scan $i en échec, on continue"
+            echo "::endgroup::"
+
+            # Publication immédiate : un scan perdu vaut mieux qu'un lot perdu.
+            git config user.name  "jimbot"
+            git config user.email "jimbot@users.noreply.github.com"
+            git add data/
+            if ! git diff --staged --quiet; then
+              git commit -q -m "scan: $(date -u '+%Y-%m-%d %H:%M UTC')"
+              for tentative in 1 2 3; do
+                git pull --rebase -X theirs --autostash -q origin "${GITHUB_REF_NAME}" \
+                  && git push -q origin "HEAD:${GITHUB_REF_NAME}" && break
+                sleep 5
+              done
+            fi
+
+            [ "$i" = "4" ] && break
+            ECOULE=$(( $(date +%s) - DEBUT ))
+            # Marge de sécurité : on n'entame pas un cycle qui déborderait.
+            [ "$ECOULE" -gt 2400 ] && { echo "temps écoulé, arrêt de la boucle"; break; }
+            echo "attente de 15 minutes avant le scan suivant"
+            sleep 900
+          done
+
+      - name: Vérifier qu'il ne reste rien à publier
+        run: |
+          # La boucle publie à chaque itération ; cette étape ne rattrape
+          # qu'un éventuel reliquat.
           git add data/
           if git diff --staged --quiet; then
-            echo "aucun changement à publier"
+            echo "rien à publier"
             exit 0
           fi
-          git commit -m "scan: $(date -u '+%Y-%m-%d %H:%M UTC')"
-          # Une autre exécution a pu committer entre-temps : on rejoue par
-          # dessus au lieu d'échouer.
-          for attempt in 1 2 3; do
-            # -X theirs : en cas de conflit sur data/, on conserve les fichiers
-            # qui viennent d'être générés. Ce sont des artefacts recalculés à
-            # chaque exécution, jamais une source de vérité à préserver.
-            git pull --rebase -X theirs --autostash origin "${GITHUB_REF_NAME}" && \
-            git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
-            echo "tentative $attempt échouée, nouvel essai"
-            sleep 5
-          done
-          echo "::error::publication impossible après 3 tentatives"
-          exit 1
+          git commit -q -m "scan: reliquat $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git pull --rebase -X theirs --autostash -q origin "${GITHUB_REF_NAME}" \
+            && git push -q origin "HEAD:${GITHUB_REF_NAME}"

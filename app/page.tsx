@@ -65,8 +65,13 @@ export default async function Page() {
 
   return (
     <>
-      <Topbar stamp={`dernier scan ${timeAgo(snap.generated_at)}`} />
+      <Topbar
+        stamp={`dernier scan ${timeAgo(snap.generated_at)}`}
+        generatedAt={snap.generated_at}
+      />
       <main className="wrap">
+        <Staleness generatedAt={snap.generated_at} />
+
         <div className="kpis">
           <Kpi label="Signaux actifs" value={String(counts.actionable)} />
           <Kpi label="Achat" value={String(counts.long)} tone={counts.long ? "up" : undefined} />
@@ -357,16 +362,52 @@ export default async function Page() {
 
 /* ---------------------------------------------------------------- */
 
-function Topbar({ stamp }: { stamp: string }) {
+function Topbar({ stamp, generatedAt }: { stamp: string; generatedAt?: string }) {
+  // Fraîcheur des données. L'ordonnanceur GitHub étrangle les planifications
+  // rapprochées : une exécution peut être retardée de plusieurs heures. Mieux
+  // vaut l'afficher que laisser croire à une surveillance continue.
+  const minutes = generatedAt
+    ? (Date.now() - new Date(generatedAt).getTime()) / 60000
+    : 0;
+  const perime = minutes > 90;
+
   return (
     <header className="topbar">
       <div className="topbar-inner">
         <div className="brand">
           JIMBOT<span>analyse de marché</span>
         </div>
-        <div className="stamp">{stamp}</div>
+        <div className="stamp">
+          {perime && <span className="stale">données anciennes</span>}
+          {stamp}
+        </div>
       </div>
     </header>
+  );
+}
+
+/**
+ * Avertit quand le dernier scan remonte à trop longtemps.
+ *
+ * L'ordonnanceur de GitHub Actions traite les planifications comme un service
+ * « au mieux » et abandonne les exécutions en charge. Mesuré sur 71 heures
+ * avec un cron toutes les 15 minutes : 4,2 % de couverture réelle et un écart
+ * médian de 7 heures. Un tableau de bord qui n'en dit rien laisse croire à
+ * une surveillance continue qui n'existe pas.
+ */
+function Staleness({ generatedAt }: { generatedAt: string }) {
+  const minutes = (Date.now() - new Date(generatedAt).getTime()) / 60000;
+  if (minutes <= 90) return null;
+  const heures = Math.round(minutes / 60);
+  return (
+    <div className="warn" style={{ marginTop: 20, maxWidth: "76ch" }}>
+      <strong>Données vieilles de {heures} h.</strong> Le scan est planifié
+      toutes les heures et enchaîne quatre passages espacés de 15 minutes, mais
+      l’ordonnanceur de GitHub Actions traite les planifications comme un
+      service « au mieux » et abandonne des exécutions en période de charge.
+      Les chiffres ci-dessous décrivent le marché tel qu’il était au dernier
+      passage, pas tel qu’il est maintenant.
+    </div>
   );
 }
 
