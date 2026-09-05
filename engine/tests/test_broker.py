@@ -375,3 +375,73 @@ def test_capital_taille_en_unites_pas_en_lots():
     assert spec["contractSize"] == 1.0
     assert spec["minVolume"] == 0.1
     assert B.volume_pour(spec, 5.0) == pytest.approx(5.0)
+
+
+# --------------------------------------------------------------------------
+# Résolution d'instrument : par identité, jamais par disponibilité
+# --------------------------------------------------------------------------
+class FauxCapital:
+    """Capital.com simulé, avec le comportement réel un samedi soir."""
+
+    def __init__(self, marches):
+        self._marches = marches
+        self.appels = []
+
+    def _get(self, chemin):
+        self.appels.append(chemin)
+        epic = chemin.rsplit("/", 1)[-1]
+        if epic in self._marches:
+            return {"instrument": {"name": self._marches[epic]}}
+        raise B.BrokerError("HTTP 404")
+
+
+def _capital(marches):
+    from jimbot.broker_capital import CapitalCom
+    c = CapitalCom("k", "i", "p")
+    faux = FauxCapital(marches)
+    c._get = faux._get
+    return c, faux
+
+
+def test_un_marche_ferme_reste_le_bon_instrument(monkeypatch):
+    """Le bug d'origine : un samedi soir, le forex est fermé et la crypto
+    ouverte. Résoudre par « premier marché négociable » faisait pointer GBPUSD
+    sur XRP — un ordre sur la livre serait parti sur Ripple.
+
+    Qu'un marché soit fermé ne change pas de quel instrument il s'agit.
+    """
+    monkeypatch.setattr("jimbot.broker_capital.DELAI_ENTRE_APPELS", 0)
+    c, _ = _capital({"GBPUSD": "GBP/USD", "XRPUSD": "Ripple/USD"})
+    assert c.resoudre("GBPUSD") == "GBPUSD"
+    assert c.resoudre("XRP-USD") == "XRPUSD"
+
+
+def test_un_epic_au_mauvais_nom_est_ecarte(monkeypatch):
+    """Une table écrite à la main se périme. Un epic qui ne porte plus le nom
+    attendu peut désigner n'importe quoi : on refuse plutôt que de deviner."""
+    monkeypatch.setattr("jimbot.broker_capital.DELAI_ENTRE_APPELS", 0)
+    c, _ = _capital({"GOLD": "Gold Mining Corp"})   # plus la matière première
+    assert c.resoudre("XAUUSD") is None
+
+
+def test_un_epic_absent_ne_se_replie_sur_rien(monkeypatch):
+    monkeypatch.setattr("jimbot.broker_capital.DELAI_ENTRE_APPELS", 0)
+    c, _ = _capital({"BTCUSD": "Bitcoin/USD"})
+    assert c.resoudre("SPX") is None, "aucun repli ne doit être tenté"
+
+
+def test_la_resolution_est_mise_en_cache(monkeypatch):
+    """Capital.com limite le débit : seize lectures d'affilée en font échouer
+    une partie, et un instrument absent pour cause de débit se lit comme un
+    instrument que le courtier ne cote pas."""
+    monkeypatch.setattr("jimbot.broker_capital.DELAI_ENTRE_APPELS", 0)
+    c, faux = _capital({"BTCUSD": "Bitcoin/USD"})
+    for _ in range(5):
+        c.resoudre("BTC-USD")
+    assert len(faux.appels) == 1, f"{len(faux.appels)} appels au lieu d'un"
+
+
+def test_les_deux_tables_restent_synchronisees():
+    """Un epic ajouté sans son nom attendu passerait sans vérification."""
+    from jimbot.broker_capital import EPICS, NOMS_ATTENDUS
+    assert set(EPICS.values()) == set(NOMS_ATTENDUS)
