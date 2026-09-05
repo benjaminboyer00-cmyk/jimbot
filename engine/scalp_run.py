@@ -145,8 +145,14 @@ def main() -> int:
         print()
         print(f"  Coût maximal supportable : {plafond:+.2f} pb par aller-retour")
         print(f"  Tarifs réels             : CFD serré 10 pb, Binance taker 20 pb")
-        rentable = any(c["rentable"] for e in net["par_horizon"].values()
-                       for c in e["net_pb"].values())
+        # « parfait » est une borne haute qui ne decrit aucun compte reel : il
+        # est exclu du verdict. L'y inclure faisait conclure « un avantage net
+        # subsiste » a partir d'un avantage brut significatif, alors qu'aucune
+        # grille tarifaire reelle ne le laissait survivre — le pire sens dans
+        # lequel un resume puisse se tromper.
+        reels = [c for e in net["par_horizon"].values()
+                 for nom, c in e["net_pb"].items() if nom != "parfait"]
+        rentable = any(c["rentable"] for c in reels)
         print(f"  Verdict                  : "
               f"{'un avantage net subsiste' if rentable else 'aucun avantage net'}")
     print()
