@@ -58,6 +58,9 @@ def main() -> int:
     p.add_argument("--bars", type=int, default=12000)
     p.add_argument("--step", type=int, default=4)
     p.add_argument("--out", default="scalp")
+    p.add_argument("--cache", default="",
+                   help="fichier JSONL d'observations : relu s'il existe, "
+                        "écrit sinon. La sonde coûte 25 min, l'analyse 3 s.")
     args = p.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)-7s %(message)s",
@@ -66,7 +69,13 @@ def main() -> int:
     minutes = {"5m": 5, "15m": 15, "1h": 60, "4h": 240, "1d": 1440}[args.interval]
 
     lignes: list[dict] = []
-    for a in actifs_volatils():
+    cache = Path(args.cache) if args.cache else None
+    if cache and cache.exists():
+        with cache.open(encoding="utf-8") as fh:
+            lignes = [json.loads(l) for l in fh if l.strip()]
+        log.info("%d observations relues depuis %s", len(lignes), cache)
+
+    for a in ([] if lignes else actifs_volatils()):
         try:
             df = crypto.klines_history(a.ref, args.interval, args.bars)
         except DataError as e:
@@ -82,6 +91,12 @@ def main() -> int:
     if len(lignes) < 500:
         log.error("échantillon insuffisant (%d)", len(lignes))
         return 1
+
+    if cache and not cache.exists():
+        with cache.open("w", encoding="utf-8") as fh:
+            for r in lignes:
+                fh.write(json.dumps(r) + "\n")
+        log.info("observations mises en cache dans %s", cache)
 
     probe.score_combine(lignes, POIDS)
     ic = probe.information_coefficients(lignes, horizons)

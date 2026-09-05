@@ -291,15 +291,23 @@ def edge_net(rows: list[dict], score_col: str = "score",
 
     Le coefficient d'information dit si un facteur porte de l'information. Il
     ne dit pas si on peut en vivre : un IC de 0,05 sur un rendement dont
-    l'écart-type vaut 3 points de base ne paiera jamais 20 points de base de
-    frais. À horizon court, c'est cette seconde question qui tranche, et elle
-    se pose en pourcentages du notionnel — pas en unités d'ATR.
+    l'écart-type vaut trois points de base ne paiera jamais 20 points de base
+    de frais. À horizon court, c'est cette seconde question qui tranche, et
+    elle se pose en pourcentages du notionnel — pas en unités d'ATR.
 
-    Le protocole est celui qu'on appliquerait à la main : à chaque pas, on
-    prend une position longue sur le quintile le mieux noté, courte sur le
-    moins bien noté, on la tient `h` bougies, et on paie l'aller-retour. La
-    moyenne des deux jambes est l'avantage brut par pari ; on en retranche le
-    coût, et le t de Student dit si ce qui reste se distingue de zéro.
+    **Les quintiles sont calculés actif par actif**, jamais sur l'ensemble mis
+    en commun. Regrouper huit actifs dont la volatilité varie du simple au
+    quadruple mélange des échelles de score et de rendement incomparables : le
+    quintile « haut » se remplit alors des actifs les plus volatils plutôt que
+    des lectures les plus nettes. Mesuré, l'écart n'est pas anecdotique — le
+    protocole groupé rendait 0,21 pb là où le coefficient d'information observé
+    en prédit 4,2, soit vingt fois moins. C'est aussi le protocole honnête vis-
+    à-vis de la pratique : on ne choisit pas entre acheter BTC et acheter DOGE,
+    on décide pour chacun s'il est achetable.
+
+    Le reste est ce qu'on ferait à la main : long sur le quintile le mieux noté,
+    court sur le moins bien noté, tenu `h` bougies, aller-retour payé. Le t de
+    Student dit si ce qui reste se distingue de zéro.
     """
     if len(rows) < 200:
         return {"note": "échantillon insuffisant"}
@@ -307,31 +315,42 @@ def edge_net(rows: list[dict], score_col: str = "score",
     df = pd.DataFrame(rows)
     if score_col not in df.columns:
         return {"note": f"colonne « {score_col} » absente"}
+    if "symbol" not in df.columns:
+        return {"note": "colonne « symbol » absente"}
 
     horizons = horizons or tuple(
         int(c.removeprefix("pct_")) for c in df.columns if c.startswith("pct_"))
 
     out: dict = {"observations": len(df), "quantile": quantile,
+                 "protocole": "quintiles par actif",
                  "couts_pb": COUTS_ALLER_RETOUR_PB, "par_horizon": {}}
 
     for h in horizons:
         col = f"pct_{h}"
         if col not in df.columns:
             continue
-        sub = df[[score_col, col]].dropna()
-        if len(sub) < 200 or sub[score_col].nunique() < 10:
+
+        paris_par_actif: list[pd.Series] = []
+        for _, groupe in df.groupby("symbol"):
+            sub = groupe[[score_col, col]].dropna()
+            if len(sub) < 100 or sub[score_col].nunique() < 10:
+                continue
+            haut = sub[score_col].quantile(1 - quantile)
+            bas = sub[score_col].quantile(quantile)
+            longs = sub.loc[sub[score_col] >= haut, col]
+            courts = sub.loc[sub[score_col] <= bas, col]
+            if len(longs) < 30 or len(courts) < 30:
+                continue
+            # La jambe courte gagne quand le prix baisse : on retourne son signe
+            # pour que les deux jambes se moyennent comme deux paris de même sens.
+            paris_par_actif.append(pd.concat([longs, -courts]))
+
+        if not paris_par_actif:
+            continue
+        paris = pd.concat(paris_par_actif)
+        if len(paris) < 200:
             continue
 
-        haut = sub[score_col].quantile(1 - quantile)
-        bas = sub[score_col].quantile(quantile)
-        longs = sub.loc[sub[score_col] >= haut, col]
-        courts = sub.loc[sub[score_col] <= bas, col]
-        if len(longs) < 50 or len(courts) < 50:
-            continue
-
-        # La jambe courte gagne quand le prix baisse : on retourne son signe
-        # pour que les deux jambes se moyennent comme deux paris de même sens.
-        paris = pd.concat([longs, -courts])
         brut_pb = float(paris.mean()) * 100.0          # % -> points de base
         ecart_pb = float(paris.std()) * 100.0
         n = len(paris)
@@ -339,6 +358,7 @@ def edge_net(rows: list[dict], score_col: str = "score",
 
         entree = {
             "n_paris": n,
+            "n_actifs": len(paris_par_actif),
             "brut_pb": round(brut_pb, 2),
             "ecart_type_pb": round(ecart_pb, 1),
             "t_brut": round(float(t_brut), 2) if np.isfinite(t_brut) else None,
