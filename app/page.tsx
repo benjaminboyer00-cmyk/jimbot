@@ -14,10 +14,11 @@ import {
   fmtPrice,
   timeAgo,
   REGIME_LABELS,
+  type Backtest,
   type Signal,
 } from "@/lib/data";
 
-import { serieEquite, cumulTradesPapier } from "@/lib/series";
+import { serieEquite, cumulTradesPapier, bandeDuScore } from "@/lib/series";
 import { Chart, CourbeCapital, CourbeCumulR, PlanTrade, Sparkline } from "@/components/charts";
 import { Topbar } from "@/components/topbar";
 
@@ -67,6 +68,9 @@ export default async function Page() {
   const actionable = snap.signals.filter((s) => s.direction !== "neutre");
   const ret = portfolio.initial ? (portfolio.equity / portfolio.initial - 1) * 100 : 0;
   const capital = serieEquite(portfolio);
+  // Un plan dont les niveaux datent de plusieurs heures ne se traite pas tel
+  // quel : la carte doit le dire avant d'afficher un prix d'entrée.
+  const perime = (Date.now() - new Date(snap.generated_at).getTime()) / 60000 > 90;
   const cumul = cumulTradesPapier(trades);
 
   return (
@@ -123,10 +127,19 @@ export default async function Page() {
 
         <section>
           <h2>Configurations retenues</h2>
+          <p className="note" style={{ marginTop: 0, marginBottom: 14 }}>
+            Convention de lecture&nbsp;: une valeur{" "}
+            <span className="predit">soulignée en pointillé</span> est une{" "}
+            <strong>prédiction du modèle</strong>&nbsp;; une valeur non
+            soulignée est une <strong>mesure</strong>. Chaque carte porte, sous
+            le plan, ce que sa tranche de score a réellement produit en rejeu —
+            c&rsquo;est cette ligne-là qui dit ce que vaut la prédiction, pas la
+            prédiction elle-même.
+          </p>
           {actionable.length ? (
             <div className="cards">
               {actionable.map((s) => (
-                <SignalCard key={s.symbol} s={s} />
+                <SignalCard key={s.symbol} s={s} bt={backtest} perime={perime} />
               ))}
             </div>
           ) : (
@@ -457,14 +470,23 @@ function Kpi({
   );
 }
 
-function SignalCard({ s }: { s: Signal }) {
+function SignalCard({
+  s,
+  bt,
+  perime,
+}: {
+  s: Signal;
+  bt: Backtest | null;
+  perime: boolean;
+}) {
   const top = [...s.factors]
     .sort((a, b) => Math.abs(b.contribution) - Math.abs(a.contribution))
     .slice(0, 4);
   const max = Math.max(...top.map((f) => Math.abs(f.contribution)), 0.01);
+  const bande = bandeDuScore(bt, s.score);
 
   return (
-    <article className="card">
+    <article className={`card${perime ? " perime" : ""}`}>
       <div className="card-head">
         <div>
           <div className="card-sym">{s.symbol}</div>
@@ -485,6 +507,13 @@ function SignalCard({ s }: { s: Signal }) {
         </div>
       </div>
 
+      {perime && (
+        <div className="warn">
+          <strong>Niveaux non actualisés.</strong> Ils datent du dernier scan,
+          pas de maintenant. À recalculer sur le prix courant avant tout ordre.
+        </div>
+      )}
+
       <div className="levels">
         <Level label="Entrée" value={fmtPrice(s.entry)} />
         <Level label="Stop" value={fmtPrice(s.stop)} />
@@ -504,15 +533,59 @@ function SignalCard({ s }: { s: Signal }) {
       {s.stop_basis && (
         <div className="plan-basis">
           <div>
-            <span className="muted">P(gain)</span> {(s.win_prob * 100).toFixed(0)} %{" · "}
+            <span className="muted">P(gain)</span>{" "}
+            <span className="predit" title="Prédiction du modèle, pas une mesure">
+              {(s.win_prob * 100).toFixed(0)} %
+            </span>
+            {" · "}
             <span className="muted">espérance</span>{" "}
-            <span className={s.expected_r > 0 ? "up" : "down"}>
+            <span
+              className={`predit ${s.expected_r > 0 ? "up" : "down"}`}
+              title="Prédiction du modèle, pas une mesure"
+            >
               {s.expected_r >= 0 ? "+" : ""}
               {fmtNum(s.expected_r, 3)} R
             </span>
           </div>
           <div className="muted">stop ← {s.stop_basis}</div>
           <div className="muted">objectif ← {s.target_basis}</div>
+        </div>
+      )}
+
+      {/* Ce que la tranche de score a produit en rejeu. Deux chiffres mesurés
+          en regard de deux chiffres prédits : c'est le seul moyen de savoir ce
+          que vaut la prédiction affichée juste au-dessus. */}
+      {bande && (
+        <div className={`record ${bande.esperance > 0 ? "good" : "bad"}`}>
+          <div className="record-head">Ce qu&rsquo;a donné cette tranche</div>
+          Sur les <strong>{bande.trades} trades</strong> rejoués avec un score
+          de {bande.tranche},{" "}
+          <strong>{fmtNum(bande.win_rate, 1)} % de réussite</strong> et une
+          espérance de{" "}
+          <strong className={bande.esperance > 0 ? "up" : "down"}>
+            {bande.esperance >= 0 ? "+" : ""}
+            {fmtNum(bande.esperance, 3)} R
+          </strong>
+          .{" "}
+          {bande.esperance <= 0 ? (
+            <>
+              La tranche est <strong>perdante</strong> sur l&rsquo;échantillon
+              mesuré.
+              {s.expected_r > 0 && (
+                <>
+                  {" "}
+                  Le modèle annonce pourtant une espérance positive ci-dessus :
+                  c&rsquo;est un désaccord, pas un détail.
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              Le modèle annonçait {fmtNum(bande.win_rate - bande.ecart_a_la_prediction, 1)} %
+              de réussite, soit {bande.ecart_a_la_prediction >= 0 ? "moins" : "plus"} que
+              l&rsquo;observé.
+            </>
+          )}
         </div>
       )}
 

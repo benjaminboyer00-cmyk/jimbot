@@ -23,7 +23,7 @@ import {
 // imports existants.
 export type { Backtest, Probe };
 
-import { calibration, courbesIC } from "@/lib/series";
+import { calibration, courbesIC, discrimination } from "@/lib/series";
 import { Calibration, Chart, PetitesMultiplesIC } from "@/components/charts";
 
 /* ------------------------------------------------------------------ */
@@ -174,8 +174,12 @@ export function Watchlist({ items }: { items: Signal[] }) {
               <th className="num">Stop</th>
               <th className="num">Objectif</th>
               <th className="num">R/R</th>
-              <th className="num">P(gain)</th>
-              <th className="num">Espérance</th>
+              <th className="num">
+                <span className="predit" title="Prédiction du modèle">P(gain)</span>
+              </th>
+              <th className="num">
+                <span className="predit" title="Prédiction du modèle">Espérance</span>
+              </th>
               <th className="wide">Lecture</th>
             </tr>
           </thead>
@@ -780,19 +784,7 @@ export function Validation({ bt }: { bt?: Backtest }) {
               </tbody>
             </table>
           </div>
-          {typeof c.correlation_score_esperance === "number" && (
-            <p className="note">
-              Corrélation entre le score et l’espérance réalisée :{" "}
-              <strong>
-                {c.correlation_score_esperance >= 0 ? "+" : ""}
-                {fmtNum(c.correlation_score_esperance, 3)}
-              </strong>
-              .{" "}
-              {c.correlation_score_esperance < 0.3
-                ? "Une conviction plus élevée ne se traduit pas par un meilleur résultat : c’est la faiblesse la plus sérieuse du moteur, et elle est affichée plutôt que masquée."
-                : "Une conviction plus élevée s’accompagne d’un meilleur résultat, ce qui est la propriété qui justifie l’existence d’un seuil."}
-            </p>
-          )}
+          <Discriminant bt={bt} />
         </>
       )}
 
@@ -805,6 +797,60 @@ export function Validation({ bt }: { bt?: Backtest }) {
         ))}
       </p>
     </section>
+  );
+}
+
+/**
+ * Le score discrimine-t-il, mesuré sur les trades et non sur les tranches.
+ *
+ * Le moteur publie une corrélation calculée sur les tranches agrégées. Quand
+ * il n'y en a que deux — le cas courant — un Spearman vaut toujours
+ * exactement ±1 : le chiffre a l'allure d'une mesure fine alors qu'il ne peut
+ * prendre que deux valeurs, et il resterait à ±1 même si le moteur était
+ * parfait. Affiché tel quel, il trompe dans les deux sens.
+ *
+ * On recalcule donc trade par trade, où le coefficient a un sens, un
+ * intervalle de confiance et un t.
+ */
+function Discriminant({ bt }: { bt: Backtest }) {
+  const d = discrimination(bt);
+  if (!d) return null;
+  const negatif = d.rho < 0;
+  return (
+    <p className="note">
+      Corrélation de rang entre le score et le résultat, mesurée sur les{" "}
+      <strong>{d.n} trades individuels</strong> et non sur les tranches
+      agrégées&nbsp;:{" "}
+      <strong className={negatif ? "down" : d.rho > 0.1 ? "up" : undefined}>
+        {d.rho >= 0 ? "+" : ""}
+        {fmtNum(d.rho, 3)}
+      </strong>{" "}
+      <span className="muted">
+        (±{fmtNum(d.marge, 3)} à 95 %, t&nbsp;= {fmtNum(d.t, 2)})
+      </span>
+      .{" "}
+      {!d.significatif ? (
+        <>
+          L’échantillon ne permet pas de distinguer ce coefficient du bruit : le
+          seuil n’est ni justifié ni invalidé par cette mesure.
+        </>
+      ) : negatif ? (
+        <>
+          <strong>
+            Le coefficient est négatif et distinguable du bruit : une conviction
+            plus élevée est suivie d’un résultat plus mauvais.
+          </strong>{" "}
+          C’est la faiblesse la plus sérieuse du moteur. Elle a une conséquence
+          directe sur l’usage : au-dessus du seuil de publication, ce sont les
+          trades les moins fiables qui sont mis en avant.
+        </>
+      ) : (
+        <>
+          Une conviction plus élevée s’accompagne d’un meilleur résultat, ce qui
+          est la propriété qui justifie l’existence d’un seuil.
+        </>
+      )}
+    </p>
   );
 }
 

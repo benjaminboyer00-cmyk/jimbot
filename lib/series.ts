@@ -264,3 +264,116 @@ export function projeter(
 ): Pt[] {
   return points.map((p) => ({ x: sx(p.i), y: sy(p.v) }));
 }
+
+/* ------------------------------------------------------------------ */
+/* Fiabilité mesurée                                                   */
+/* ------------------------------------------------------------------ */
+
+export type BandeMesuree = {
+  tranche: string;
+  trades: number;
+  win_rate: number;
+  esperance: number;
+  /** Écart entre ce que le modèle annonçait et ce qui est arrivé, en points. */
+  ecart_a_la_prediction: number;
+};
+
+/**
+ * Ce que la tranche de score d'un signal a réellement produit.
+ *
+ * Une carte de signal affiche une probabilité de gain et une espérance : ce
+ * sont deux affirmations du modèle sur lui-même. Elles ne disent rien de ce
+ * qui est arrivé aux trades qui portaient le même score. Pour quelqu'un qui
+ * s'appuie sur le site pour passer un ordre, c'est la seconde information
+ * qui compte, et c'est celle qui manquait.
+ */
+export function bandeDuScore(
+  bt: Backtest | null | undefined,
+  score: number,
+): BandeMesuree | null {
+  const tranches = bt?.calibration?.par_tranche_de_score;
+  if (!tranches?.length) return null;
+  for (const t of tranches) {
+    const [lo, hi] = t.tranche.split("-").map(Number);
+    if (!Number.isFinite(lo) || !Number.isFinite(hi)) continue;
+    if (score >= lo && score < hi) {
+      return {
+        tranche: t.tranche,
+        trades: t.trades,
+        win_rate: t.win_rate,
+        esperance: t.esperance_realisee,
+        ecart_a_la_prediction: t.win_rate - t.prob_predite,
+      };
+    }
+  }
+  return null;
+}
+
+/** Corrélation de rang de Spearman, avec gestion des ex æquo. */
+function spearman(xs: number[], ys: number[]): number {
+  const n = xs.length;
+  if (n < 3) return 0;
+  const rangs = (v: number[]): number[] => {
+    const ordre = v.map((_, i) => i).sort((a, b) => v[a] - v[b]);
+    const r = new Array<number>(n);
+    let i = 0;
+    while (i < n) {
+      let j = i;
+      while (j + 1 < n && v[ordre[j + 1]] === v[ordre[i]]) j++;
+      const moyen = (i + j) / 2 + 1;
+      for (let k = i; k <= j; k++) r[ordre[k]] = moyen;
+      i = j + 1;
+    }
+    return r;
+  };
+  const rx = rangs(xs);
+  const ry = rangs(ys);
+  const mx = rx.reduce((a, b) => a + b, 0) / n;
+  const my = ry.reduce((a, b) => a + b, 0) / n;
+  let num = 0;
+  let dx = 0;
+  let dy = 0;
+  for (let i = 0; i < n; i++) {
+    num += (rx[i] - mx) * (ry[i] - my);
+    dx += (rx[i] - mx) ** 2;
+    dy += (ry[i] - my) ** 2;
+  }
+  const den = Math.sqrt(dx * dy);
+  return den ? num / den : 0;
+}
+
+export type Discrimination = {
+  rho: number;
+  n: number;
+  t: number;
+  significatif: boolean;
+  /** Demi-largeur de l'intervalle de confiance à 95 %. */
+  marge: number;
+};
+
+/**
+ * Le score discrimine-t-il, mesuré trade par trade.
+ *
+ * Le moteur publie une corrélation calculée sur les *tranches* agrégées.
+ * Quand il n'y a que deux tranches — le cas courant — un Spearman vaut
+ * toujours exactement ±1 : le nombre a l'air d'une mesure précise alors
+ * qu'il ne peut prendre que deux valeurs. On recalcule donc sur les trades
+ * individuels, où le coefficient a un sens et un intervalle.
+ */
+export function discrimination(bt?: Backtest | null): Discrimination | null {
+  const trades = bt?.trades;
+  if (!trades || trades.length < 10) return null;
+  const rho = spearman(
+    trades.map((t) => t.score),
+    trades.map((t) => t.r_multiple),
+  );
+  const n = trades.length;
+  const se = 1 / Math.sqrt(n - 1);
+  return {
+    rho,
+    n,
+    t: rho / se,
+    significatif: Math.abs(rho / se) > 2,
+    marge: 1.96 * se,
+  };
+}

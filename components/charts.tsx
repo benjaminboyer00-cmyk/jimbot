@@ -868,7 +868,7 @@ export function PlanTrade({
   price,
   direction,
   w = 300,
-  h = 88,
+  h = 95,
 }: {
   entry: number;
   stop: number;
@@ -881,7 +881,10 @@ export function PlanTrade({
   const valeurs = [entry, stop, target, ...(price ? [price] : [])];
   const [lo, hi] = extent(valeurs);
   const marge = (hi - lo) * 0.12 || 1;
-  const m: Marge = { t: 10, r: 4, b: 10, l: 4 };
+  // La marge haute doit loger l'accent du libellé « entrée » : il monte
+  // au-dessus de la ligne de base, et un cadre calé au plus juste le rogne
+  // sans que rien ne le signale — le mot reste correct dans le balisage.
+  const m: Marge = { t: 17, r: 4, b: 10, l: 4 };
   const sx = scaler(lo - marge, hi + marge, m.l, w - m.r);
   const yHaut = m.t;
   const hauteur = h - m.t - m.b - 18;

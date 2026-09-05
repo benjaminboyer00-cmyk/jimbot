@@ -741,6 +741,48 @@ h3 {
   font-weight: 600;
 }
 
+/* Convention de lecture, appliquée partout sans exception : une valeur
+   soulignée en pointillé est une **prédiction du modèle**, une valeur non
+   soulignée est une **mesure**. Sur un site dont on se sert pour passer des
+   ordres, confondre les deux est la faute la plus coûteuse possible, et rien
+   dans la mise en forme ne les distinguait jusqu'ici. */
+.predit {
+  border-bottom: 1px dotted var(--ink-4);
+  cursor: help;
+}
+
+/* Ce que la tranche de score a réellement produit, adossé au signal. */
+.record {
+  margin-top: var(--s3);
+  padding: var(--s2) var(--s3);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--line-2);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  font-size: var(--t-2xs);
+  line-height: 1.65;
+}
+.record.bad {
+  border-left-color: var(--down);
+}
+.record.good {
+  border-left-color: var(--up);
+}
+.record-head {
+  font-weight: 600;
+  color: var(--ink-2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 2px;
+}
+
+/* Un plan calculé il y a plusieurs heures ne se traite pas : les niveaux ont
+   bougé. La carte le dit avant les niveaux, pas après. */
+.card.perime .levels,
+.card.perime .planchart {
+  opacity: 0.55;
+}
+
 .plan-basis {
   margin-top: var(--s3);
   padding-top: var(--s2);
@@ -1090,6 +1132,7 @@ code {
 /* Miniature dans une carte de signal : le plan de trade en coupe. */
 .planchart {
   margin-top: var(--s3);
+  overflow: visible;
 }
 
 /* --------------------------------------------------------------------------

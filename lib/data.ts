@@ -305,10 +305,28 @@ async function readLocal<T>(name: string): Promise<T | null> {
   }
 }
 
+/**
+ * Durée de mise en cache d'une lecture distante.
+ *
+ * `no-store` semblait la lecture la plus honnête — toujours la donnée la plus
+ * fraîche. En pratique elle ne gagnait rien et coûtait cher : les scans sont
+ * espacés de plusieurs heures, donc une réponse vieille d'une minute est
+ * strictement la même. Chaque page vue déclenchait en revanche quatre appels
+ * à `raw.githubusercontent`, non authentifiés, depuis des adresses Vercel
+ * partagées et soumises à quota. Sous la moindre affluence, le site ne
+ * servait plus rien du tout.
+ *
+ * Soixante secondes suffisent à absorber une rafale de visiteurs sans qu'un
+ * lecteur puisse jamais voir un scan qu'il aurait manqué.
+ */
+const CACHE_SECONDES = 60;
+
 async function readRemote<T>(name: string): Promise<T | null> {
   if (!REMOTE_BASE) return null;
   try {
-    const res = await fetch(`${REMOTE_BASE}/${name}.json`, { cache: "no-store" });
+    const res = await fetch(`${REMOTE_BASE}/${name}.json`, {
+      next: { revalidate: CACHE_SECONDES },
+    });
     return res.ok ? ((await res.json()) as T) : null;
   } catch {
     return null;
