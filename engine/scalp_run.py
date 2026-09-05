@@ -128,14 +128,17 @@ def main() -> int:
 
     print()
     print("  Avantage du quintile, en points de base par aller-retour")
-    print(f"    {'horizon':>10} {'paris':>7} {'brut':>8} {'t':>6} "
-          f"{'net CFD':>9} {'net Binance':>12}")
+    print(f"    {'horizon':>10} {'paris':>7} {'moyenne':>9} {'mediane':>9} "
+          f"{'elaguee':>9} {'gagnants':>9} {'pire':>7}")
     for h, e in net.get("par_horizon", {}).items():
         mn = int(h.removeprefix('h')) * minutes
-        print(f"    {str(mn) + ' min':>10} {e['n_paris']:7d} {e['brut_pb']:+8.2f} "
-              f"{(e['t_brut'] or 0):+6.2f} "
-              f"{e['net_pb']['cfd_serre']['net_pb']:+9.2f} "
-              f"{e['net_pb']['binance_taker']['net_pb']:+12.2f}")
+        print(f"    {str(mn) + ' min':>10} {e['n_paris']:7d} {e['brut_pb']:+9.2f} "
+              f"{e['mediane_pb']:+9.2f} {e['moyenne_elaguee_pb']:+9.2f} "
+              f"{e['part_gagnante_pct']:8.1f}% {e['pire_pb']:+7.0f}")
+
+    print()
+    print("  La moyenne est ce qu'on encaisse ; la médiane est ce qu'on ressent.")
+    print("  Un écart entre les deux signale un gain régulier annulé par ses queues.")
 
     plafond = net.get("cout_maximal_supportable_pb")
     if plafond is not None:

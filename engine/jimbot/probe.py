@@ -356,10 +356,34 @@ def edge_net(rows: list[dict], score_col: str = "score",
         n = len(paris)
         t_brut = brut_pb / (ecart_pb / np.sqrt(n)) if ecart_pb > 0 else float("nan")
 
+        # La moyenne seule cache la forme du gain, et c'est la forme qui décide.
+        #
+        # Mesuré à 30 minutes : moyenne +0,04 pb, mais médiane +2,40 pb et
+        # 53,6 % de paris gagnants. Le signal classe donc correctement — il
+        # gagne souvent et un peu — et la moyenne est malgré tout nulle, parce
+        # que les paris extrêmes vont de -826 à +959 pb et que la queue perdante
+        # mange exactement le gain régulier.
+        #
+        # C'est la structure exacte du « petits gains assurés » : la régularité
+        # est réelle, la rentabilité ne l'est pas. Ne publier que la moyenne
+        # laissait croire à l'absence de signal ; ne publier que la médiane
+        # laisserait croire à un avantage. Les deux sont donc rapportées, avec
+        # la moyenne élaguée qui montre ce que vaut le signal une fois les
+        # queues bornées.
+        mediane_pb = float(paris.median()) * 100.0
+        bornes = (paris.quantile(0.05), paris.quantile(0.95))
+        elaguee_pb = float(paris.clip(*bornes).mean()) * 100.0
+        part_gagnante = float((paris > 0).mean()) * 100.0
+
         entree = {
             "n_paris": n,
             "n_actifs": len(paris_par_actif),
             "brut_pb": round(brut_pb, 2),
+            "mediane_pb": round(mediane_pb, 2),
+            "moyenne_elaguee_pb": round(elaguee_pb, 2),
+            "part_gagnante_pct": round(part_gagnante, 1),
+            "pire_pb": round(float(paris.min()) * 100.0, 0),
+            "meilleur_pb": round(float(paris.max()) * 100.0, 0),
             "ecart_type_pb": round(ecart_pb, 1),
             "t_brut": round(float(t_brut), 2) if np.isfinite(t_brut) else None,
             "significatif_brut": bool(np.isfinite(t_brut) and abs(t_brut) > 2.0),
