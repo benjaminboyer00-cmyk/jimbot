@@ -17,7 +17,7 @@
  * dashboard. Une courbe servie ici ne peut donc pas diverger de celle qui
  * est affichée sur la page.
  */
-import { getBacktest, getProbe, getSnapshot, getTrades } from "@/lib/data";
+import { getBacktest, getProbe, getSnapshot, getTrades, seuils } from "@/lib/data";
 import {
   calibration,
   courbesIC,
@@ -288,7 +288,9 @@ export async function GET(request: Request) {
     },
     univers: {
       unite: "score signé",
-      seuil: 58,
+      // Publié par le scan, pas figé ici : le seuil est réglable, et un
+      // tableur qui tracerait l'ancienne ligne décrirait une autre stratégie.
+      seuil: seuils(snap).signal,
       points: universSigne(snap),
     },
   };

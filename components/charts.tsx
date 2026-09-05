@@ -27,12 +27,23 @@ import type {
   CumulSerie,
   EquiteSerie,
   Panier,
+  PointActif,
   PointCalibration,
   PointExcursion,
   PointUnivers,
+  SerieActif,
 } from "@/lib/series";
 
 type Marge = { t: number; r: number; b: number; l: number };
+
+/*
+ * Note sur les `<title>` d'infobulle.
+ *
+ * Le contenu d'un `<title>` doit être assemblé en **une** chaîne. Écrire
+ * `<title>score {x} sur {n}</title>` produit cinq enfants là où le DOM n'en
+ * accepte qu'un, et React le signale à chaque rendu. Les gabarits littéraux
+ * lisent aussi bien et ne coûtent rien.
+ */
 
 const num = (v: number, d = 0) =>
   v.toLocaleString("fr-FR", { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -556,7 +567,7 @@ export function NuageExcursions({
           opacity={0.62}
         >
           <title>
-            {p.symbol} · MFE {num(p.mfe, 2)} R · MAE {num(p.mae, 2)} R · {p.issue}
+            {`${p.symbol} · MFE ${num(p.mfe, 2)} R · MAE ${num(p.mae, 2)} R · ${p.issue}`}
           </title>
         </circle>
       ))}
@@ -624,7 +635,7 @@ export function Calibration({
               height={Math.max(1, bas - yP)}
               rx={1}
             >
-              <title>prédite {num(p.predite, 1)} %</title>
+              <title>{`prédite ${num(p.predite, 1)} %`}</title>
             </rect>
             <rect
               className={`c-bar ${p.observee >= p.predite ? "up" : "down"}`}
@@ -634,7 +645,9 @@ export function Calibration({
               height={Math.max(1, bas - yO)}
               rx={1}
             >
-              <title>observée {num(p.observee, 1)} % sur {p.trades} trades</title>
+              <title>
+                {`observée ${num(p.observee, 1)} % sur ${p.trades} trades`}
+              </title>
             </rect>
             <text className="c-tick" x={cx} y={bas + 14} textAnchor="middle">
               {p.tranche}
@@ -750,7 +763,7 @@ export function PetitesMultiplesIC({
                   style={p.significatif ? undefined : { fill: "var(--ink-4)" }}
                 >
                   <title>
-                    {p.bougies} bougies · IC {num(p.ic, 4)} · t {num(p.t, 2)}
+                    {`${p.bougies} bougies · IC ${num(p.ic, 4)} · t ${num(p.t, 2)}`}
                   </title>
                 </circle>
               ))}
@@ -839,7 +852,7 @@ export function BarresUnivers({
               opacity={franchi ? 1 : 0.4}
             >
               <title>
-                {it.symbol} · score {num(it.score, 1)} · {it.regime.replace(/_/g, " ")}
+                {`${it.symbol} · score ${num(it.score, 1)} · ${it.regime.replace(/_/g, " ")}`}
               </title>
             </rect>
           </g>
@@ -1009,6 +1022,227 @@ export function BarresCategories({
           </g>
         );
       })}
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Trajectoire d'un actif                                              */
+/* ------------------------------------------------------------------ */
+
+/** Repère visuel d'une issue de signal. */
+const ISSUE_TON: Record<string, "up" | "down" | undefined> = {
+  cible: "up",
+  stop: "down",
+};
+
+const ISSUE_LIBELLE: Record<string, string> = {
+  cible: "objectif atteint",
+  stop: "stop touché",
+  expiration: "expiré",
+  en_cours: "en cours",
+  hors_portee: "hors portée",
+  indetermine: "indéterminé",
+};
+
+/**
+ * Prix et score d'un actif dans le temps, avec les signaux épinglés.
+ *
+ * Trois choix méritent d'être explicités.
+ *
+ * **L'axe est le temps, pas le rang du scan.** Un axe indexé donnerait à
+ * chaque scan la même largeur et effacerait les trous de l'ordonnanceur : sept
+ * heures sans mesure auraient l'allure d'un intervalle ordinaire. Sur un
+ * graphique de prix, c'est un mensonge.
+ *
+ * **Les trous sont dessinés comme tels.** Une portion non observée est reliée
+ * par un pointillé pâle : le trait ne prétend pas décrire un mouvement, il
+ * relie deux mesures entre lesquelles on n'a pas regardé.
+ *
+ * **Le score est en dessous, sur le même axe.** C'est la seule disposition qui
+ * permette de lire « le score est monté ici, et voilà ce que le prix a fait
+ * ensuite » — la question à laquelle la page doit répondre.
+ */
+export function CourbeActif({
+  serie,
+  seuil,
+  w = 860,
+  h = 260,
+  hScore = 110,
+}: {
+  serie: SerieActif;
+  /** Seuil de déclenchement en valeur absolue, tel que publié par le moteur. */
+  seuil: number;
+  w?: number;
+  h?: number;
+  hScore?: number;
+}) {
+  const { points, portions, marques } = serie;
+  if (points.length < 2) return null;
+
+  const m: Marge = { t: 12, r: 62, b: 22, l: 62 };
+  const bas = h - m.b;
+  const x0 = points[0].x;
+  const x1 = points[points.length - 1].x;
+  const sx = scaler(x0, x1, m.l, w - m.r);
+
+  // L'échelle des prix englobe les niveaux d'entrée des signaux : un signal
+  // épinglé hors du cadre serait pire qu'absent.
+  const valeursPrix = [...points.map((p) => p.prix), ...marques.map((s) => s.prix)];
+  const ech = niceScale(Math.min(...valeursPrix), Math.max(...valeursPrix), 4);
+  const sy = scaler(ech.min, ech.max, bas, m.t);
+
+  const gagne = serie.prix.dernier >= serie.prix.premier;
+  const ton = gagne ? "up" : "down";
+  const id = gradId("actif", `${serie.symbol}-${points.length}`);
+  const pts = (ps: PointActif[]): Pt[] => ps.map((p) => ({ x: sx(p.x), y: sy(p.prix) }));
+
+  // Panneau du score, sous le premier, même abscisse.
+  const hautScore = h + 12;
+  const basScore = hautScore + hScore;
+  const borneScore = Math.max(100, Math.abs(serie.score.min), serie.score.max);
+  const echScore = niceScale(-borneScore, borneScore, 2);
+  const syScore = scaler(echScore.min, echScore.max, basScore, hautScore + 14);
+  const ptsScore: Pt[] = points.map((p) => ({ x: sx(p.x), y: syScore(p.score) }));
+  const total = basScore + 22;
+
+  const dernier = pts(points)[points.length - 1];
+  const decimales = serie.prix.max >= 1000 ? 0 : serie.prix.max >= 1 ? 2 : 4;
+
+  return (
+    <svg
+      viewBox={`0 0 ${w} ${total}`}
+      role="img"
+      aria-label={`Prix et score de ${serie.label} du ${jour(serie.debut)} au ${jour(serie.fin)}, ${marques.length} signal(aux) émis`}
+    >
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={`var(--${ton})`} stopOpacity="0.18" />
+          <stop offset="100%" stopColor={`var(--${ton})`} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+
+      <GrilleY
+        ticks={ech.ticks}
+        sy={sy}
+        x0={m.l}
+        x1={w - m.r}
+        format={(v) => num(v, decimales)}
+      />
+
+      {/* L'aire est peinte d'un seul tenant : découpée aux trous, elle
+          produirait un peigne de traits verticaux qui ne veut rien dire. La
+          continuité du tracé, elle, est portée par le trait — qui, lui, est
+          bien découpé. */}
+      <path className="c-area" d={areaPath(pts(points), bas)} fill={`url(#${id})`} />
+      {portions.map((p, i) =>
+        p.points.length < 2 ? null : (
+          <path
+            key={`trace-${i}`}
+            className={p.observee ? `c-line ${ton}` : "c-line ghost thin"}
+            d={linePath(pts(p.points))}
+          />
+        ),
+      )}
+
+      {/* Signaux épinglés à leur date d'émission. Le triangle pointe dans le
+          sens du pari, sa couleur dit ce qu'il est devenu. */}
+      {marques.map((s) => {
+        const cx = sx(s.x);
+        const cy = sy(s.prix);
+        const sens = s.direction === "long" ? -1 : 1;
+        const tonIssue = ISSUE_TON[s.issue];
+        return (
+          <g key={s.t + s.direction}>
+            <line
+              className="c-zero"
+              x1={cx}
+              x2={cx}
+              y1={cy}
+              y2={basScore}
+              opacity={0.35}
+            />
+            <path
+              className={`c-dot${tonIssue ? ` ${tonIssue}` : ""}`}
+              d={`M${cx},${cy + sens * 8} L${cx - 4.5},${cy + sens * 1.5} L${cx + 4.5},${cy + sens * 1.5} Z`}
+              style={tonIssue ? undefined : { fill: "var(--ink-3)" }}
+            >
+              <title>
+                {`${s.direction === "long" ? "achat" : "vente"} ${serie.symbol} · score ${s.score.toFixed(0)} · ${ISSUE_LIBELLE[s.issue] ?? s.issue}${
+                  s.r !== null ? ` (${s.r >= 0 ? "+" : ""}${s.r.toFixed(2)} R)` : ""
+                }`}
+              </title>
+            </path>
+          </g>
+        );
+      })}
+
+      <g className="c-fade">
+        <circle className={`c-dot ${ton}`} cx={dernier.x} cy={dernier.y} r={3} />
+        <text
+          className="c-tick"
+          x={w - m.r + 6}
+          y={dernier.y + 3}
+          style={{ fill: `var(--${ton})` }}
+        >
+          {num(serie.prix.dernier, decimales)}
+        </text>
+      </g>
+
+      <line className="c-axis" x1={m.l} x2={w - m.r} y1={bas + 0.5} y2={bas + 0.5} />
+      {[0, Math.floor((points.length - 1) / 2), points.length - 1].map((i, k) => (
+        <text
+          key={i}
+          className="c-tick"
+          x={sx(points[i].x)}
+          y={bas + 14}
+          textAnchor={k === 0 ? "start" : k === 2 ? "end" : "middle"}
+        >
+          {jour(points[i].t)}
+        </text>
+      ))}
+
+      {/* Score signé */}
+      <text className="c-label" x={m.l} y={hautScore + 4}>
+        score signé — achat au-dessus de zéro, vente en dessous
+      </text>
+      {[seuil, -seuil].map((v) => (
+        <g key={v}>
+          <line
+            className="c-grid"
+            x1={m.l}
+            x2={w - m.r}
+            y1={Math.round(syScore(v)) + 0.5}
+            y2={Math.round(syScore(v)) + 0.5}
+          />
+          <text className="c-tick" x={w - m.r + 6} y={syScore(v) + 3}>
+            {v > 0 ? `+${v}` : v}
+          </text>
+        </g>
+      ))}
+      <line
+        className="c-zero"
+        x1={m.l}
+        x2={w - m.r}
+        y1={Math.round(syScore(0)) + 0.5}
+        y2={Math.round(syScore(0)) + 0.5}
+      />
+      <text className="c-tick" x={m.l - 6} y={syScore(0) + 3} textAnchor="end">
+        0
+      </text>
+      <path className="c-line thin" d={linePath(ptsScore)} />
+      {/* Les passages où un signal a réellement été émis. */}
+      {points.map((p, i) =>
+        p.signal ? (
+          <circle
+            key={`emis-${i}`}
+            className={`c-dot ${p.score >= 0 ? "up" : "down"}`}
+            cx={sx(p.x)}
+            cy={syScore(p.score)}
+            r={2}
+          />
+        ) : null,
+      )}
     </svg>
   );
 }

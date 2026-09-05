@@ -41,11 +41,40 @@ non falsifiable a posteriori.
 | `engine/jimbot/calendar.py` | Échéances à venir : règles de calendrier et annonces de presse |
 | `engine/jimbot/backtest.py` | Validation walk-forward et calibration du modèle |
 | `engine/jimbot/probe.py` | Mesure du pouvoir prédictif de chaque facteur |
+| `engine/jimbot/history.py` | Mémoire : prix, score et régime de chaque actif, scan après scan |
+| `engine/jimbot/ledger.py` | Redevabilité : issue de chaque signal réellement émis |
 | `app/` | Dashboard Next.js, page « Courbes » et routes d'API |
 | `lib/chart.ts` | Primitives de tracé : échelles, graduations rondes, splines monotones |
 | `lib/series.ts` | Dérivation des séries à partir des fichiers du moteur |
+| `lib/sizing.ts` | Taille de position pour le capital du lecteur, sur les préréglages du moteur |
 | `components/charts.tsx` | Graphiques SVG rendus côté serveur, sans dépendance |
 | `metatrader/` | Expert Advisor MQL5 prêt à l'emploi |
+
+### Les fichiers de données
+
+| Fichier | Contenu |
+|---|---|
+| `data/latest.json` | État complet du dernier scan. Écrasé à chaque passage |
+| `data/history.json` | **Mémoire** : un point par actif et par scan — prix, score signé, régime, et si un signal a été émis. Borné à 400 points par actif |
+| `data/signals.json` | Les émissions de signaux, brutes |
+| `data/suivi.json` | **Redevabilité** : les émissions regroupées en signaux, chacun avec l'issue que le marché lui a donnée. Une issue établie n'est jamais recalculée |
+| `data/trades.json` | Trades fermés du portefeuille papier |
+| `data/portfolio.json` | État du portefeuille papier |
+| `data/backtest.json`, `data/probe.json` | Résultats de validation |
+
+`history.json` et `suivi.json` sont le socle de la page d'un actif
+(`/actif/SYMBOLE`) et de la section « ce qu'ont donné les signaux émis ». Le
+premier est entretenu par chaque scan et peut être reconstitué depuis
+l'historique git — chaque révision de `latest.json` est une photo horodatée de
+l'univers :
+
+```bash
+.venv/bin/python engine/backfill_history.py --dry-run   # compte sans écrire
+.venv/bin/python engine/backfill_history.py             # écrit data/history.json
+```
+
+L'opération est idempotente : un point déjà présent est remplacé, jamais
+dupliqué.
 
 ## Principe du moteur
 
@@ -234,9 +263,10 @@ Puis, sur GitHub, onglet **Actions** → *Scan de marché* → **Run workflow**.
 .venv/bin/python engine/scan.py --no-alert    # analyse seule
 .venv/bin/python engine/scan.py --dry-run     # simule aussi les envois
 .venv/bin/python engine/daily_report.py       # rapport PDF + publication
-.venv/bin/python -m pytest engine/tests -v    # 210 tests, sans réseau
+.venv/bin/python -m pytest engine/tests -v    # 240 tests, sans réseau
 .venv/bin/python engine/backtest_run.py       # validation walk-forward (~10 min)
 .venv/bin/python engine/probe_run.py          # pouvoir prédictif des facteurs (~5 min)
+.venv/bin/python engine/backfill_history.py   # reconstruit data/history.json depuis git
 npm run dev                                   # dashboard sur localhost:3000
 ```
 

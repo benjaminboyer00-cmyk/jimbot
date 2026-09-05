@@ -11,7 +11,17 @@ import {
   drawdown,
   type Pt,
 } from "./chart";
-import type { Backtest, BacktestTrade, Probe, Snapshot, Trade } from "./data";
+import type {
+  Backtest,
+  BacktestTrade,
+  History,
+  Issue,
+  Probe,
+  SignalSuivi,
+  Snapshot,
+  Suivi,
+  Trade,
+} from "./data";
 
 export type SeriePoint = { i: number; t?: string; v: number };
 
@@ -376,4 +386,177 @@ export function discrimination(bt?: Backtest | null): Discrimination | null {
     significatif: Math.abs(rho / se) > 2,
     marge: 1.96 * se,
   };
+}
+
+/* ------------------------------------------------------------------ */
+/* Trajectoire d'un actif                                              */
+/* ------------------------------------------------------------------ */
+
+export type PointActif = {
+  /** Horodatage du scan, en millisecondes — l'axe est le temps, pas le rang. */
+  x: number;
+  t: string;
+  prix: number;
+  /** Score signé : positif à l'achat, négatif à la vente. */
+  score: number;
+  regime: string;
+  /** Un signal a-t-il été émis à ce passage ? */
+  signal: boolean;
+};
+
+/**
+ * Une portion de série effectivement observée.
+ *
+ * L'ordonnanceur de GitHub abandonne des exécutions : entre deux scans, il
+ * peut s'écouler sept heures. Relier les deux points par un trait plein
+ * dessinerait un mouvement de prix que personne n'a mesuré. Les portions sont
+ * donc découpées aux trous, et la page relie ces trous par un pointillé qui
+ * dit « ici, on n'a pas regardé ».
+ */
+export type Portion = { points: PointActif[]; observee: boolean };
+
+export type MarqueSignal = {
+  x: number;
+  t: string;
+  /** Prix d'entrée du signal, tel qu'il a été publié. */
+  prix: number;
+  direction: "long" | "short";
+  issue: Issue;
+  r: number | null;
+  score: number;
+  alerte_discord: boolean;
+};
+
+export type SerieActif = {
+  symbol: string;
+  label: string;
+  klass: string;
+  points: PointActif[];
+  portions: Portion[];
+  marques: MarqueSignal[];
+  debut: string;
+  fin: string;
+  prix: { premier: number; dernier: number; min: number; max: number; variation: number };
+  score: { dernier: number; min: number; max: number };
+  /** Le dernier point est-il celui du dernier scan de l'univers ? */
+  suivi: boolean;
+};
+
+/**
+ * Écart au-delà duquel deux relevés ne sont plus considérés comme continus.
+ *
+ * Mesuré sur l'historique réel : l'écart médian entre deux scans est de 15
+ * minutes — la cadence nominale — mais le troisième quartile est à 86 minutes
+ * et le neuvième décile à près de 4 heures. L'ordonnanceur travaille par
+ * rafales entrecoupées de longs silences.
+ *
+ * Trois heures est le seuil qui sépare les deux régimes. En dessous, le
+ * marché a bougé de deux ou trois bougies horaires sans qu'on regarde : c'est
+ * négligeable, et hacher le tracé à cette échelle le rendrait illisible sans
+ * rien apprendre. Au-dessus, on a manqué une demi-séance, et le trait ne doit
+ * pas prétendre décrire ce qui s'y est passé.
+ */
+export const TROU_MS = 3 * 60 * 60 * 1000;
+
+/** Silence au-delà duquel un actif est considéré comme sorti de l'univers. */
+const ABANDON_MS = 24 * 60 * 60 * 1000;
+
+export function serieActif(
+  hist: History | null | undefined,
+  symbol: string,
+  suiviSignaux: SignalSuivi[] = [],
+): SerieActif | null {
+  const actif = hist?.actifs?.[symbol];
+  if (!actif?.points?.length) return null;
+
+  const legende = hist?.regimes ?? [];
+  const points: PointActif[] = actif.points.map(([t, prix, score, regime, signal]) => ({
+    x: new Date(t).getTime(),
+    t,
+    prix,
+    score,
+    regime: legende[regime] ?? "",
+    signal: signal === 1,
+  }));
+
+  const portions: Portion[] = [];
+  let courante: PointActif[] = [points[0]];
+  for (let i = 1; i < points.length; i++) {
+    if (points[i].x - points[i - 1].x > TROU_MS) {
+      portions.push({ points: courante, observee: true });
+      portions.push({ points: [points[i - 1], points[i]], observee: false });
+      courante = [points[i]];
+    } else {
+      courante.push(points[i]);
+    }
+  }
+  portions.push({ points: courante, observee: true });
+
+  const prix = points.map((p) => p.prix);
+  const scores = points.map((p) => p.score);
+  const premier = prix[0];
+  const dernier = prix[prix.length - 1];
+
+  const marques: MarqueSignal[] = suiviSignaux
+    .filter((s) => s.symbol === symbol)
+    .map((s) => ({
+      x: new Date(s.premiere_emission).getTime(),
+      t: s.premiere_emission,
+      prix: s.entry,
+      direction: s.direction,
+      issue: s.issue,
+      r: s.r_multiple,
+      score: s.score,
+      alerte_discord: s.alerte_discord,
+    }))
+    .sort((a, b) => a.x - b.x);
+
+  return {
+    symbol,
+    label: actif.label,
+    klass: actif.klass,
+    points,
+    portions,
+    marques,
+    debut: points[0].t,
+    fin: points[points.length - 1].t,
+    prix: {
+      premier,
+      dernier,
+      min: Math.min(...prix),
+      max: Math.max(...prix),
+      variation: premier ? (dernier / premier - 1) * 100 : 0,
+    },
+    score: {
+      dernier: scores[scores.length - 1],
+      min: Math.min(...scores),
+      max: Math.max(...scores),
+    },
+    // Un actif retiré de l'univers garde son historique mais cesse d'être
+    // alimenté : la page doit le dire plutôt que d'afficher une série morte
+    // comme si elle était courante.
+    //
+    // Le seuil est bien plus large que celui des trous de tracé : une source
+    // de données en panne quelques heures ne signifie pas qu'un actif a été
+    // retiré, et l'annoncer serait une fausse alerte.
+    suivi:
+      !hist?.generated_at ||
+      new Date(hist.generated_at).getTime() - points[points.length - 1].x <= ABANDON_MS,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Redevabilité                                                        */
+/* ------------------------------------------------------------------ */
+
+/** R cumulés des signaux réellement émis, dans l'ordre de leur résolution. */
+export function cumulSuivi(suivi?: Suivi | null): CumulSerie | null {
+  const tranches = (suivi?.signaux ?? [])
+    .filter((s) => s.r_multiple !== null && s.resolu_le)
+    .sort((a, b) => (a.resolu_le ?? "").localeCompare(b.resolu_le ?? ""));
+  if (tranches.length < 1) return null;
+  return serieCumulR(
+    tranches.map((s) => s.r_multiple as number),
+    tranches.map((s) => s.resolu_le ?? undefined),
+  );
 }

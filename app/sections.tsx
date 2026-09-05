@@ -10,11 +10,13 @@ import {
   fmtPrice,
   REGIME_LABELS,
   type Backtest,
+  type Issue,
   type Probe,
   type Report,
   type RiskOff,
   type Signal,
   type Speech,
+  type Suivi,
   type Trade,
 } from "@/lib/data";
 
@@ -23,8 +25,46 @@ import {
 // imports existants.
 export type { Backtest, Probe };
 
-import { calibration, courbesIC, discrimination } from "@/lib/series";
-import { Calibration, Chart, PetitesMultiplesIC } from "@/components/charts";
+import { calibration, courbesIC, cumulSuivi, discrimination } from "@/lib/series";
+import {
+  Calibration,
+  Chart,
+  CourbeCumulR,
+  PetitesMultiplesIC,
+  Sparkline,
+} from "@/components/charts";
+
+/* ------------------------------------------------------------------ */
+/* Chiffre clé                                                         */
+/*                                                                     */
+/* Vivait dans `page.tsx`, où il n'était pas exportable sans créer un   */
+/* cycle d'imports. Il est ici parce que plusieurs sections l'utilisent.*/
+/* ------------------------------------------------------------------ */
+
+export function Kpi({
+  label,
+  value,
+  tone,
+  spark,
+}: {
+  label: string;
+  value: string;
+  tone?: "up" | "down";
+  /** Série d'accompagnement : la forme du chemin parcouru sous le chiffre. */
+  spark?: number[];
+}) {
+  return (
+    <div className="kpi">
+      <div className={`kpi-value ${tone ?? ""}`}>{value}</div>
+      <div className="kpi-label">{label}</div>
+      {spark && spark.length > 1 && (
+        <div className="kpi-spark">
+          <Sparkline values={spark} tone={tone} seed={label} h={22} />
+        </div>
+      )}
+    </div>
+  );
+}
 
 /* ------------------------------------------------------------------ */
 /* Résumé d'actualité                                                  */
@@ -953,6 +993,228 @@ export function FactorPower({ probe }: { probe?: Probe }) {
         <br />
         <br />
         {probe.note}
+      </p>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Redevabilité                                                        */
+/* ------------------------------------------------------------------ */
+
+const ISSUES: Record<Issue, { libelle: string; classe: string }> = {
+  cible: { libelle: "objectif atteint", classe: "cible" },
+  stop: { libelle: "stop touché", classe: "stop" },
+  expiration: { libelle: "expiré", classe: "neutre" },
+  en_cours: { libelle: "en cours", classe: "encours" },
+  hors_portee: { libelle: "hors portée", classe: "neutre" },
+  indetermine: { libelle: "indéterminé", classe: "neutre" },
+};
+
+const dateCourte = (iso: string) =>
+  new Date(iso).toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+/**
+ * Ce qu'ont donné les signaux réellement émis.
+ *
+ * Toutes les autres mesures du site portent sur des trades que personne n'a
+ * vus : le backtest rejoue le passé, le portefeuille papier n'ouvre qu'une
+ * fraction des signaux et sous des plafonds de risque. Cette section est la
+ * seule qui porte sur ce qui a été **publié** — et donc la seule qu'un lecteur
+ * puisse confronter à ce qu'il a lu au moment où il l'a lu.
+ *
+ * Elle est délibérément placée juste après les configurations retenues :
+ * l'ordre de lecture est « voici ce que le moteur propose aujourd'hui », puis
+ * « voici ce que ses propositions ont valu jusqu'ici ».
+ */
+export function Redevabilite({ suivi }: { suivi?: Suivi | null }) {
+  if (!suivi?.signaux?.length) return null;
+  const r = suivi.resume;
+  const cumul = cumulSuivi(suivi);
+  const tranches = r.tranches;
+
+  // Concentration. Un bilan de neuf signaux dont sept portent sur le même
+  // actif n'est pas un bilan de moteur, c'est un bilan sur cet actif — et la
+  // moyenne d'ensemble le cache au lieu de le dire.
+  const parActif = new Map<string, number>();
+  for (const s of suivi.signaux) {
+    parActif.set(s.symbol, (parActif.get(s.symbol) ?? 0) + 1);
+  }
+  const [dominant, nDominant] = [...parActif.entries()].sort((a, b) => b[1] - a[1])[0];
+  const concentre = nDominant / suivi.signaux.length >= 0.5;
+
+  return (
+    <section>
+      <h2>Ce qu’ont donné les signaux émis</h2>
+      <p className="note" style={{ marginTop: 0, marginBottom: 14 }}>
+        Le rejeu et le portefeuille papier mesurent des trades que personne n’a
+        vus. Ce tableau-ci ne contient que des signaux <strong>réellement
+        émis</strong>, à la date où ils l’ont été, avec l’issue que le marché
+        leur a donnée ensuite. C’est la seule mesure de ce site qu’un lecteur
+        puisse confronter à ce qu’il avait sous les yeux.
+      </p>
+
+      <div className="kpis">
+        <Kpi label="Signaux" value={String(r.signaux)} />
+        <Kpi label="Émissions" value={String(r.emissions)} />
+        <Kpi label="Publiés sur Discord" value={String(r.publies_discord)} />
+        <Kpi label="Tranchés" value={String(tranches)} />
+        <Kpi
+          label="Réussite"
+          value={r.win_rate === null ? "—" : `${fmtNum(r.win_rate, 0)} %`}
+        />
+        <Kpi
+          label="Espérance"
+          value={
+            r.esperance_r === null
+              ? "—"
+              : `${r.esperance_r >= 0 ? "+" : ""}${fmtNum(r.esperance_r, 3)} R`
+          }
+          tone={r.esperance_r === null ? undefined : r.esperance_r > 0 ? "up" : "down"}
+        />
+      </div>
+
+      {!r.significatif && (
+        <div className="warn" style={{ maxWidth: "76ch" }}>
+          <strong>
+            {tranches > 1
+              ? `${tranches} signaux tranchés ne mesurent rien.`
+              : `${tranches} signal tranché ne mesure rien.`}
+          </strong>{" "}
+          Il en faudrait une trentaine pour qu’un taux de réussite cesse d’être
+          du bruit. Les chiffres ci-dessus sont affichés parce qu’ils sont
+          vérifiables, pas parce qu’ils prouvent quoi que ce soit — et ils ne
+          contredisent pas le rejeu, qui porte sur un tout autre échantillon.
+          {concentre && (
+            <>
+              {" "}
+              <strong>
+                {nDominant} de ces {suivi.signaux.length} signaux portent sur{" "}
+                {dominant}
+              </strong>{" "}
+              : ce bilan décrit surtout le comportement du moteur sur un actif,
+              pas sur l’univers.
+            </>
+          )}
+        </div>
+      )}
+
+      <p className="note" style={{ maxWidth: "76ch" }}>
+        Le moteur réémet le même signal à chaque scan tant que la configuration
+        tient : <strong>{r.emissions} émissions</strong> ne font que{" "}
+        <strong>{r.signaux} signaux</strong>. Les émissions espacées de moins de{" "}
+        {suivi.fenetre_regroupement_min} minutes — le délai anti-spam Discord —
+        sont regroupées, parce qu’elles n’ont pas pu produire deux alertes
+        distinctes. Le plan retenu est celui de la première : c’est le prix
+        qu’aurait obtenu quelqu’un qui a agi sur l’alerte.
+      </p>
+
+      {cumul && cumul.points.length > 1 && (
+        <div className="charts" style={{ marginTop: 16 }}>
+          <Chart
+            wide
+            title="R cumulés des signaux émis"
+            sub={`${cumul.gagnants} gagnant(s) · ${cumul.perdants} perdant(s)`}
+            foot="Dans l’ordre où le marché les a tranchés. Un signal encore en cours n’y figure pas : il n’a pas de résultat."
+          >
+            <CourbeCumulR serie={cumul} h={180} seed="suivi" />
+          </Chart>
+        </div>
+      )}
+
+      <div className="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Émis le</th>
+              <th>Symbole</th>
+              <th>Sens</th>
+              <th className="num">Score</th>
+              <th className="num">Entrée</th>
+              <th className="num">Stop</th>
+              <th className="num">Objectif</th>
+              <th>Issue</th>
+              <th className="num">Résultat</th>
+              <th className="num">MFE / MAE</th>
+            </tr>
+          </thead>
+          <tbody>
+            {suivi.signaux.map((s) => {
+              const issue = ISSUES[s.issue] ?? ISSUES.indetermine;
+              return (
+                <tr key={s.id}>
+                  <td className="muted">
+                    {dateCourte(s.premiere_emission)}
+                    {s.emissions > 1 && (
+                      <span className="pill" style={{ marginLeft: 6 }}>
+                        ×{s.emissions}
+                      </span>
+                    )}
+                  </td>
+                  <td style={{ fontWeight: 600 }}>
+                    <a href={`/actif/${encodeURIComponent(s.symbol)}`}>{s.symbol}</a>
+                  </td>
+                  <td className={s.direction === "long" ? "up" : "down"}>
+                    {s.direction === "long" ? "achat" : "vente"}
+                  </td>
+                  <td className="num">
+                    {s.score.toFixed(0)}
+                    {s.alerte_discord && (
+                      <span className="pill" style={{ marginLeft: 6 }} title={`Publié sur Discord : score au-delà de ${suivi.seuil_alerte}`}>
+                        discord
+                      </span>
+                    )}
+                  </td>
+                  <td className="num">{fmtPrice(s.entry)}</td>
+                  <td className="num">{fmtPrice(s.stop)}</td>
+                  <td className="num">{fmtPrice(s.target)}</td>
+                  <td>
+                    <span className={`issue ${issue.classe}`}>{issue.libelle}</span>
+                  </td>
+                  <td
+                    className={`num ${
+                      s.r_multiple === null ? "muted" : s.r_multiple > 0 ? "up" : "down"
+                    }`}
+                  >
+                    {s.r_multiple !== null ? (
+                      <>
+                        {s.r_multiple >= 0 ? "+" : ""}
+                        {fmtNum(s.r_multiple, 2)} R
+                      </>
+                    ) : s.r_courant !== null ? (
+                      <span title="Le trade court encore : valeur au dernier prix connu">
+                        ({s.r_courant >= 0 ? "+" : ""}
+                        {fmtNum(s.r_courant, 2)} R)
+                      </span>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+                  <td className="num muted">
+                    <span className="up">+{fmtNum(s.mfe, 2)}</span> /{" "}
+                    <span className="down">{fmtNum(s.mae, 2)}</span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <p className="note">
+        Un résultat entre parenthèses est un trade encore ouvert, valorisé au
+        dernier prix connu : il n’entre dans aucune statistique. Les issues sont
+        déterminées sur les bougies horaires suivant l’émission, avec les règles
+        du rejeu — le stop l’emporte quand une même bougie touche le stop et
+        l’objectif, l’horizon est borné à {suivi.horizon_bougies} bougies, et
+        les frais sont retranchés à l’entrée comme à la sortie. Une issue
+        établie n’est jamais recalculée : elle est figée dans l’historique du
+        dépôt, toute réécriture après coup y serait visible.
       </p>
     </section>
   );

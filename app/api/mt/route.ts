@@ -13,7 +13,7 @@
  *   ?min_score=70      relève le seuil de conviction
  *   ?symbol=XAUUSD     filtre sur un instrument (nom interne ou alias MT)
  */
-import { getSnapshot, type Signal } from "@/lib/data";
+import { getSnapshot, seuils, type Signal } from "@/lib/data";
 import { jsonResponse, noStore, preflight } from "@/lib/api";
 import { MT_ALIASES, mtSymbol, mtDigits } from "@/lib/mt";
 
@@ -66,6 +66,7 @@ export async function GET(request: Request) {
   const minScore = Number(url.searchParams.get("min_score") ?? "0");
   const symbolFilter = url.searchParams.get("symbol")?.toUpperCase();
 
+  const seuil = seuils(snap);
   const actionable = snap.signals.filter((s) => s.actionable);
   const watchlist = snap.watchlist ?? [];
 
@@ -92,8 +93,11 @@ export async function GET(request: Request) {
       timestamp: Math.floor(new Date(snap.generated_at).getTime() / 1000),
       mode,
       count: rows.length,
-      // Seuils en vigueur, pour que l'EA puisse afficher le contexte.
-      thresholds: { signal: 58, alert: 68 },
+      // Seuils en vigueur, pour que l'EA puisse afficher le contexte. Ils
+      // viennent du scan et non d'une constante : ils sont réglables par
+      // variable d'environnement, et un robot qui afficherait l'ancien seuil
+      // décrirait une stratégie qui n'est plus celle qui tourne.
+      thresholds: { signal: seuil.signal, alert: seuil.alerte },
       risk_off: snap.risk_off?.level ?? 0,
       signals: rows,
       disclaimer:

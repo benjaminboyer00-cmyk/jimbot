@@ -1301,6 +1301,176 @@ code {
   color: var(--ink);
 }
 
+/* Issue d'un signal émis.
+
+   Trois états à distinguer d'un coup d'œil, sans lire l'étiquette : tranché
+   dans le bon sens, tranché dans le mauvais, pas encore tranché. Le neutre
+   couvre l'expiration et le hors-portée — deux non-résultats. */
+.issue {
+  display: inline-block;
+  border-radius: var(--r-full);
+  padding: 1px 9px;
+  font-size: var(--t-2xs);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  border: 1px solid var(--line-2);
+  background: var(--surface-3);
+  color: var(--ink-2);
+}
+
+.issue.cible {
+  color: var(--up);
+  background: var(--up-bg);
+  border-color: var(--up-line);
+}
+
+.issue.stop {
+  color: var(--down);
+  background: var(--down-bg);
+  border-color: var(--down-line);
+}
+
+/* Un trade encore ouvert : le contour dit « pas encore mesuré », comme le
+   pointillé dit « prédit » ailleurs sur le site. */
+.issue.encours {
+  color: var(--ink-2);
+  background: transparent;
+  border-style: dashed;
+}
+
+/* Saisie.
+
+   Le site n'a qu'un seul formulaire — le dimensionnement — et il ne poste
+   rien : les valeurs restent dans le navigateur. Les champs sont donc traités
+   comme des chiffres affichés qu'on peut corriger, pas comme un formulaire à
+   remplir : même chasse fixe et même alignement que les tableaux, pour qu'un
+   capital saisi se lise comme les montants qu'il produit. */
+.saisie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--s3) var(--s5);
+  margin: var(--s4) 0 var(--s5);
+}
+
+.champ {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--s2);
+  flex-wrap: wrap;
+}
+
+.champ-label {
+  font-size: var(--t-2xs);
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  width: 100%;
+  margin-bottom: 2px;
+}
+
+.champ input {
+  font-family: var(--mono);
+  font-size: var(--t-base);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  padding: 7px 10px;
+  width: 11ch;
+  transition: border-color var(--d-fast) var(--ease-out);
+}
+
+.champ input:hover {
+  border-color: var(--ink-4);
+}
+
+.champ input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.champ-unite {
+  font-family: var(--mono);
+  color: var(--ink-3);
+  font-size: var(--t-sm);
+}
+
+.champ-note {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--ink-3);
+  font-size: var(--t-xs);
+  max-width: var(--measure);
+}
+
+/* Un total qui dépasse le plafond que le moteur s'impose : il ne suffit pas
+   de l'écrire, il faut que l'œil s'y arrête. */
+.note.depasse {
+  color: var(--down);
+  background: var(--down-bg);
+  border: 1px solid var(--down-line);
+  border-radius: var(--r-sm);
+  padding: var(--s3) var(--s4);
+  max-width: 76ch;
+}
+
+.note.depasse strong {
+  color: var(--down);
+}
+
+/* --------------------------------------------------------------------------
+   9 bis. Page d'un actif
+   -------------------------------------------------------------------------- */
+
+.actif-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s3) var(--s5);
+  margin-top: var(--s6);
+}
+
+.actif-sym {
+  font-family: var(--mono);
+  font-size: var(--t-xl);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.actif-nom {
+  color: var(--ink-2);
+  font-size: var(--t-md);
+}
+
+.actif-prix {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: var(--t-lg);
+  font-variant-numeric: tabular-nums;
+}
+
+.actif-var {
+  font-family: var(--mono);
+  font-size: var(--t-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Fil d'Ariane : la page d'un actif est une descente depuis le tableau, pas
+   une destination autonome. */
+.fil {
+  margin-top: var(--s5);
+  font-size: var(--t-sm);
+  color: var(--ink-3);
+}
+
+.fil a {
+  color: var(--ink-2);
+}
+
 .stale {
   color: var(--down);
   background: var(--down-bg);

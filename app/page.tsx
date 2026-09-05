@@ -8,10 +8,11 @@ import {
   getProbe,
   getLastReport,
   getSnapshot,
+  getSuivi,
   getTrades,
-  fmtCompact,
   fmtNum,
   fmtPrice,
+  seuils,
   timeAgo,
   REGIME_LABELS,
   type Backtest,
@@ -19,7 +20,9 @@ import {
 } from "@/lib/data";
 
 import { serieEquite, cumulTradesPapier, bandeDuScore } from "@/lib/series";
-import { Chart, CourbeCapital, CourbeCumulR, PlanTrade, Sparkline } from "@/components/charts";
+import { reglagesRisque } from "@/lib/sizing";
+import { Dimensionnement } from "@/components/dimensionnement";
+import { Chart, CourbeCapital, CourbeCumulR, PlanTrade } from "@/components/charts";
 import { Topbar } from "@/components/topbar";
 
 import {
@@ -27,8 +30,10 @@ import {
   FactorPower,
   Validation,
   ApiSection,
+  Kpi,
   Memecoins,
   NewsSummary,
+  Redevabilite,
   Reports,
   TradeJournal,
   Watchlist,
@@ -38,12 +43,13 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const [snap, trades, report, backtest, probe] = await Promise.all([
+  const [snap, trades, report, backtest, probe, suivi] = await Promise.all([
     getSnapshot(),
     getTrades(),
     getLastReport(),
     getBacktest(),
     getProbe(),
+    getSuivi(),
   ]);
 
   if (!snap) {
@@ -72,6 +78,8 @@ export default async function Page() {
   // quel : la carte doit le dire avant d'afficher un prix d'entrée.
   const perime = (Date.now() - new Date(snap.generated_at).getTime()) / 60000 > 90;
   const cumul = cumulTradesPapier(trades);
+  const seuil = seuils(snap);
+  const risque = reglagesRisque(snap);
 
   return (
     <>
@@ -150,6 +158,14 @@ export default async function Page() {
           )}
         </section>
 
+        <Dimensionnement
+          signaux={actionable}
+          reglages={risque}
+          seuilSignal={seuil.signal}
+        />
+
+        <Redevabilite suivi={suivi} />
+
         <Agenda agenda={snap.agenda} />
 
         <Watchlist items={snap.watchlist ?? []} />
@@ -177,7 +193,9 @@ export default async function Page() {
                     const v = signed(s);
                     return (
                       <tr key={s.symbol}>
-                        <td style={{ fontWeight: 600 }}>{s.symbol}</td>
+                        <td style={{ fontWeight: 600 }}>
+                          <a href={`/actif/${encodeURIComponent(s.symbol)}`}>{s.symbol}</a>
+                        </td>
                         <td className="muted">{s.label}</td>
                         <td>
                           <div className="scorebar">
@@ -212,8 +230,9 @@ export default async function Page() {
           </div>
           <p className="note">
             Le score est signé&nbsp;: positif à l’achat, négatif à la vente. Un
-            signal n’est émis qu’au-delà de 58 en valeur absolue, et publié sur
-            Discord au-delà de 68.
+            signal n’est émis qu’au-delà de {seuil.signal} en valeur absolue, et
+            publié sur Discord au-delà de {seuil.alerte}. Cliquez un symbole
+            pour son historique et les signaux qu’il a portés.
           </p>
         </section>
 
@@ -441,31 +460,6 @@ function Staleness({ generatedAt }: { generatedAt: string }) {
       service « au mieux » et abandonne des exécutions en période de charge.
       Les chiffres ci-dessous décrivent le marché tel qu’il était au dernier
       passage, pas tel qu’il est maintenant.
-    </div>
-  );
-}
-
-function Kpi({
-  label,
-  value,
-  tone,
-  spark,
-}: {
-  label: string;
-  value: string;
-  tone?: "up" | "down";
-  /** Série d'accompagnement : la forme du chemin parcouru sous le chiffre. */
-  spark?: number[];
-}) {
-  return (
-    <div className="kpi">
-      <div className={`kpi-value ${tone ?? ""}`}>{value}</div>
-      <div className="kpi-label">{label}</div>
-      {spark && spark.length > 1 && (
-        <div className="kpi-spark">
-          <Sparkline values={spark} tone={tone} seed={label} h={22} />
-        </div>
-      )}
     </div>
   );
 }

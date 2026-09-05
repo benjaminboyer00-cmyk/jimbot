@@ -120,8 +120,27 @@ export type Memecoin = {
   url: string;
 };
 
+/**
+ * Seuils de décision en vigueur.
+ *
+ * Ils sont réglables par variable d'environnement côté moteur. Le site les
+ * affichait en dur, si bien qu'un changement de seuil aurait laissé la page
+ * annoncer l'ancien — sur un site dont des gens tirent des ordres, c'est le
+ * genre d'écart qui coûte cher. Le scan les publie donc dans son instantané.
+ */
+export type Seuils = { signal: number; alerte: number; ping: number };
+
+/** Valeurs de repli, pour les instantanés antérieurs à leur publication. */
+export const SEUILS_PAR_DEFAUT: Seuils = { signal: 58, alerte: 68, ping: 80 };
+
+export const seuils = (snap?: Snapshot | null): Seuils =>
+  snap?.seuils ?? SEUILS_PAR_DEFAUT;
+
 export type Snapshot = {
   generated_at: string;
+  seuils?: Seuils;
+  /** Préréglages de risque du moteur. Voir `lib/sizing.ts`. */
+  risque?: import("./sizing").ReglagesRisque;
   signals: Signal[];
   regimes: Record<string, number>;
   memecoins: Memecoin[];
@@ -278,6 +297,111 @@ export type Probe = {
   note: string;
 };
 
+/* ------------------------------------------------------------------ */
+/* Mémoire : la trajectoire de chaque actif, scan après scan           */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Un point d'historique, tel qu'il est stocké.
+ *
+ * Le format est colonnaire et non nommé — `["2026-09-05T07:20:00+00:00",
+ * 4358.1, 58.1, 2, 1]`. Le fichier est réécrit et committé à chaque scan :
+ * répéter cinq noms de champs sur des milliers de lignes coûterait plus cher
+ * que toutes les données réunies. Le tuple est déballé une seule fois, ici,
+ * par `serieActif`.
+ */
+export type PointHistorique = [
+  /** horodatage du scan */ string,
+  /** prix */ number,
+  /** score **signé** : positif à l'achat, négatif à la vente */ number,
+  /** indice dans `History.regimes` */ number,
+  /** 1 si un signal a été émis à ce passage */ number,
+];
+
+export type History = {
+  generated_at: string | null;
+  champs: string[];
+  /** Légende des régimes. L'ordre est figé : les points stockent un indice. */
+  regimes: string[];
+  points_max: number;
+  actifs: Record<
+    string,
+    { label: string; klass: string; points: PointHistorique[] }
+  >;
+};
+
+/* ------------------------------------------------------------------ */
+/* Redevabilité : ce qu'ont donné les signaux réellement émis          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Issue d'un signal.
+ *
+ * - `cible` / `stop` / `expiration` : le marché a tranché ;
+ * - `en_cours` : le trade court encore ;
+ * - `hors_portee` : le signal précède la fenêtre de bougies dont dispose le
+ *   moteur, son issue ne sera jamais connue ;
+ * - `indetermine` : les données manquaient au moment de la mesure.
+ */
+export type Issue =
+  | "cible"
+  | "stop"
+  | "expiration"
+  | "en_cours"
+  | "hors_portee"
+  | "indetermine";
+
+export type SignalSuivi = {
+  id: string;
+  symbol: string;
+  label: string;
+  klass: string;
+  direction: "long" | "short";
+  premiere_emission: string;
+  derniere_emission: string;
+  /** Nombre de fois où le moteur a réémis ce même signal. */
+  emissions: number;
+  score: number;
+  score_max: number;
+  regime: string;
+  entry: number;
+  stop: number;
+  target: number;
+  rr: number;
+  /** Le score a-t-il franchi le seuil de publication Discord ? */
+  alerte_discord: boolean;
+  issue: Issue;
+  resolu_le: string | null;
+  prix_sortie: number | null;
+  r_multiple: number | null;
+  bougies: number;
+  mfe: number;
+  mae: number;
+  dernier_prix: number | null;
+  r_courant: number | null;
+  mesure_le: string;
+};
+
+export type Suivi = {
+  generated_at: string;
+  horizon_bougies: number;
+  seuil_alerte: number;
+  fenetre_regroupement_min: number;
+  methode: string;
+  resume: {
+    emissions: number;
+    signaux: number;
+    publies_discord: number;
+    par_issue: Record<string, number>;
+    tranches: number;
+    win_rate: number | null;
+    esperance_r: number | null;
+    total_r: number | null;
+    significatif: boolean;
+  };
+  signaux: SignalSuivi[];
+};
+
 const DATA_DIR = path.join(process.cwd(), "data");
 
 /**
@@ -356,45 +480,16 @@ export const getSnapshot = () => readJson<Snapshot | null>("latest", null);
 export const getTrades = () => readJson<Trade[]>("trades", []);
 export const getProbe = () => readJson<Probe | null>("probe", null);
 export const getBacktest = () => readJson<Backtest | null>("backtest", null);
+export const getHistory = () => readJson<History | null>("history", null);
+export const getSuivi = () => readJson<Suivi | null>("suivi", null);
 export const getLastReport = () =>
   readJson<{ path: string; generated_at: string; briefing: string; engine: string } | null>(
     "last_report",
     null,
   );
 
-/** Formatage adapté à l'ordre de grandeur : un memecoin et un indice ne se
- *  formatent pas avec le même nombre de décimales. */
-export function fmtPrice(v: number): string {
-  const digits = v >= 1000 ? 2 : v >= 1 ? 4 : v >= 0.01 ? 6 : 10;
-  return v.toLocaleString("fr-FR", {
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-  });
-}
-
-export function fmtNum(v: number, digits = 2): string {
-  return v.toLocaleString("fr-FR", {
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-  });
-}
-
-export function fmtCompact(v: number): string {
-  return v.toLocaleString("fr-FR", { notation: "compact", maximumFractionDigits: 1 });
-}
-
-export function timeAgo(iso: string): string {
-  const diff = (Date.now() - new Date(iso).getTime()) / 60000;
-  if (!Number.isFinite(diff)) return "—";
-  if (diff < 1) return "à l'instant";
-  if (diff < 60) return `il y a ${Math.round(diff)} min`;
-  if (diff < 1440) return `il y a ${Math.round(diff / 60)} h`;
-  return `il y a ${Math.round(diff / 1440)} j`;
-}
-
-export const REGIME_LABELS: Record<string, string> = {
-  tendance_haussière: "tendance haussière",
-  tendance_baissière: "tendance baissière",
-  range: "range",
-  chaotique: "chaotique",
-};
+/* Le formatage et les libellés vivent dans `lib/format.ts` : ils ne lisent
+   aucun fichier et doivent rester utilisables par un composant client, ce que
+   ce module — qui importe `node:fs` — interdit. Ils sont ré-exposés ici pour
+   que les appelants n'aient pas à savoir où ils sont passés. */
+export { fmtPrice, fmtNum, fmtCompact, timeAgo, REGIME_LABELS } from "./format";
