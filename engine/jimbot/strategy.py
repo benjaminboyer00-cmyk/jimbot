@@ -744,7 +744,8 @@ def _build_plan(asset: Asset, df: pd.DataFrame, direction: str, score: float,
             df, direction, score,
             atr_mult=float(_env("JIMBOT_FIXED_ATR", str(profile.atr_stop_mult))),
             rr=float(_env("JIMBOT_FIXED_RR", str(profile.rr_target))),
-            klass=asset.klass, regime_quality=float(regime.quality))
+            klass=asset.klass, regime_quality=float(regime.quality),
+            symbol=asset.symbol)
 
     return L.optimal_plan(
         df, direction, score,
@@ -752,4 +753,5 @@ def _build_plan(asset: Asset, df: pd.DataFrame, direction: str, score: float,
         fallback_atr_mult=profile.atr_stop_mult,
         fallback_rr=profile.rr_target,
         klass=asset.klass,
+        symbol=asset.symbol,
     )

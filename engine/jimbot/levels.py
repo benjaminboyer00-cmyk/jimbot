@@ -407,7 +407,8 @@ def win_probability(stop_dist: float, target_dist: float, score: float,
     return float(np.clip(p, 0.02, 0.98))
 
 
-def cost_in_r(price: float, stop_dist: float, klass: str) -> float:
+def cost_in_r(price: float, stop_dist: float, klass: str,
+              symbol: str | None = None) -> float:
     """Coût de l'aller-retour, exprimé en multiples de risque.
 
     Le point aveugle du modèle initial. L'espérance était calculée comme si
@@ -424,7 +425,7 @@ def cost_in_r(price: float, stop_dist: float, klass: str) -> float:
 
     if stop_dist <= 0 or price <= 0:
         return 0.0
-    return (_cost_bps(klass) / 10_000.0) * price / stop_dist
+    return (_cost_bps(klass, symbol) / 10_000.0) * price / stop_dist
 
 
 def expected_r(win_prob: float, rr: float, cost_r: float = 0.0) -> float:
@@ -444,7 +445,7 @@ def optimal_plan(df: pd.DataFrame, direction: str, score: float,
                  *, regime_quality: float = 0.5,
                  fallback_atr_mult: float = 2.0,
                  fallback_rr: float = 2.0,
-                 klass: str = "crypto") -> Plan:
+                 klass: str = "crypto", symbol: str | None = None) -> Plan:
     """Construit le plan de trade maximisant l'espérance mathématique.
 
     La recherche est contrainte par la structure : les stops candidats sont
@@ -456,7 +457,7 @@ def optimal_plan(df: pd.DataFrame, direction: str, score: float,
     atr_v = S._last(I.atr(df["high"], df["low"], df["close"]))
     if not np.isfinite(atr_v) or atr_v <= 0 or price <= 0 or direction == "neutre":
         return _fallback_plan(price, atr_v, direction, fallback_atr_mult,
-                              fallback_rr, klass)
+                              fallback_rr, klass, symbol)
 
     structure = build_structure(df)
     # Pour un achat, le stop se place sous un support et l'objectif sous une
@@ -467,7 +468,7 @@ def optimal_plan(df: pd.DataFrame, direction: str, score: float,
     stop_candidates = _stop_candidates(price, atr_v, direction, stop_side)
     if not stop_candidates:
         return _fallback_plan(price, atr_v, direction, fallback_atr_mult,
-                              fallback_rr, klass)
+                              fallback_rr, klass, symbol)
 
     evaluated: list[Plan] = []
     for stop, stop_dist, stop_basis, stop_strength in stop_candidates:
@@ -476,7 +477,7 @@ def optimal_plan(df: pd.DataFrame, direction: str, score: float,
             p = win_probability(stop_dist, abs(target - price), score,
                                 regime_quality, atr_v,
                                 stop_strength=stop_strength, obstacle=obstacle)
-            ev = expected_r(p, rr, cost_in_r(price, stop_dist, klass))
+            ev = expected_r(p, rr, cost_in_r(price, stop_dist, klass, symbol))
             evaluated.append(Plan(
                 entry=round(price, 8), stop=round(stop, 8), target=round(target, 8),
                 rr=round(rr, 2), stop_atr=round(stop_dist / atr_v, 2),
@@ -486,7 +487,7 @@ def optimal_plan(df: pd.DataFrame, direction: str, score: float,
 
     if not evaluated:
         return _fallback_plan(price, atr_v, direction, fallback_atr_mult,
-                              fallback_rr, klass)
+                              fallback_rr, klass, symbol)
 
     # Plusieurs stops candidats peuvent produire des couples (stop, objectif)
     # identiques : on déduplique avant de classer, sinon la liste
@@ -606,7 +607,8 @@ def _target_candidates(price: float, atr_v: float, direction: str,
 
 def fixed_plan(df: pd.DataFrame, direction: str, score: float, *,
                atr_mult: float = 2.0, rr: float = 2.0,
-               klass: str = "crypto", regime_quality: float = 0.5) -> Plan:
+               klass: str = "crypto", regime_quality: float = 0.5,
+               symbol: str | None = None) -> Plan:
     """Plan fixe, sans aucune optimisation : stop à N ATR, objectif à N R.
 
     Sert de point de comparaison à `optimal_plan`. La mesure a montré que
@@ -630,7 +632,7 @@ def fixed_plan(df: pd.DataFrame, direction: str, score: float, *,
     target = price - sign * dist * rr
 
     p = win_probability(dist, dist * rr, score, regime_quality, atr_v)
-    ev = expected_r(p, rr, cost_in_r(price, dist, klass))
+    ev = expected_r(p, rr, cost_in_r(price, dist, klass, symbol))
     return Plan(
         entry=round(price, 8), stop=round(max(stop, 0.0), 8),
         target=round(max(target, 0.0), 8), rr=round(rr, 2),
@@ -642,7 +644,7 @@ def fixed_plan(df: pd.DataFrame, direction: str, score: float, *,
 
 def _fallback_plan(price: float, atr_v: float, direction: str,
                    atr_mult: float, rr_target: float,
-                   klass: str = "crypto") -> Plan:
+                   klass: str = "crypto", symbol: str | None = None) -> Plan:
     """Plan de repli en pure volatilité, quand la structure est inexploitable."""
     if direction == "neutre" or not np.isfinite(atr_v) or atr_v <= 0 or price <= 0:
         return Plan(round(price, 8), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -652,7 +654,7 @@ def _fallback_plan(price: float, atr_v: float, direction: str,
     stop = price + sign * dist
     target = price - sign * dist * rr_target
     p = win_probability(dist, dist * rr_target, 50.0)
-    ev = expected_r(p, rr_target, cost_in_r(price, dist, klass))
+    ev = expected_r(p, rr_target, cost_in_r(price, dist, klass, symbol))
     return Plan(round(price, 8), round(stop, 8), round(target, 8), round(rr_target, 2),
                 round(atr_mult, 2), round(p, 3), round(ev, 3),
                 f"volatilité pure ({atr_mult:.1f} ATR)",

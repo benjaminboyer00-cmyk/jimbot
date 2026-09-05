@@ -346,3 +346,43 @@ def test_expiration_survient_au_bon_horizon():
     apres = bougies.iloc[: 1 + P.MAX_HOLD_BARS + 1]
     fermes = pf.update("TEST", apres)
     assert len(fermes) == 1 and fermes[0].reason == "expiration"
+
+
+# --------------------------------------------------------------------------
+# Coût de transaction : mesuré par instrument, pas déduit de la classe
+# --------------------------------------------------------------------------
+def test_le_cout_propre_a_un_symbole_prime_sur_celui_de_sa_classe():
+    """Mesuré chez Capital.com : BTC coûte 6 pb, DOGE en coûte 50. Supposer
+    que tous les membres d'une classe coûtent pareil est faux d'un facteur
+    cinq à l'intérieur même de la crypto."""
+    classe = P._cost_bps("crypto")
+    assert P._cost_bps("crypto", "BTC-USD") == classe, "BTC suit sa classe"
+    assert P._cost_bps("crypto", "DOGE-USD") > classe * 3
+
+
+def test_un_cout_sous_estime_laisse_passer_un_plan_perdant():
+    """L'enjeu n'est pas la précision comptable : c'est le filtre d'espérance
+    minimale, qui accepte ou refuse un trade sur ce chiffre."""
+    from jimbot.levels import cost_in_r, expected_r
+
+    prix = 0.0909
+    dist = prix * 0.03                      # stop à 3 % du prix
+    suppose = cost_in_r(prix, dist, "crypto", None)
+    mesure = cost_in_r(prix, dist, "crypto", "DOGE-USD")
+
+    assert mesure > suppose * 4
+    # À 40 % de réussite pour 2 R, le plan paraît gagnant et ne l'est presque plus.
+    assert expected_r(0.40, 2.0, suppose) > 0.15
+    assert expected_r(0.40, 2.0, mesure) < 0.05
+
+
+def test_les_couts_degradent_le_prix_dans_le_sens_defavorable():
+    """Garde-fou de signe : une erreur ici rendrait tout rentable sur le
+    papier."""
+    ouv_long = P.apply_costs(100.0, "crypto", "long", True, "DOGE-USD")
+    fer_long = P.apply_costs(100.0, "crypto", "long", False, "DOGE-USD")
+    assert ouv_long > 100.0, "on achète plus cher qu'affiché"
+    assert fer_long < 100.0, "on revend moins cher qu'affiché"
+
+    ouv_short = P.apply_costs(100.0, "crypto", "short", True, "DOGE-USD")
+    assert ouv_short < 100.0, "on vend à découvert moins cher qu'affiché"

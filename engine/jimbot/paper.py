@@ -104,17 +104,49 @@ class Trade:
         return asdict(self)
 
 
-def _cost_bps(klass: str) -> float:
+# Coût réel par instrument, en points de base d'aller-retour, mesuré sur les
+# cotations du courtier plutôt que déduit de la classe d'actif.
+#
+# Le coût par classe suppose que tous les membres d'une classe coûtent la même
+# chose. Mesuré chez Capital.com le 5 septembre 2026, c'est faux d'un facteur
+# cinq à l'intérieur même de la crypto :
+#
+#     BTCUSD    6,3 pb     ETHUSD    7,1 pb     <- conformes à l'hypothèse
+#     XRPUSD   50,0 pb     DOGEUSD  50,0 pb     <- cinq fois plus
+#
+# L'écart n'est pas cosmétique. Le coût en R vaut `pb/10000 × prix / distance
+# au stop` : sur un stop à 3 % du prix, 50 pb coûtent 0,167 R contre 0,033 R
+# pour 10 pb. Un plan estimé à peine positif devient franchement perdant, et le
+# filtre d'espérance minimale le laissait passer.
+#
+# Ces valeurs sont des mesures, pas des estimations, et elles se périment : un
+# spread se resserre et s'élargit selon l'heure et la liquidité. Elles sont
+# volontairement prises au plus large observé.
+COUT_PAR_SYMBOLE: dict[str, float] = {
+    "XRP-USD": 55.0,
+    "DOGE-USD": 55.0,
+}
+
+
+def _cost_bps(klass: str, symbol: str | None = None) -> float:
+    """Coût d'un aller-retour, en points de base.
+
+    Le coût propre à l'instrument l'emporte sur celui de sa classe : à
+    l'intérieur d'une même classe, les spreads varient d'un facteur cinq.
+    """
+    if symbol and symbol in COUT_PAR_SYMBOLE:
+        return COUT_PAR_SYMBOLE[symbol]
     return FEE_BPS.get(klass, 10.0) + SLIPPAGE_BPS.get(klass, 5.0)
 
 
-def apply_costs(price: float, klass: str, direction: str, opening: bool) -> float:
+def apply_costs(price: float, klass: str, direction: str, opening: bool,
+                symbol: str | None = None) -> float:
     """Dégrade le prix dans le sens défavorable au trader.
 
     À l'ouverture d'un long on paie plus cher, à la fermeture on vend moins
     cher — et symétriquement pour un short.
     """
-    bps = _cost_bps(klass) / 2.0  # la moitié des coûts par jambe
+    bps = _cost_bps(klass, symbol) / 2.0  # la moitié des coûts par jambe
     adverse = 1.0 if (direction == "long") == opening else -1.0
     return price * (1.0 + adverse * bps / 10_000.0)
 
