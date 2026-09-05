@@ -89,6 +89,16 @@ export default async function Page() {
         actif="tableau"
       />
       <main className="wrap" id="contenu">
+        <div className="masthead">
+          <h1>Ce que le moteur a mesuré au dernier passage</h1>
+          <p>
+            Sept facteurs recalculés à la main sur {counts.analysed} actifs,
+            quatre fois par heure. Chaque signal émis reste au tableau jusqu’à
+            ce que le marché le tranche —{" "}
+            <strong>y compris quand il a eu tort</strong>.
+          </p>
+        </div>
+
         <Staleness generatedAt={snap.generated_at} />
 
         <div className="kpis">
@@ -171,7 +181,10 @@ export default async function Page() {
         <Watchlist items={snap.watchlist ?? []} />
 
         <section>
-          <h2>Univers suivi · {counts.analysed} actifs</h2>
+          <h2>
+            Univers suivi
+            <span className="compte">{counts.analysed} actifs</span>
+          </h2>
           <div className="tablewrap">
             <table>
               <thead>
@@ -487,7 +500,7 @@ function SignalCard({
           <div className="card-name">{s.label}</div>
         </div>
         <span className={`badge ${s.direction}`}>
-          {s.direction === "long" ? "ACHAT" : "VENTE"}
+          {s.direction === "long" ? "achat" : "vente"}
         </span>
       </div>
 

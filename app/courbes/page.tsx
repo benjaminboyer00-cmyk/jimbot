@@ -103,15 +103,15 @@ export default async function Courbes() {
       />
 
       <main className="wrap" id="contenu">
-        <section style={{ marginTop: 40 }}>
-          <h2>Courbes</h2>
-          <p className="lede">
+        <div className="masthead">
+          <h1>Par où le capital est passé</h1>
+          <p>
             Les mêmes nombres que le tableau de bord, mis en forme. Un chiffre
             de performance dit où l’on est arrivé ; une courbe dit par où l’on
-            est passé, et c’est la seule chose qui permette de distinguer un
-            avantage d’une série de coups heureux.
+            est passé, et c’est la seule chose qui permette de distinguer{" "}
+            <strong>un avantage d’une série de coups heureux</strong>.
           </p>
-        </section>
+        </div>
 
         {/* ---------------- Portefeuille papier ---------------- */}
         <section id="capital">

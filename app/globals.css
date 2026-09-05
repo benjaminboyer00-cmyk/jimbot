@@ -1,14 +1,35 @@
 /* ==========================================================================
    Jimbot — feuille de style unique.
 
-   Charte : neutres, un vert et un rouge. Aucune couleur décorative. Le
-   contraste, la graisse et l'espace portent l'information ; la teinte ne sert
-   qu'à dire « au-dessus de zéro » ou « en-dessous ».
+   CHARTE. Quatre règles, tenues partout, sans exception.
+
+   1. La teinte ne dit qu'une chose : le sens. Vert au-dessus de zéro, rouge
+      en dessous. Il n'existe pas de troisième couleur — ni pour la marque, ni
+      pour un lien, ni pour décorer. Tout le reste du contraste est obtenu par
+      la graisse, la taille, l'espace et le filet.
+
+   2. Chaque famille a un locuteur. La monospace ne porte que ce que la
+      machine a relevé : nombres mesurés et lignes de journal, jamais un
+      libellé d'interface. La serif ne porte que la voix de l'analyste : titres
+      de section et texte rédigé. La grotesque porte l'interface, et rien
+      d'autre. On sait donc, avant de lire, qui parle. Aucun libellé n'est en
+      capitales : à ce corps, la capitale traquée dit « étiquette » et fait
+      crier toutes les strates au même volume.
+
+   3. L'arrondi désigne un objet, le filet désigne un relevé. Une carte de
+      signal est une chose qu'on saisit : elle a un rayon, une ombre, elle se
+      soulève au survol. Un tableau, un graphique, un journal sont des relevés
+      continus : filet d'un pixel, aucune ombre, ils ne bougent pas. Le rayon
+      cesse d'être un tic de mise en forme et devient une information.
+
+   4. Une section s'ouvre sur un repère. Un trait plein court barre le filet à
+      l'origine du titre, comme la graduation d'appui d'un instrument. C'est le
+      seul ornement de la page, et il est structurel.
 
    Deux modes assumés comme deux objets différents. En clair, la page est une
-   note de recherche imprimée : fond papier légèrement chaud, cartes blanches
-   posées dessus. En sombre, c'est un terminal : graphite froid, cartes qui
-   émergent du fond par élévation. Chaque mode est cohérent avec lui-même.
+   note de recherche imprimée : fond papier légèrement chaud, relevés blancs
+   posés dessus. En sombre, c'est le boîtier d'un instrument : graphite tiède,
+   jamais le noir absolu, qui garderait les filets invisibles.
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -19,22 +40,25 @@
   color-scheme: light;
 
   /* Fonds — du plus profond au plus proche du lecteur */
-  --bg: #fbfbf9;
-  --bg-sunk: #f4f4f1;
-  --surface: #ffffff;
-  --surface-2: #f6f6f3;
-  --surface-3: #eeeeea;
+  --bg: #f6f5f0;
+  --bg-sunk: #edece5;
+  --surface: #fffefb;
+  --surface-2: #f4f3ed;
+  --surface-3: #e9e8e0;
 
   /* Filets. --line est la valeur par défaut ; --line-2 marque une séparation
      structurelle (bord de tableau, contour de carte au survol). */
-  --line: #e6e5e0;
-  --line-2: #d5d4cd;
+  --line: #e0ded4;
+  --line-2: #cbc9bd;
 
   /* Encres */
   --ink: #16181b;
-  --ink-2: #56585e;
-  --ink-3: #8b8d94;
-  --ink-4: #b4b6bb;
+  --ink-2: #53565c;
+  /* --ink-3 porte les libellés de colonne, les légendes et les cellules
+     secondaires : c'est du texte à lire, pas un gris décoratif. Il est calé
+     pour passer 4,5:1 sur le papier comme sur un relevé blanc. */
+  --ink-3: #6d7077;
+  --ink-4: #adaeb1;
 
   /* Direction. Deux teintes seulement, chacune avec son fond très dilué. */
   --up: #116b43;
@@ -46,7 +70,7 @@
 
   --focus: #16181b;
   --sel-bg: #16181b;
-  --sel-ink: #fbfbf9;
+  --sel-ink: #f6f5f0;
 
   /* Élévation — quasi imperceptible, elle sert à décoller, pas à décorer. */
   --lift-1: 0 1px 1px rgb(20 22 26 / 0.03), 0 1px 3px rgb(20 22 26 / 0.03);
@@ -111,19 +135,22 @@
   :root:not([data-theme="light"]) {
     color-scheme: dark;
 
-    --bg: #0b0c0e;
-    --bg-sunk: #070809;
-    --surface: #131519;
-    --surface-2: #1a1d22;
-    --surface-3: #23262c;
+    /* Le noir absolu avale les filets d'un pixel : le graphite s'arrête à
+       #15171b — assez sombre pour que la courbe brille, assez clair pour
+       qu'une séparation reste visible. */
+    --bg: #15171b;
+    --bg-sunk: #101216;
+    --surface: #1c1f24;
+    --surface-2: #23272d;
+    --surface-3: #2c3038;
 
-    --line: #24272d;
-    --line-2: #363a42;
+    --line: #2e323a;
+    --line-2: #41464f;
 
-    --ink: #eceef1;
-    --ink-2: #a2a7af;
-    --ink-3: #6f757e;
-    --ink-4: #4c525a;
+    --ink: #eef0f3;
+    --ink-2: #a8adb5;
+    --ink-3: #878d96;
+    --ink-4: #545a63;
 
     --up: #4fd08a;
     --up-bg: #0d2018;
@@ -132,9 +159,9 @@
     --down-bg: #241211;
     --down-line: #4d2320;
 
-    --focus: #eceef1;
-    --sel-bg: #eceef1;
-    --sel-ink: #0b0c0e;
+    --focus: #eef0f3;
+    --sel-bg: #eef0f3;
+    --sel-ink: #15171b;
 
     --lift-1: 0 1px 2px rgb(0 0 0 / 0.4);
     --lift-2: 0 2px 4px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.35);
@@ -144,19 +171,22 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --bg: #0b0c0e;
-  --bg-sunk: #070809;
-  --surface: #131519;
-  --surface-2: #1a1d22;
-  --surface-3: #23262c;
+  /* Le noir absolu avale les filets d'un pixel : le graphite s'arrête à
+     #15171b — assez sombre pour que la courbe brille, assez clair pour
+     qu'une séparation reste visible. */
+  --bg: #15171b;
+  --bg-sunk: #101216;
+  --surface: #1c1f24;
+  --surface-2: #23272d;
+  --surface-3: #2c3038;
 
-  --line: #24272d;
-  --line-2: #363a42;
+  --line: #2e323a;
+  --line-2: #41464f;
 
-  --ink: #eceef1;
-  --ink-2: #a2a7af;
-  --ink-3: #6f757e;
-  --ink-4: #4c525a;
+  --ink: #eef0f3;
+  --ink-2: #a8adb5;
+  --ink-3: #878d96;
+  --ink-4: #545a63;
 
   --up: #4fd08a;
   --up-bg: #0d2018;
@@ -165,9 +195,9 @@
   --down-bg: #241211;
   --down-line: #4d2320;
 
-  --focus: #eceef1;
-  --sel-bg: #eceef1;
-  --sel-ink: #0b0c0e;
+  --focus: #eef0f3;
+  --sel-bg: #eef0f3;
+  --sel-ink: #15171b;
 
   --lift-1: 0 1px 2px rgb(0 0 0 / 0.4);
   --lift-2: 0 2px 4px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.35);
@@ -198,6 +228,12 @@ body {
   font-size: var(--t-base);
   line-height: 1.55;
   font-feature-settings: "cv05" 1, "ss01" 1;
+  /* L'espace-mot de l'Instrument Sans vaut 0,167 em là où une grotesque en
+     pose 0,25 : sans correction, « Tableau de bord » se lit « Tableau
+     debord ». Le rattrapage est porté par le corps et neutralisé partout où
+     la monospace ou la serif reprennent la main — leurs espaces sont
+     normales, et les élargir défigurerait un montant comme « 10 024 ». */
+  word-spacing: 0.07em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -269,6 +305,49 @@ a:hover {
   max-width: var(--page);
   margin: 0 auto;
   padding: 0 var(--s5) var(--s9);
+}
+
+/* Ouverture de page.
+
+   La page s'ouvrait sur un encadré rouge d'avertissement : le premier objet
+   rencontré était une exception, jamais l'objet lui-même. Le bandeau dit
+   désormais de quoi la page rend compte, en une phrase et dans la voix de
+   l'analyste ; l'avertissement de fraîcheur reste, juste en dessous, où il se
+   lit comme une réserve sur ce qui vient d'être annoncé. */
+.masthead {
+  padding: var(--s7) 0 var(--s5);
+  max-width: 46ch;
+}
+
+.masthead h1 {
+  font-family: var(--serif);
+  word-spacing: normal;
+  font-size: clamp(1.75rem, 1.1rem + 1.9vw, 2.5rem);
+  font-weight: 400;
+  line-height: 1.14;
+  letter-spacing: -0.018em;
+  text-wrap: balance;
+}
+
+.masthead p {
+  margin-top: var(--s4);
+  font-size: var(--t-base);
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 58ch;
+}
+
+/* Le sous-titre nomme la promesse du moteur : elle est tenue en gras, pas en
+   couleur — la couleur est réservée au sens du marché. */
+.masthead p strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+@media (max-width: 720px) {
+  .masthead {
+    padding-top: var(--s6);
+  }
 }
 
 .topbar {
@@ -360,7 +439,6 @@ a:hover {
 .stamp {
   color: var(--ink-3);
   font-size: var(--t-xs);
-  font-family: var(--mono);
   font-variant-numeric: tabular-nums;
   display: inline-flex;
   align-items: center;
@@ -423,29 +501,61 @@ a:hover {
    4. Titres et sections
    -------------------------------------------------------------------------- */
 
+/* Une section s'ouvre par un filet qui traverse toute la largeur, barré à son
+   origine par une graduation pleine — le trait d'appui d'un instrument. Le
+   titre vient ensuite, dans la serif : c'est l'analyste qui annonce ce que la
+   machine va montrer. Le filet est au-dessus du titre et non en dessous, pour
+   que l'œil rencontre la césure avant de lire le libellé. */
 section {
-  margin-top: var(--s8);
-  scroll-margin-top: 88px;
+  position: relative;
+  margin-top: var(--s7);
+  padding-top: var(--s5);
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 96px;
 }
 
+section::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background: var(--ink);
+}
+
+/* Titres de section. La capitale traquée de 11 px disait « libellé » et non
+   « titre » : à ce corps, toutes les sections criaient au même volume et la
+   page n'avait plus de hiérarchie. La serif au corps du texte rend cette
+   hiérarchie sans hausser la voix. */
 h2 {
-  font-size: var(--t-xs);
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-2);
-  padding-bottom: var(--s2);
-  border-bottom: 1px solid var(--line);
+  font-family: var(--serif);
+  word-spacing: normal;
+  font-size: 1.375rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  text-transform: none;
+  color: var(--ink);
   margin-bottom: var(--s5);
   display: flex;
   align-items: baseline;
   gap: var(--s3);
+  flex-wrap: wrap;
 }
-/* Filet d'amorce : un trait court et plein sous le début du titre, qui donne
-   au bord de section une origine plutôt qu'un simple contour. */
-h2::after {
-  content: "";
-  flex: 1;
+
+/* Le décompte qui accompagne un titre est une mesure, pas une suite du titre :
+   il passe à droite, en chasse fixe, séparé par l'espace et non par un point
+   médian. */
+h2 .compte {
+  margin-left: auto;
+  font-family: var(--mono);
+  word-spacing: normal;
+  font-size: var(--t-xs);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
 }
 
 h3 {
@@ -457,6 +567,7 @@ h3 {
 
 .lede {
   font-family: var(--serif);
+  word-spacing: normal;
   font-size: var(--t-md);
   line-height: 1.6;
   color: var(--ink-2);
@@ -496,6 +607,7 @@ h3 {
 .prose {
   max-width: var(--measure);
   font-family: var(--serif);
+  word-spacing: normal;
   font-size: var(--t-md);
   line-height: 1.68;
 }
@@ -516,40 +628,57 @@ h3 {
    aucune séparation horizontale. */
 .kpis {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1px;
   border: 1px solid var(--line);
-  border-radius: var(--r-md);
+  border-radius: var(--r-sm);
   overflow: hidden;
   margin-top: var(--s6);
   background: var(--line);
-  box-shadow: var(--lift-1);
 }
 
 .kpi {
-  padding: var(--s4) var(--s4) var(--s3);
+  padding: var(--s4) var(--s4) var(--s4);
   background: var(--surface);
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 92px;
 }
 
 .kpi-value {
   font-family: var(--mono);
+  word-spacing: normal;
   font-size: var(--t-lg);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
 }
+
+/* Le libellé se lit comme une légende, pas comme une enseigne : bas de casse,
+   sans traque. Ce qui doit se voir de loin, c'est le nombre. */
 .kpi-label {
-  font-size: var(--t-2xs);
+  font-size: var(--t-xs);
   color: var(--ink-3);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-top: var(--s1);
+  text-transform: none;
+  letter-spacing: 0;
 }
+
+/* La courbe miniature occupe le bas de la cellule, à l'intérieur du filet :
+   auparavant elle débordait sur la bordure et donnait à la cellule un fond
+   coloré accidentel. */
 .kpi-spark {
-  margin-top: var(--s2);
-  height: 22px;
+  margin-top: auto;
+  padding-top: var(--s3);
+  height: 26px;
+}
+.kpi-spark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
 }
 
 /* --------------------------------------------------------------------------
@@ -675,11 +804,12 @@ h3 {
 .level-label {
   font-size: var(--t-2xs);
   color: var(--ink-3);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  text-transform: none;
+  letter-spacing: 0;
 }
 .level-value {
   font-family: var(--mono);
+  word-spacing: normal;
   font-size: var(--t-xs);
   font-variant-numeric: tabular-nums;
   margin-top: 1px;
@@ -722,24 +852,31 @@ h3 {
 }
 .factor-val {
   font-family: var(--mono);
+  word-spacing: normal;
   text-align: right;
   color: var(--ink-2);
   font-variant-numeric: tabular-nums;
 }
 
+/* Réserve. Un pavé entièrement rouge criait aussi fort pour « le plan a
+   quelques heures » que pour une perte : le fond disparaît, il ne reste qu'un
+   filet d'appui rouge à gauche. La teinte dit toujours le sens, mais elle ne
+   couvre plus la surface. */
 .warn {
   margin-top: var(--s3);
   font-size: var(--t-sm);
-  line-height: 1.6;
-  color: var(--down);
+  line-height: 1.65;
+  color: var(--ink-2);
   background: var(--down-bg);
-  border: 1px solid var(--down-line);
-  border-radius: var(--r-sm);
-  padding: var(--s2) var(--s3);
+  border: none;
+  border-left: 2px solid var(--down);
+  border-radius: 0 var(--r-xs) var(--r-xs) 0;
+  padding: var(--s3) var(--s4);
 }
 .warn strong {
-  font-weight: 600;
+  color: var(--down);
 }
+
 
 /* Convention de lecture, appliquée partout sans exception : une valeur
    soulignée en pointillé est une **prédiction du modèle**, une valeur non
@@ -771,8 +908,8 @@ h3 {
 .record-head {
   font-weight: 600;
   color: var(--ink-2);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  text-transform: none;
+  letter-spacing: 0;
   margin-bottom: 2px;
 }
 
@@ -795,12 +932,13 @@ h3 {
    7. Tableaux
    -------------------------------------------------------------------------- */
 
+/* Un tableau est un relevé continu : filet d'un pixel, rayon discret, aucune
+   ombre. L'ombre est réservée aux cartes de signal, qui sont des objets. */
 .tablewrap {
   overflow-x: auto;
   border: 1px solid var(--line);
-  border-radius: var(--r-md);
+  border-radius: var(--r-sm);
   background: var(--surface);
-  box-shadow: var(--lift-1);
 }
 
 table {
@@ -813,13 +951,13 @@ table {
 th {
   text-align: left;
   font-weight: 500;
-  font-size: var(--t-2xs);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
+  font-size: var(--t-xs);
+  text-transform: none;
+  letter-spacing: 0;
   color: var(--ink-3);
-  padding: var(--s2) var(--s3);
+  padding: var(--s3) var(--s3);
   background: var(--surface-2);
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--line-2);
   white-space: nowrap;
   position: sticky;
   top: 0;
@@ -844,6 +982,7 @@ tbody tr:hover {
 
 .num {
   font-family: var(--mono);
+  word-spacing: normal;
   text-align: right;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
@@ -895,9 +1034,9 @@ tbody tr:hover {
 
 .pill {
   display: inline-block;
-  font-family: var(--mono);
   font-size: var(--t-2xs);
-  padding: 1px 6px;
+  font-variant-numeric: tabular-nums;
+  padding: 2px 7px;
   border-radius: var(--r-xs);
   background: var(--surface-3);
   color: var(--ink-2);
@@ -906,6 +1045,7 @@ tbody tr:hover {
 
 code {
   font-family: var(--mono);
+  word-spacing: normal;
   font-size: 0.9em;
   background: var(--surface-3);
   padding: 1px 5px;
@@ -924,9 +1064,8 @@ code {
 
 .chart {
   border: 1px solid var(--line);
-  border-radius: var(--r-md);
+  border-radius: var(--r-sm);
   background: var(--surface);
-  box-shadow: var(--lift-1);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -947,16 +1086,15 @@ code {
   flex-wrap: wrap;
 }
 .chart-title {
-  font-size: var(--t-xs);
+  font-size: var(--t-sm);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--ink-2);
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--ink);
 }
 .chart-sub {
-  font-size: var(--t-2xs);
+  font-size: var(--t-xs);
   color: var(--ink-3);
-  font-family: var(--mono);
   font-variant-numeric: tabular-nums;
 }
 .chart-body {
@@ -997,6 +1135,7 @@ code {
 .c-tick {
   fill: var(--ink-3);
   font-family: var(--mono);
+  word-spacing: normal;
   font-size: 9.5px;
   font-variant-numeric: tabular-nums;
 }
@@ -1126,7 +1265,6 @@ code {
   border-radius: var(--r-sm);
   background: var(--surface);
   padding: var(--s2) var(--s3) var(--s1);
-  box-shadow: var(--lift-1);
 }
 
 /* Miniature dans une carte de signal : le plan de trade en coupe. */
@@ -1140,19 +1278,19 @@ code {
    -------------------------------------------------------------------------- */
 
 .climate {
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  background: var(--surface);
-  padding: var(--s4);
-  box-shadow: var(--lift-1);
+  border: none;
+  background: none;
+  padding: 0;
 }
 .climate-head {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: var(--s4);
+  margin-bottom: var(--s4);
 }
 .climate-value {
   font-family: var(--mono);
+  word-spacing: normal;
   font-size: var(--t-xl);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
@@ -1162,9 +1300,8 @@ code {
 
 .journal {
   border: 1px solid var(--line);
-  border-radius: var(--r-md);
+  border-radius: var(--r-sm);
   overflow: hidden;
-  box-shadow: var(--lift-1);
 }
 .entry {
   display: grid;
@@ -1190,6 +1327,7 @@ code {
 }
 .entry-r {
   font-family: var(--mono);
+  word-spacing: normal;
   font-weight: 500;
   font-size: var(--t-md);
   font-variant-numeric: tabular-nums;
@@ -1214,6 +1352,7 @@ code {
   font-size: var(--t-2xs);
   margin-top: 2px;
   font-family: var(--mono);
+  word-spacing: normal;
 }
 
 .reports {
@@ -1242,6 +1381,7 @@ code {
 }
 .report-date {
   font-family: var(--mono);
+  word-spacing: normal;
   font-size: var(--t-sm);
   font-weight: 500;
 }
@@ -1270,6 +1410,7 @@ code {
 }
 .event-days {
   font-family: var(--mono);
+  word-spacing: normal;
   font-size: var(--t-md);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
@@ -1277,6 +1418,7 @@ code {
 .event-date {
   font-size: var(--t-2xs);
   font-family: var(--mono);
+  word-spacing: normal;
 }
 .event-head {
   display: flex;
@@ -1362,16 +1504,17 @@ code {
 }
 
 .champ-label {
-  font-size: var(--t-2xs);
+  font-size: var(--t-xs);
   color: var(--ink-3);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  text-transform: none;
+  letter-spacing: 0;
   width: 100%;
-  margin-bottom: 2px;
+  margin-bottom: var(--s1);
 }
 
 .champ input {
   font-family: var(--mono);
+  word-spacing: normal;
   font-size: var(--t-base);
   font-variant-numeric: tabular-nums;
   color: var(--ink);
@@ -1395,6 +1538,7 @@ code {
 
 .champ-unite {
   font-family: var(--mono);
+  word-spacing: normal;
   color: var(--ink-3);
   font-size: var(--t-sm);
 }
@@ -1436,6 +1580,7 @@ code {
 
 .actif-sym {
   font-family: var(--mono);
+  word-spacing: normal;
   font-size: var(--t-xl);
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -1449,12 +1594,14 @@ code {
 .actif-prix {
   margin-left: auto;
   font-family: var(--mono);
+  word-spacing: normal;
   font-size: var(--t-lg);
   font-variant-numeric: tabular-nums;
 }
 
 .actif-var {
   font-family: var(--mono);
+  word-spacing: normal;
   font-size: var(--t-sm);
   font-variant-numeric: tabular-nums;
 }
@@ -1513,6 +1660,15 @@ footer {
     width: 100%;
     margin-inline: 0;
     padding-bottom: 2px;
+  }
+  /* En-tête mobile : trois rangées de chrome mangeaient un tiers de l'écran
+     avant le premier chiffre. La signature de la marque suffit sans son
+     apposition, et l'heure du scan tient sur la même ligne. */
+  .brand span {
+    display: none;
+  }
+  .masthead {
+    max-width: none;
   }
   section {
     margin-top: var(--s7);

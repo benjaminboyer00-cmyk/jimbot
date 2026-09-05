@@ -99,11 +99,11 @@ export function NewsSummary({
                 <article className="card" key={i}>
                   <div className="card-head">
                     <div>
-                      <div className="card-sym">{s.speaker.toUpperCase()}</div>
+                      <div className="card-sym">{s.speaker}</div>
                       <div className="card-name">importance {s.importance.toFixed(2)}/1.00</div>
                     </div>
                     <span className={`badge ${accommodant ? "long" : "short"}`}>
-                      {accommodant ? "ACCOMMODANT" : "RESTRICTIF"}
+                      {accommodant ? "accommodant" : "restrictif"}
                     </span>
                   </div>
                   <p style={{ fontSize: 13, marginTop: 10 }}>
@@ -447,9 +447,10 @@ export function Memecoins({
   return (
     <section>
       <h2>
-        Memecoins{" "}
-        <span className="muted" style={{ textTransform: "none", letterSpacing: 0 }}>
-          — {report?.retained ?? items.length} retenu(s) sur {report?.screened ?? 0} criblé(s)
+        Memecoins
+        <span className="compte">
+          {report?.retained ?? items.length} retenu(s) sur{" "}
+          {report?.screened ?? 0} criblé(s)
         </span>
       </h2>
       {items.length ? (
@@ -617,7 +618,7 @@ export function Agenda({
   const badge = (impact: string) =>
     impact === "eleve" ? "short" : impact === "moyen" ? "neutre" : "neutre";
   const libelle = (impact: string) =>
-    impact === "eleve" ? "IMPACT ÉLEVÉ" : impact === "moyen" ? "IMPACT MOYEN" : "IMPACT FAIBLE";
+    impact === "eleve" ? "impact élevé" : impact === "moyen" ? "impact moyen" : "impact faible";
 
   return (
     <section>

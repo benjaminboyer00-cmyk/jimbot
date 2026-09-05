@@ -78,17 +78,17 @@ type Serie = (typeof SERIES)[number];
  * n'importe quoi ailleurs.
  */
 const STYLE = `
-svg{--ink:#16181b;--ink-2:#56585e;--ink-3:#8b8d94;--ink-4:#b4b6bb;
+svg{--ink:#16181b;--ink-2:#53565c;--ink-3:#6d7077;--ink-4:#adaeb1;
 --line:#e6e5e0;--line-2:#d5d4cd;--surface:#fff;--surface-3:#eeeeea;
 --up:#116b43;--up-bg:#eff7f1;--up-line:#b9dcc7;
 --down:#a8342a;--down-bg:#fbf1f0;--down-line:#e8c3bf;
-background:#fbfbf9;font-family:ui-sans-serif,system-ui,sans-serif}
+background:#f6f5f0;font-family:ui-sans-serif,system-ui,sans-serif}
 @media (prefers-color-scheme:dark){svg{
---ink:#eceef1;--ink-2:#a2a7af;--ink-3:#6f757e;--ink-4:#4c525a;
+--ink:#eef0f3;--ink-2:#a8adb5;--ink-3:#878d96;--ink-4:#545a63;
 --line:#24272d;--line-2:#363a42;--surface:#131519;--surface-3:#23262c;
 --up:#4fd08a;--up-bg:#0d2018;--up-line:#1d4432;
 --down:#f0837a;--down-bg:#241211;--down-line:#4d2320;
-background:#0b0c0e}}
+background:#15171b}}
 .c-grid{stroke:var(--line);stroke-width:1;shape-rendering:crispEdges}
 .c-axis{stroke:var(--line-2);stroke-width:1;shape-rendering:crispEdges}
 .c-zero{stroke:var(--ink-4);stroke-width:1;stroke-dasharray:2 3}

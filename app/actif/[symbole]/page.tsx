@@ -106,7 +106,7 @@ export default async function PageActif({
         </p>
 
         <div className="actif-head">
-          <span className="actif-sym">{serie.symbol}</span>
+          <h1 className="actif-sym">{serie.symbol}</h1>
           <span className="actif-nom">{serie.label}</span>
           <span className="actif-prix">
             {fmtPrice(serie.prix.dernier)}

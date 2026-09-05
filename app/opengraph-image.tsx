@@ -31,11 +31,11 @@ export const contentType = "image/png";
 /** Palette, reprise de `globals.css`. L'image ne suit pas le thème du lecteur :
  *  elle est servie identique à tout le monde, on la fige donc en sombre. */
 const C = {
-  fond: "#0b0c0e",
+  fond: "#15171b",
   surface: "#131519",
   ligne: "#24272d",
   ligne2: "#363a42",
-  encre: "#eceef1",
+  encre: "#eef0f3",
   encre2: "#a2a7af",
   encre3: "#6f757e",
   haut: "#4fd08a",
