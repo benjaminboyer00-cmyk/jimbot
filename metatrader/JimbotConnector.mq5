@@ -116,17 +116,26 @@ void AutoTest()
    }
    Print("AUTO-TEST 1/5 : API joignable, ", StringLen(body), " octets reçus.");
 
-   int open_brace = StringFind(body, "{", StringFind(body, "[", StringFind(body, "\"signals\"")));
-   int close_brace = StringFind(body, "}", open_brace);
+   int cle = StringFind(body, "\"signals\"");
+   int crochet = (cle < 0) ? -1 : StringFind(body, "[", cle);
+   int open_brace = (crochet < 0) ? -1 : StringFind(body, "{", crochet);
+   int close_brace = (open_brace < 0) ? -1 : StringFind(body, "}", open_brace);
    if(open_brace < 0 || close_brace < 0)
    {
-      Print("AUTO-TEST : ÉCHEC à l'étape 2 — aucun signal dans la réponse.");
+      Print("AUTO-TEST : ÉCHEC à l'étape 2 — aucun signal dans la réponse. ",
+            "L'API a répondu, mais son contenu n'a pas la forme attendue.");
       return;
    }
    string item = StringSubstr(body, open_brace, close_brace - open_brace + 1);
    string cmd  = JsonString(item, "cmd");
    double sl   = JsonNumber(item, "sl");
    double tp   = JsonNumber(item, "tp");
+   if(cmd != "BUY" && cmd != "SELL")
+   {
+      Print("AUTO-TEST : ÉCHEC à l'étape 2 — le premier plan n'a pas de sens ",
+            "exploitable (cmd = « ", cmd, " »).");
+      return;
+   }
    Print("AUTO-TEST 2/5 : plan lu — ", JsonString(item, "internal"), " ", cmd,
          "  SL ", sl, "  TP ", tp);
 
@@ -287,11 +296,16 @@ void HandleSignal(const string item)
    if(NotifyMobile && !DejaNotifie(symbol, cmd))
    {
       RetenirNotification(symbol, cmd);
+      // La précision vient du signal, pas du graphique : `_Digits` est celle
+      // de l'instrument sur lequel l'EA est posé, et afficher un plan DOGE
+      // avec la précision de l'EURUSD arrondit 0,086140 à 0,09.
+      int digits = (int)JsonNumber(item, "digits");
+      if(digits <= 0) digits = _Digits;
       SendNotification(StringFormat("Jimbot %s %s — entrée %s, stop %s, objectif %s (score %.0f)",
                                     cmd, symbol,
-                                    DoubleToString(JsonNumber(item, "entry"), _Digits),
-                                    DoubleToString(sl, _Digits),
-                                    DoubleToString(tp, _Digits), score));
+                                    DoubleToString(JsonNumber(item, "entry"), digits),
+                                    DoubleToString(sl, digits),
+                                    DoubleToString(tp, digits), score));
    }
 
    if(!AutoTrade) return;
