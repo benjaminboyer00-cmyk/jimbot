@@ -84,7 +84,56 @@ stop et son objectif, mais fermez-la à la main quand vous avez vu ce que vous
 vouliez voir. Repassez `SelfTestOnDemo` à `false` ensuite, sinon il rouvre une
 position à chaque rechargement de l'EA.
 
-## Trader depuis le téléphone, sans aucune machine allumée
+## Capital.com — le montage gratuit (recommandé)
+
+MetaApi facture **la connexion elle-même**, indépendamment du compte
+MetaTrader. Un compte MT5 de démonstration ne coûte rien chez le courtier, mais
+le pont qui l'expose en REST est payant : sans solde chez MetaApi, il refuse de
+déployer, le compte reste indéfiniment `DISCONNECTED`, et l'API renvoie 504.
+
+Capital.com expose directement son propre moteur en REST, avec un
+**environnement de démonstration gratuit**, et cote presque tout l'univers du
+moteur : forex, or, indices et cryptos en CFD. Son application mobile montre
+les positions — ce qui était l'objectif.
+
+```
+GitHub Actions ──POST /positions──> Capital.com démo ──> app mobile
+```
+
+### Mise en place
+
+1. Ouvrir un compte Capital.com et **activer l'authentification à deux
+   facteurs** — l'API la refuse sans.
+2. *Réglages → Intégrations API → Générer une nouvelle clé.* Noter la clé et
+   le **mot de passe de la clé**, qui n'est pas celui du compte.
+3. Renseigner `.env` :
+
+   ```
+   JIMBOT_BROKER_TYPE=capital
+   CAPITAL_API_KEY=...
+   CAPITAL_IDENTIFIER=<e-mail du compte>
+   CAPITAL_PASSWORD=<mot de passe de la clé>
+   CAPITAL_DEMO=1
+   ```
+4. Vérifier : `python engine/broker_run.py --check`
+5. Armer : secrets `CAPITAL_*` sur GitHub, variable `JIMBOT_BROKER=1`.
+
+### Deux différences de vocabulaire
+
+Les instruments s'appellent des **epics** et ne suivent aucune nomenclature
+devinable : ils sont résolus par recherche (« Gold », « Bitcoin »…) plutôt que
+par une table d'alias, ce qui évite d'en maintenir une seconde.
+
+Les tailles sont en **unités de l'instrument, pas en lots**. La taille de
+contrat vaut donc 1 et le dimensionnement du moteur s'applique directement —
+le refus « sous le lot minimal » qui bloque l'or sur un petit compte MT5 ne se
+pose plus dans les mêmes termes.
+
+L'environnement se distingue **par l'URL** (`demo-api-capital` contre
+`api-capital`), pas par un champ qu'on pourrait lire de travers : on ne peut
+pas croire être en démonstration et se retrouver en réel.
+
+## Trader depuis le téléphone, via MetaTrader (payant)
 
 C'est le montage qui répond vraiment à « je veux que les trades du bot arrivent
 sur mon téléphone ». Il n'utilise pas l'Expert Advisor du tout.

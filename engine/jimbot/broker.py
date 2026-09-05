@@ -170,12 +170,26 @@ class MetaApi:
         return None
 
     # -- écriture -----------------------------------------------------------
-    def ordre(self, payload: dict) -> dict:
+    def passer_ordre(self, symbole: str, sens: str, volume: float,
+                     stop: float, objectif: float, cid: str,
+                     digits: int = 5) -> dict:
+        """Ordre au marché, dans le vocabulaire de MetaTrader."""
+        payload = {
+            "actionType": "ORDER_TYPE_BUY" if sens == "long" else "ORDER_TYPE_SELL",
+            "symbol": symbole,
+            "volume": round(volume, 8),
+            "stopLoss": round(stop, digits),
+            "takeProfit": round(objectif, digits),
+            "clientId": cid,
+            "comment": "jimbot",
+        }
         url = f"{self.base}/users/current/accounts/{self.account_id}/trade"
         try:
-            return http_post_json(url, payload, headers={"auth-token": self.token})
+            return {"envoye": payload,
+                    "reponse": http_post_json(url, payload,
+                                              headers={"auth-token": self.token})}
         except DataError as e:
-            raise BrokerError(f"ordre refusé : {e}") from e
+            raise BrokerError(f"ordre refusé : {diagnostic(str(e))}") from e
 
 
 def taux_vers_compte(api: "MetaApi", devise_profit: str, devise_compte: str) -> float | None:
@@ -257,12 +271,26 @@ def client_id(signal: dict) -> str:
 # --------------------------------------------------------------------------
 # Synchronisation : porter les signaux du moteur sur le compte
 # --------------------------------------------------------------------------
-def _client() -> MetaApi:
-    return MetaApi(
-        token=_env("METAAPI_TOKEN", ""),
-        account_id=_env("METAAPI_ACCOUNT_ID", ""),
-        region=_env("METAAPI_REGION", REGION_DEFAUT),
-    )
+def _client():
+    """Le courtier configuré.
+
+    Deux implémentations, même interface. `capital` est le défaut parce qu'il
+    est gratuit : MetaApi facture la connexion elle-même, indépendamment du
+    compte MetaTrader, et refuse de déployer sans solde — un compte de
+    démonstration y reste indéfiniment déconnecté.
+    """
+    quel = _env("JIMBOT_BROKER_TYPE", "capital").lower()
+    if quel == "metaapi":
+        return MetaApi(
+            token=_env("METAAPI_TOKEN", ""),
+            account_id=_env("METAAPI_ACCOUNT_ID", ""),
+            region=_env("METAAPI_REGION", REGION_DEFAUT),
+        )
+    if quel == "capital":
+        from .broker_capital import depuis_env
+        return depuis_env()
+    raise BrokerError(f"JIMBOT_BROKER_TYPE inconnu : « {quel} » "
+                      f"(attendu : capital ou metaapi)")
 
 
 def actif() -> bool:
@@ -376,32 +404,28 @@ def synchroniser(signaux: list[dict], *, dry_run: bool = False) -> dict:
                 "raison": f"volume sous le lot minimal du courtier ({spec.get('minVolume')})"})
             continue
 
-        payload = {
-            "actionType": "ORDER_TYPE_BUY" if s["direction"] == "long" else "ORDER_TYPE_SELL",
-            "symbol": courtier_nom,
-            "volume": volume,
-            "stopLoss": round(float(s["stop"]), int(spec.get("digits") or 5)),
-            "takeProfit": round(float(s["target"]), int(spec.get("digits") or 5)),
-            "clientId": cid,
-            "comment": "jimbot",
-        }
+        digits = int(spec.get("digits") or 5)
+        resume = {"symbol": courtier_nom, "interne": nom, "sens": s["direction"],
+                  "volume": volume, "stop": round(float(s["stop"]), digits),
+                  "objectif": round(float(s["target"]), digits), "clientId": cid}
 
         if dry_run:
-            rapport["ordres"].append({**payload, "simule": True})
+            rapport["ordres"].append({**resume, "simule": True})
             place += 1
             continue
 
         try:
-            reponse = api.ordre(payload)
+            reponse = api.passer_ordre(courtier_nom, s["direction"], volume,
+                                       float(s["stop"]), float(s["target"]),
+                                       cid, digits)
         except BrokerError as e:
             rapport["ignores"].append({"symbol": nom, "raison": str(e)})
             continue
 
-        rapport["ordres"].append({**payload, "reponse": reponse})
+        rapport["ordres"].append({**resume, "reponse": reponse})
         deja.add(courtier_nom)
         deja_ids.add(cid)
         place += 1
-        log.info("ordre transmis : %s %s %.2f lot(s)", payload["actionType"],
-                 courtier_nom, volume)
+        log.info("ordre transmis : %s %s %s", s["direction"], courtier_nom, volume)
 
     return rapport

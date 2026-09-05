@@ -46,9 +46,10 @@ class FauxApi:
                 return a
         return None
 
-    def ordre(self, payload):
-        self.ordres.append(payload)
-        return {"numericCode": 10009, "stringCode": "TRADE_RETCODE_DONE"}
+    def passer_ordre(self, symbole, sens, volume, stop, objectif, cid, digits=5):
+        self.ordres.append({"symbol": symbole, "sens": sens, "volume": volume,
+                            "stop": stop, "objectif": objectif, "clientId": cid})
+        return {"stringCode": "TRADE_RETCODE_DONE"}
 
 
 def _signal(**kw) -> dict:
@@ -217,10 +218,9 @@ def test_le_sens_et_les_niveaux_partent_correctement(faux):
     B.synchroniser([_signal(direction="short", symbol="BTC-USD", klass="crypto",
                             entry=80_000.0, stop=81_000.0, target=78_000.0)])
     o = api.ordres[0]
-    assert o["actionType"] == "ORDER_TYPE_SELL"
+    assert o["sens"] == "short"
     assert o["symbol"] == "BTCUSD"
-    assert o["stopLoss"] == 81_000.0 and o["takeProfit"] == 78_000.0
-    assert o["comment"] == "jimbot"
+    assert o["stop"] == 81_000.0 and o["objectif"] == 78_000.0
 
 
 def test_client_id_est_stable_sur_un_meme_scan():
@@ -322,3 +322,56 @@ def test_les_lectures_courtier_ne_sont_jamais_mises_en_cache(monkeypatch):
     api._get("/positions")
     api._get("/account-information")
     assert vus == [False, False], f"cache actif sur une lecture courtier : {vus}"
+
+
+# --------------------------------------------------------------------------
+# Capital.com : même interface, vocabulaire différent
+# --------------------------------------------------------------------------
+def test_capital_est_le_courtier_par_defaut(monkeypatch):
+    """MetaApi facture la connexion elle-même : le défaut gratuit évite qu'un
+    compte de démonstration reste indéfiniment déconnecté."""
+    monkeypatch.delenv("JIMBOT_BROKER_TYPE", raising=False)
+    monkeypatch.delenv("CAPITAL_API_KEY", raising=False)
+    with pytest.raises(B.BrokerError, match="CAPITAL_API_KEY"):
+        B._client()
+
+
+def test_type_de_courtier_inconnu_est_refuse(monkeypatch):
+    monkeypatch.setenv("JIMBOT_BROKER_TYPE", "etoro")
+    with pytest.raises(B.BrokerError, match="inconnu"):
+        B._client()
+
+
+def test_capital_expose_la_meme_interface_que_metaapi():
+    """`synchroniser` ne doit connaître le vocabulaire d'aucun courtier."""
+    from jimbot.broker_capital import CapitalCom
+    requis = ("compte", "positions", "specification", "resoudre", "prix",
+              "passer_ordre")
+    for nom in requis:
+        assert callable(getattr(CapitalCom, nom, None)), f"{nom} manquant"
+        assert callable(getattr(B.MetaApi, nom, None)), f"{nom} manquant sur MetaApi"
+
+
+def test_capital_demo_et_reel_se_distinguent_par_l_url():
+    """L'environnement vient de l'adresse appelée, pas d'un champ lisible de
+    travers : on ne peut pas croire être en démonstration et être en réel."""
+    from jimbot.broker_capital import CapitalCom, BASE_DEMO, BASE_REEL
+    demo = CapitalCom("k", "i", "p", demo=True)
+    reel = CapitalCom("k", "i", "p", demo=False)
+    assert demo.base == BASE_DEMO and reel.base == BASE_REEL
+    assert demo.base != reel.base
+
+
+def test_capital_taille_en_unites_pas_en_lots():
+    """Capital.com traite en unités de l'instrument : la taille de contrat
+    vaut 1, donc le dimensionnement du moteur s'applique sans conversion."""
+    from jimbot.broker_capital import CapitalCom
+    c = CapitalCom("k", "i", "p")
+    c._get = lambda chemin: {
+        "dealingRules": {"minDealSize": {"value": 0.1},
+                         "maxDealSize": {"value": 1000}},
+        "instrument": {"currency": "USD"}}
+    spec = c.specification("GOLD")
+    assert spec["contractSize"] == 1.0
+    assert spec["minVolume"] == 0.1
+    assert B.volume_pour(spec, 5.0) == pytest.approx(5.0)
