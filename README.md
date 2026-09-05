@@ -58,7 +58,44 @@ ce régime et l'accord avec l'unité de temps supérieure.
 Chaque point de score est traçable jusqu'à la formule qui l'a produit : le
 rapport et le dashboard affichent la contribution de chaque facteur.
 
-### Niveaux optimisés par espérance mathématique
+### Le plan fixe l'emporte sur l'optimiseur
+
+Les niveaux sont posés simplement : **stop à 2 ATR, objectif à 2 R**, sans
+aucune optimisation. Ce choix vient d'une mesure, et il a coûté la mise au
+rebut d'un module de quatre cents lignes.
+
+Comparés sur le même historique :
+
+| | optimiseur | plan fixe |
+|---|---|---|
+| trades | 340 | 91 |
+| taux de réussite | 27.9 % | **40.7 %** |
+| espérance réalisée | +0.045 R | **+0.186 R** |
+| facteur de profit | 1.073 | **1.309** |
+| drawdown maximal | 29.3 R | **11.45 R** |
+
+Le mécanisme est identifié. L'optimiseur retenait un R/R de 3.0 dans 175 cas
+sur 340, or c'est précisément la bande qui perd :
+
+| R/R retenu | n | réussite | espérance |
+|---|---|---|---|
+| < 1.5 | 76 | 48.7 % | +0.145 |
+| 1.5 – 2.5 | 50 | 34.0 % | **+0.277** |
+| **2.5 – 3.5** | **197** | **19.3 %** | **−0.029** |
+| > 3.5 | 17 | 17.6 % | −0.232 |
+
+La cause tient à sa fonction objectif. Maximiser une espérance *estimée*
+revient à retenir les estimations les plus flatteuses, qui sont aussi les plus
+bruitées : un optimiseur nourri d'une estimation imparfaite sélectionne son
+erreur. Le plan fixe ne peut pas tromper son propre estimateur, et c'est
+exactement ce qui le protège.
+
+L'optimiseur reste accessible pour la recherche (`JIMBOT_PLAN_MODE=optimise`),
+et toute la détection de structure — pivots, congestions, Fibonacci, point de
+contrôle du volume — garde sa valeur descriptive dans les rapports. Elle n'entre
+simplement plus dans la décision.
+
+### Ce que l'optimiseur cherchait à faire
 
 Les stops et objectifs ne sont pas des multiples d'ATR arbitraires. Le moteur
 identifie la structure réellement respectée par le marché — points pivots,

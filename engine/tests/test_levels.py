@@ -259,3 +259,52 @@ def test_le_bruit_penalise_encore_les_stops_tres_serres():
     assert serre < normal
     # L'écart doit rester de l'ordre de quelques points, pas de vingt.
     assert normal - serre < 0.08
+
+
+# --------------------------------------------------------------------------
+# Plan fixe — point de comparaison de l'optimiseur
+# --------------------------------------------------------------------------
+def test_le_plan_fixe_respecte_ses_parametres(marche):
+    plan = L.fixed_plan(marche, "long", 70.0, atr_mult=2.0, rr=2.0)
+    assert plan.stop < plan.entry < plan.target
+    assert plan.rr == pytest.approx(2.0)
+    assert plan.stop_atr == pytest.approx(2.0)
+    # Distance au stop et à l'objectif dans le rapport voulu.
+    assert (plan.target - plan.entry) == pytest.approx(2 * (plan.entry - plan.stop), rel=1e-6)
+
+
+def test_le_plan_fixe_est_symetrique_a_la_vente(marche):
+    plan = L.fixed_plan(marche, "short", 70.0)
+    assert plan.target < plan.entry < plan.stop
+
+
+def test_le_plan_fixe_neutre_ne_produit_aucun_niveau(marche):
+    plan = L.fixed_plan(marche, "neutre", 40.0)
+    assert plan.stop == 0.0 and plan.target == 0.0
+
+
+def test_les_deux_modes_utilisent_le_meme_modele_de_probabilite(marche):
+    """La comparaison n'aurait aucun sens si les deux plans étaient évalués
+    avec des règles différentes."""
+    fixe = L.fixed_plan(marche, "long", 70.0, atr_mult=2.0, rr=2.0)
+    attendu = L.win_probability(
+        fixe.entry - fixe.stop, fixe.target - fixe.entry, 70.0, 0.5,
+        (fixe.entry - fixe.stop) / 2.0)
+    assert fixe.win_prob == pytest.approx(attendu, abs=0.001)
+
+
+def test_le_plan_fixe_est_le_mode_par_defaut(monkeypatch):
+    """Mesuré : l'optimiseur réalise +0.045 R contre +0.186 R pour un plan
+    fixe à 2 ATR / 2 R, avec 2,5 fois plus de drawdown. Il concentre ses choix
+    sur la bande de R/R 2.5-3.5, qui est celle qui perd."""
+    import importlib
+    from jimbot import config, strategy
+    monkeypatch.delenv("JIMBOT_PLAN_MODE", raising=False)
+    assert config._env("JIMBOT_PLAN_MODE", "fixe") == "fixe"
+
+
+def test_le_plan_fixe_evite_la_bande_de_rr_perdante(marche):
+    """La bande 2.5-3.5 R réalisait 19.3 % de réussite pour -0.029 R ; le plan
+    fixe s'en tient à 2 R, dans la bande mesurée comme la meilleure."""
+    plan = L.fixed_plan(marche, "long", 70.0, atr_mult=2.0, rr=2.0)
+    assert 1.5 <= plan.rr <= 2.5

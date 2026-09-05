@@ -532,6 +532,43 @@ def _build_plan(asset: Asset, df: pd.DataFrame, direction: str, score: float,
     étouffant sur une paire forex qui varie de 0.4 %.
     """
     profile = RISK.get(asset.klass, RISK["crypto"])
+
+    # Le plan fixe est le mode par défaut, et ce choix vient d'une mesure.
+    #
+    # Comparés sur le même historique, l'optimiseur de niveaux et un plan fixe
+    # à 2 ATR / 2 R donnent :
+    #
+    #                        optimiseur   plan fixe
+    #   trades                      340          91
+    #   taux de réussite         27.9 %      40.7 %
+    #   espérance réalisée      +0.045 R    +0.186 R
+    #   facteur de profit          1.073       1.309
+    #   drawdown maximal          29.3 R     11.45 R
+    #
+    # Le mécanisme est identifié. L'optimiseur retient un R/R de 3.0 dans 175
+    # cas sur 340, or c'est précisément la bande qui perd : les R/R de 2.5 à
+    # 3.5 réalisent 19.3 % de réussite et -0.029 R, quand la bande 1.5-2.5
+    # réalise +0.277 R. Son stop moyen atteint 3.22 ATR contre 1.99, et 12 %
+    # de ses trades expirent sans jamais toucher leur objectif, contre 0 %.
+    #
+    # La cause tient à sa fonction objectif : maximiser une espérance estimée
+    # revient à retenir les estimations les plus flatteuses, qui sont aussi
+    # les plus bruitées. Un optimiseur nourri d'une estimation imparfaite
+    # sélectionne son erreur. Le plan fixe ne peut pas tromper son propre
+    # estimateur, et c'est exactement ce qui le protège.
+    #
+    # L'optimiseur reste accessible pour la recherche
+    # (`JIMBOT_PLAN_MODE=optimise`), de même que toute la détection de
+    # structure, qui garde sa valeur descriptive dans les rapports.
+    if _env("JIMBOT_PLAN_MODE", "fixe") == "fixe":
+        # Paramètres surchargeables uniquement pour le contrôle de robustesse :
+        # vérifier que le résultat ne tient pas à un choix particulier.
+        return L.fixed_plan(
+            df, direction, score,
+            atr_mult=float(_env("JIMBOT_FIXED_ATR", str(profile.atr_stop_mult))),
+            rr=float(_env("JIMBOT_FIXED_RR", str(profile.rr_target))),
+            klass=asset.klass, regime_quality=float(regime.quality))
+
     return L.optimal_plan(
         df, direction, score,
         regime_quality=float(regime.quality),

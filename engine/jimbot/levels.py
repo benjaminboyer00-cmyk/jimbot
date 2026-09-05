@@ -604,6 +604,42 @@ def _target_candidates(price: float, atr_v: float, direction: str,
     return out
 
 
+def fixed_plan(df: pd.DataFrame, direction: str, score: float, *,
+               atr_mult: float = 2.0, rr: float = 2.0,
+               klass: str = "crypto", regime_quality: float = 0.5) -> Plan:
+    """Plan fixe, sans aucune optimisation : stop à N ATR, objectif à N R.
+
+    Sert de point de comparaison à `optimal_plan`. La mesure a montré que
+    l'espérance estimée ne classe pas les trades — la tranche la mieux notée
+    réalisait le deuxième pire résultat. Si un plan qui ignore entièrement la
+    structure fait aussi bien, alors l'optimiseur est de la complexité sans
+    valeur, et le supprimer vaut mieux que le conserver.
+
+    La probabilité et l'espérance restent calculées avec le même modèle, pour
+    que les deux approches soient comparables sur les mêmes grandeurs.
+    """
+    price = S._last(df["close"])
+    atr_v = S._last(I.atr(df["high"], df["low"], df["close"]))
+    if direction == "neutre" or not np.isfinite(atr_v) or atr_v <= 0 or price <= 0:
+        return Plan(round(price, 8) if np.isfinite(price) else 0.0,
+                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, "aucun", "aucun", [])
+
+    dist = atr_mult * atr_v
+    sign = -1.0 if direction == "long" else 1.0
+    stop = price + sign * dist
+    target = price - sign * dist * rr
+
+    p = win_probability(dist, dist * rr, score, regime_quality, atr_v)
+    ev = expected_r(p, rr, cost_in_r(price, dist, klass))
+    return Plan(
+        entry=round(price, 8), stop=round(max(stop, 0.0), 8),
+        target=round(max(target, 0.0), 8), rr=round(rr, 2),
+        stop_atr=round(atr_mult, 2), win_prob=round(p, 3),
+        expected_r=round(ev, 3),
+        stop_basis=f"plan fixe ({atr_mult:.1f} ATR)",
+        target_basis=f"plan fixe ({rr:.1f} R)", alternatives=[])
+
+
 def _fallback_plan(price: float, atr_v: float, direction: str,
                    atr_mult: float, rr_target: float,
                    klass: str = "crypto") -> Plan:
