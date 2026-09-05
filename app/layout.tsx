@@ -34,10 +34,38 @@ const serif = Newsreader({
   variable: "--font-serif",
 });
 
+/**
+ * Base des URL absolues.
+ *
+ * Un aperçu de partage se réclame par une adresse absolue : un chemin relatif
+ * ne sert à rien à Discord, qui ne connaît pas le site. `VERCEL_URL` porte le
+ * domaine du déploiement courant — y compris pour une prévisualisation, ce qui
+ * évite qu'une branche de test annonce l'image de production.
+ */
+const BASE = process.env.VERCEL_URL
+  ? `https://${process.env.VERCEL_URL}`
+  : "https://jimbot-seven.vercel.app";
+
+const TITRE = "Jimbot — analyse de marché";
+const DESCRIPTION =
+  "Moteur d'analyse quantitative multi-actifs : crypto, forex, indices et memecoins. " +
+  "Chaque signal émis est suivi jusqu'à son issue.";
+
 export const metadata: Metadata = {
-  title: "Jimbot — analyse de marché",
-  description:
-    "Moteur d'analyse quantitative multi-actifs : crypto, forex, indices et memecoins.",
+  metadataBase: new URL(BASE),
+  title: TITRE,
+  description: DESCRIPTION,
+  // L'aperçu est produit par `app/opengraph-image.tsx` : Next le référence
+  // tout seul, il n'y a pas d'URL à écrire ici.
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: "Jimbot",
+    title: TITRE,
+    description: DESCRIPTION,
+    url: "/",
+  },
+  twitter: { card: "summary_large_image", title: TITRE, description: DESCRIPTION },
 };
 
 export const viewport: Viewport = {
