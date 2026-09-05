@@ -92,11 +92,10 @@ class CapitalCom:
             raise BrokerError(f"session Capital.com : {e}") from e
 
         if not r.ok:
+            detail = (r.text or "")[:200]
             raise BrokerError(
-                f"session refusée (HTTP {r.status_code}). Vérifiez la clé d'API, "
-                f"l'identifiant et le mot de passe. La clé doit être créée dans "
-                f"Réglages > Intégrations API, avec l'authentification à deux "
-                f"facteurs active.")
+                f"session refusée (HTTP {r.status_code}) sur {self.base}. "
+                f"{detail}")
 
         cst = r.headers.get("CST")
         jeton = r.headers.get("X-SECURITY-TOKEN")
@@ -243,3 +242,24 @@ def depuis_env() -> CapitalCom:
         mot_de_passe=_env("CAPITAL_PASSWORD", ""),
         demo=_env("CAPITAL_DEMO", "1") not in ("0", "", "false", "no"),
     )
+
+
+def diagnostiquer(cle: str, identifiant: str, mot_de_passe: str) -> dict:
+    """Essaie d'ouvrir une session sur les deux environnements.
+
+    Un 401 ne dit pas *lequel* des trois champs est faux. Mais comparer les
+    deux environnements, eux, tranche : la clé est la même pour les deux, donc
+    si l'un accepte et l'autre refuse, le problème est l'environnement et non
+    les identifiants ; si les deux refusent, ce sont les identifiants.
+
+    N'ouvre que des sessions — aucune lecture de compte, aucun ordre.
+    """
+    resultats = {}
+    for nom, demo in (("démonstration", True), ("réel", False)):
+        client = CapitalCom(cle, identifiant, mot_de_passe, demo=demo)
+        try:
+            client.ouvrir_session()
+            resultats[nom] = {"ok": True, "base": client.base, "detail": ""}
+        except BrokerError as e:
+            resultats[nom] = {"ok": False, "base": client.base, "detail": str(e)}
+    return resultats

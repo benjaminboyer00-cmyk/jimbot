@@ -63,14 +63,29 @@ def check() -> int:
         c = api.compte()
     except broker.BrokerError as e:
         print(f"\n  ÉCHEC : {e}\n")
+        if os.environ.get("JIMBOT_BROKER_TYPE", "capital").lower() == "capital":
+            _diagnostic_capital()
         return 1
 
+    # L'environnement se lit d'abord, et en toutes lettres : c'est la seule
+    # chose qui distingue un essai d'une perte réelle, et un montage se
+    # configure une fois pour tourner pendant des mois.
+    base = getattr(api, "base", "")
+    demo = c.est_demo
     print()
+    if demo:
+        print("  ┌────────────────────────────────────────────────┐")
+        print("  │  DÉMONSTRATION — aucun argent réel n'est engagé │")
+        print("  └────────────────────────────────────────────────┘")
+    else:
+        print("  ┌────────────────────────────────────────────────┐")
+        print("  │  COMPTE RÉEL — de l'argent réel est en jeu      │")
+        print("  └────────────────────────────────────────────────┘")
+    print(f"  Adresse    {base}")
     print(f"  Courtier   {c.courtier}")
     print(f"  Serveur    {c.serveur}")
     print(f"  Compte     {c.login}")
-    print(f"  Type       {c.type_compte}"
-          f"{'   <- compte de démonstration' if c.est_demo else '   <- COMPTE RÉEL'}")
+
     print(f"  Solde      {c.solde:,.2f} {c.devise}   (équité {c.equite:,.2f})")
     print(f"  Trading    {'autorisé' if c.trading_autorise else 'REFUSÉ par le courtier'}")
 
@@ -99,6 +114,51 @@ def check() -> int:
               f"profit {p.get('profit')}")
     print()
     return 0
+
+
+def _diagnostic_capital() -> None:
+    """Isole la cause d'un refus de session en comparant les deux environnements.
+
+    La clé est la même pour la démonstration et le réel : si l'un accepte et
+    l'autre refuse, le problème est l'environnement ; si les deux refusent, ce
+    sont les identifiants. Seules des sessions sont ouvertes — aucune lecture de
+    compte, aucun ordre.
+    """
+    from jimbot.broker_capital import diagnostiquer
+
+    cle = os.environ.get("CAPITAL_API_KEY", "")
+    ident = os.environ.get("CAPITAL_IDENTIFIER", "")
+    mdp = os.environ.get("CAPITAL_PASSWORD", "")
+    print("  Diagnostic — ouverture d'une session sur les deux environnements")
+    print(f"    clé          {'renseignée (' + str(len(cle)) + ' caractères)' if cle else 'ABSENTE'}")
+    print(f"    identifiant  {ident or 'ABSENT'}")
+    print(f"    mot de passe {'renseigné (' + str(len(mdp)) + ' caractères)' if mdp else 'ABSENT'}")
+    print()
+
+    res = diagnostiquer(cle, ident, mdp)
+    for nom, r in res.items():
+        etat = "ACCEPTÉE" if r["ok"] else "refusée"
+        print(f"    {nom:14} {etat}")
+        if not r["ok"]:
+            print(f"                   {r['detail'][:160]}")
+
+    demo_ok = res["démonstration"]["ok"]
+    reel_ok = res["réel"]["ok"]
+    print()
+    if demo_ok:
+        print("  La démonstration accepte vos identifiants : relancez --check.")
+    elif reel_ok:
+        print("  Vos identifiants sont bons, mais seul l'environnement RÉEL les")
+        print("  accepte. Capital.com n'ouvre l'accès démo qu'une fois un compte")
+        print("  de démonstration créé dans l'application : basculez sur « Démo »")
+        print("  dans la plateforme, puis réessayez.")
+    else:
+        print("  Les deux refusent : ce sont les identifiants.")
+        print("    - CAPITAL_IDENTIFIER doit être l'e-mail du compte.")
+        print("    - CAPITAL_PASSWORD est le mot de passe défini À LA CRÉATION")
+        print("      DE LA CLÉ, jamais celui du compte. C'est la cause la plus")
+        print("      fréquente d'un 401.")
+        print("    - Une clé fraîchement créée peut mettre quelques minutes.")
 
 
 def sync(dry_run: bool) -> int:
