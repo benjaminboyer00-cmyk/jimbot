@@ -12,8 +12,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import pandas as pd
 
 from . import calendar as cal
-from . import risk, stats
-from .config import MEMECOIN_CHAINS, REPORTS_DIR, SETTINGS, UNIVERSE, Asset
+from . import history, ledger, risk, stats
+from .config import MEMECOIN_CHAINS, REPORTS_DIR, RISK, SETTINGS, UNIVERSE, Asset
 from .datasources import crypto, dexscreener, news as news_src, yahoo
 from .datasources.base import DataError
 from .paper import Portfolio, performance
@@ -145,8 +145,8 @@ def run_paper(signals: list[dict], data: dict, corr: pd.DataFrame) -> tuple[dict
             closed += [t.to_dict() for t in pf.close_symbol(pos.symbol, price, "inversion")]
 
     # 3. Nouvelles entrées, par ordre de conviction décroissante.
-    history = read("trades", []) or []
-    perf = performance(history, pf.equity_curve, pf.initial)
+    fermes = read("trades", []) or []
+    perf = performance(fermes, pf.equity_curve, pf.initial)
     kelly = perf.get("kelly") if perf.get("trades", 0) >= 30 else None
 
     marks = {sym: float(df["close"].iloc[-1]) for sym, df in data["candles"].items()}
@@ -218,6 +218,33 @@ def persist_scan(signals: list[dict], data: dict, portfolio: dict,
 
     snapshot = {
         "generated_at": data["generated_at"],
+        # Seuils en vigueur pour *ce* scan. Le dashboard les affichait en dur ;
+        # ils sont réglables par variable d'environnement, si bien qu'un
+        # changement de seuil laissait le site annoncer l'ancien.
+        "seuils": {
+            "signal": SETTINGS.signal_threshold,
+            "alerte": SETTINGS.alert_threshold,
+            "ping": SETTINGS.ping_threshold,
+        },
+        # Préréglages de risque, par classe d'actif. Le dashboard en a besoin
+        # pour dimensionner une position sur le capital de son lecteur — un
+        # calcul que le moteur ne peut pas faire, puisqu'il ne connaît que son
+        # portefeuille papier. Les publier plutôt que les recopier côté site
+        # garantit qu'il n'existe qu'une seule règle de dimensionnement.
+        "risque": {
+            "par_classe": {
+                klass: {
+                    "risque_pct": p.risk_pct,
+                    "notionnel_max_pct": p.max_notional_pct,
+                    "positions_max": p.max_positions,
+                    "stop_atr": p.atr_stop_mult,
+                    "rr_cible": p.rr_target,
+                }
+                for klass, p in RISK.items()
+            },
+            "risque_portefeuille_max": risk.MAX_PORTFOLIO_RISK,
+            "risque_correle_max": risk.MAX_CORRELATED_RISK,
+        },
         "news_summary": news_summary,
         "news_engine": news_engine,
         "speeches": speeches,
@@ -243,14 +270,24 @@ def persist_scan(signals: list[dict], data: dict, portfolio: dict,
     }
     write("latest", snapshot)
 
-    # Historique : uniquement les signaux exploitables, pour rester léger.
+    # Historique des signaux : uniquement les exploitables, pour rester léger.
     actionable = [{k: s[k] for k in ("symbol", "label", "klass", "direction", "score",
                                      "price", "entry", "stop", "target", "rr",
                                      "timeframe", "generated_at")}
                   | {"regime": s["regime"]["name"]}
                   for s in signals if s["direction"] != "neutre"]
+    emis = read("signals", []) or []
     if actionable:
-        append_history("signals", actionable, MAX_SIGNALS_HISTORY)
+        emis = append_history("signals", actionable, MAX_SIGNALS_HISTORY)
+
+    # Mémoire : la trajectoire de *tous* les actifs, signal ou non. C'est ce
+    # qui permet de tracer un actif dans le temps plutôt que le seul présent.
+    history.enregistrer(signals, data["generated_at"])
+
+    # Redevabilité : ce que le marché a fait après chaque signal émis. Le
+    # calcul a lieu ici parce que c'est le seul endroit où l'on dispose encore
+    # des bougies — le dashboard, lui, ne voit que des fichiers JSON.
+    ledger.enregistrer(emis, data["candles"], data["generated_at"])
     return snapshot
 
 

@@ -78,8 +78,8 @@ class BacktestTrade:
         return asdict(self)
 
 
-def _simulate_exit(future: pd.DataFrame, direction: str, entry: float,
-                   stop: float, target: float, klass: str) -> tuple[str, float, int, float, float]:
+def simulate_exit(future: pd.DataFrame, direction: str, entry: float,
+                  stop: float, target: float, klass: str) -> tuple[str, float, int, float, float]:
     """Fait vivre le trade sur les bougies suivantes.
 
     Renvoie (issue, prix de sortie, bougies tenues, MFE en R, MAE en R).
@@ -145,7 +145,7 @@ def run_asset(asset: Asset, df: pd.DataFrame, *, step: int = STEP,
         entry = sig.entry * (1.0 + adverse * bps)
 
         future = df.iloc[i + 1:]
-        outcome, raw_exit, bars, mfe, mae = _simulate_exit(
+        outcome, raw_exit, bars, mfe, mae = simulate_exit(
             future, sig.direction, entry, sig.stop, sig.target, asset.klass)
         if outcome in {"invalide", "tronque"}:
             continue

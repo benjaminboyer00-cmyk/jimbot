@@ -45,18 +45,24 @@ def read(name: str, default: Any = None) -> Any:
         return default
 
 
-def write(name: str, payload: Any) -> Path:
-    """Écrit de façon atomique : pas de JSON tronqué si le job est tué.
+def write_raw(name: str, text: str) -> Path:
+    """Écrit un fichier de données déjà sérialisé, de façon atomique.
 
-    Un fichier partiel serait committé par Actions et casserait le dashboard ;
-    l'écriture passe donc par un temporaire puis un rename atomique.
+    Pas de JSON tronqué si le job est tué : un fichier partiel serait committé
+    par Actions et casserait le dashboard. L'écriture passe donc par un
+    temporaire puis un rename atomique.
+
+    Cette variante prend du texte plutôt qu'un objet parce que tous les
+    fichiers ne se sérialisent pas de la même façon : l'historique met un
+    point par ligne pour rester lisible dans un diff (voir `history.py`), ce
+    que `json.dump` ne sait pas faire.
     """
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     p = _path(name)
     fd, tmp = tempfile.mkstemp(dir=str(DATA_DIR), suffix=".tmp")
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as fh:
-            json.dump(payload, fh, ensure_ascii=False, indent=2, default=str)
+            fh.write(text)
             fh.flush()
             os.fsync(fh.fileno())
         # mkstemp crée en 0600 et os.replace conserve les droits : sans cette
@@ -69,6 +75,12 @@ def write(name: str, payload: Any) -> Path:
         raise
     log.debug("écrit %s (%.1f Ko)", p.name, p.stat().st_size / 1024)
     return p
+
+
+def write(name: str, payload: Any) -> Path:
+    """Écrit un fichier de données au format indenté habituel."""
+    return write_raw(name, json.dumps(payload, ensure_ascii=False, indent=2,
+                                      default=str))
 
 
 def append_history(name: str, items: list[dict], cap: int) -> list[dict]:
