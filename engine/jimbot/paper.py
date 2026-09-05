@@ -183,7 +183,25 @@ class Portfolio:
             new_bars = candles[candles.index > pd.Timestamp(pos.opened_at)]
             # Au minimum, la dernière bougie sert de référence de marché.
             window = new_bars if not new_bars.empty else candles.tail(1)
-            pos.bars_held += len(new_bars)
+
+            # Affectation, et non incrément.
+            #
+            # `new_bars` contient toutes les bougies depuis l'ouverture, pas
+            # celles arrivées depuis la dernière mise à jour. En cumulant, le
+            # compteur additionnait un total à chaque scan et croissait comme le
+            # carré du temps écoulé : une position ouverte depuis treize heures
+            # — treize bougies horaires — affichait 128 bougies détenues et
+            # franchissait le plafond de 120.
+            #
+            # Conséquence : les positions expiraient au bout d'une demi-journée
+            # au lieu des cinq jours prévus. Cinq des sept trades clos du
+            # portefeuille papier portent la mention « expiration » après 13 à
+            # 19 heures, et mesurent donc une stratégie qui n'est pas celle que
+            # le site décrit. Le registre de redevabilité, qui rejoue les
+            # bougies sans passer par ce compteur, ne partageait pas l'erreur —
+            # d'où le même signal DOGE affiché clos à +0,54 R d'un côté et
+            # toujours en cours à +0,09 R de l'autre.
+            pos.bars_held = len(new_bars)
 
             hi = float(window["high"].max())
             lo = float(window["low"].min())

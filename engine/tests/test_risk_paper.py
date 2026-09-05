@@ -3,10 +3,12 @@
 C'est la partie du code qui décide combien on perd quand on a tort : elle est
 testée sur ses cas limites, pas seulement sur son cas nominal.
 """
+import numpy as np
 import pandas as pd
 import pytest
 
 from jimbot import risk as R
+from jimbot import paper as P
 from jimbot.paper import Portfolio, Position, apply_costs, performance
 
 
@@ -278,3 +280,69 @@ def test_series_consecutives():
 
 def test_performance_sans_trade():
     assert performance([], [], 10_000)["trades"] == 0
+
+
+# --------------------------------------------------------------------------
+# Durée de détention : un compteur, pas un cumul
+# --------------------------------------------------------------------------
+def _bougies_horaires(n: int, depart: str = "2026-09-01T00:00:00+00:00",
+                      prix: float = 100.0) -> pd.DataFrame:
+    """Série horaire plate : aucune position ne peut toucher stop ni objectif,
+    seule l'expiration peut la fermer."""
+    idx = pd.date_range(depart, periods=n, freq="h", tz="UTC")
+    p = np.full(n, prix)
+    return pd.DataFrame(
+        {"open": p, "high": p, "low": p, "close": p, "volume": np.full(n, 1.0)},
+        index=idx)
+
+
+def test_bars_held_compte_les_bougies_pas_les_scans():
+    """Le scan tourne quatre fois par heure et recharge toute la fenêtre.
+
+    `new_bars` contient donc à chaque passage *toutes* les bougies depuis
+    l'ouverture. En cumulant, le compteur croissait comme le carré du temps :
+    treize heures de détention affichaient 128 bougies. Une position ouverte
+    depuis dix bougies doit en compter dix, quel que soit le nombre de fois
+    qu'on a rafraîchi entre-temps.
+    """
+    pf = Portfolio({"capital": 10_000, "initial": 10_000})
+    bougies = _bougies_horaires(200)
+
+    pos = Position(
+        symbol="TEST", label="Test", klass="crypto", direction="long",
+        entry=100.0, entry_ref=100.0, stop=95.0, target=110.0, units=10.0,
+        notional=1_000.0, risk_amount=50.0,
+        opened_at="2026-09-01T00:00:00+00:00", score=60.0, regime="range")
+    pf.positions.append(pos)
+
+    # Dix heures se sont écoulées, rafraîchies vingt fois — comme en production.
+    fenetre = bougies.iloc[: 1 + 10]
+    for _ in range(20):
+        pf.update("TEST", fenetre)
+
+    assert pos.bars_held == 10, (
+        f"{pos.bars_held} bougies comptées pour 10 écoulées : le compteur cumule")
+
+
+def test_expiration_survient_au_bon_horizon():
+    """Une position ne doit pas expirer avant MAX_HOLD_BARS bougies réelles."""
+    pf = Portfolio({"capital": 10_000, "initial": 10_000})
+    bougies = _bougies_horaires(P.MAX_HOLD_BARS + 50)
+
+    pos = Position(
+        symbol="TEST", label="Test", klass="crypto", direction="long",
+        entry=100.0, entry_ref=100.0, stop=95.0, target=110.0, units=10.0,
+        notional=1_000.0, risk_amount=50.0,
+        opened_at="2026-09-01T00:00:00+00:00", score=60.0, regime="range")
+    pf.positions.append(pos)
+
+    # Bien avant l'horizon, rafraîchi de nombreuses fois : rien ne doit fermer.
+    avant = bougies.iloc[: 1 + P.MAX_HOLD_BARS - 10]
+    for _ in range(40):
+        assert pf.update("TEST", avant) == [], "fermeture prématurée"
+    assert pf.positions, "la position a disparu avant son horizon"
+
+    # Une fois l'horizon franchi, elle expire.
+    apres = bougies.iloc[: 1 + P.MAX_HOLD_BARS + 1]
+    fermes = pf.update("TEST", apres)
+    assert len(fermes) == 1 and fermes[0].reason == "expiration"

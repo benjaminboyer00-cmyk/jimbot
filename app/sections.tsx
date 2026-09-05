@@ -1065,6 +1065,17 @@ export function Redevabilite({ suivi }: { suivi?: Suivi | null }) {
         émis</strong>, à la date où ils l’ont été, avec l’issue que le marché
         leur a donnée ensuite. C’est la seule mesure de ce site qu’un lecteur
         puisse confronter à ce qu’il avait sous les yeux.
+        <br />
+        <br />
+        <strong>«&nbsp;En cours&nbsp;» ne veut pas dire «&nbsp;position
+        ouverte&nbsp;».</strong> Ici, un signal reste en cours tant que le
+        marché n’a touché ni le stop ni l’objectif du plan émis — c’est une
+        question posée au marché, pas un état du portefeuille. Le portefeuille
+        papier, lui, a ses propres sorties : stop suiveur, expiration. Il peut
+        donc avoir soldé une position que ce tableau suit encore, et le
+        bandeau «&nbsp;Positions&nbsp;» du portefeuille afficher zéro pendant
+        qu’une ligne est en cours ici. Les deux chiffres sont justes&nbsp;; ils
+        ne répondent pas à la même question.
       </p>
 
       {v && (
