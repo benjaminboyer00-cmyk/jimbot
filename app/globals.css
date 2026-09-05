@@ -1724,3 +1724,41 @@ footer {
     font-size: 10.5pt;
   }
 }
+
+/* Position du prix dans l'amplitude des 24 h.
+
+   Une graduation, pas une barre de progression : ce qui compte n'est pas une
+   quantité remplie mais un emplacement — sur le plus bas, sur le plus haut, ou
+   quelque part entre les deux. Le repère est donc un trait posé sur un axe, et
+   les deux extrémités sont marquées pour que le milieu se lise sans légende. */
+.amplitude {
+  position: relative;
+  display: block;
+  height: 14px;
+  min-width: 96px;
+}
+.amplitude::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 6px;
+  height: 2px;
+  background: var(--surface-3);
+  border-radius: var(--r-full);
+}
+.amplitude i {
+  position: absolute;
+  top: 1px;
+  width: 2px;
+  height: 12px;
+  margin-left: -1px;
+  border-radius: var(--r-full);
+  background: var(--ink-3);
+}
+.amplitude i.up {
+  background: var(--up);
+}
+.amplitude i.down {
+  background: var(--down);
+}

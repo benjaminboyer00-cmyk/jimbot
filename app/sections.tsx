@@ -11,6 +11,7 @@ import {
   REGIME_LABELS,
   type Backtest,
   type Issue,
+  type Mouvement,
   type Probe,
   type Report,
   type RiskOff,
@@ -1218,5 +1219,143 @@ export function Redevabilite({ suivi }: { suivi?: Suivi | null }) {
         dépôt, toute réécriture après coup y serait visible.
       </p>
     </section>
+  );
+}
+
+/**
+ * Ce que fait le marché en ce moment.
+ *
+ * Le site disait ce que le moteur *pense* d'un actif, et ce qu'un signal passé
+ * *a donné*. Il ne disait pas ce que le marché *fait* — c'est pourtant la
+ * première chose qu'on regarde, et la seule qui ne demande aucun modèle.
+ *
+ * Rien ici n'est une prédiction ni une invitation à agir : ce sont des
+ * mesures. Elles sont donc séparées des configurations retenues, et triées par
+ * ampleur du parcours plutôt que par score.
+ */
+export function Marche({ signaux }: { signaux: Signal[] }) {
+  const lignes = signaux
+    .map((s) => ({ s, m: s.mouvement }))
+    .filter(
+      (l): l is { s: Signal; m: Extract<Mouvement, { disponible: true }> } =>
+        !!l.m && l.m.disponible,
+    )
+    // Le classement se fait sur le parcours rapporté à la journée habituelle,
+    // et non sur la variation : sinon une crypto à 3 % passerait toujours
+    // devant un indice à 0,8 %, quand bien même l'indice vivrait sa journée la
+    // plus agitée du mois et la crypto une journée banale.
+    .sort((a, b) => b.m.ampleur - a.m.ampleur);
+
+  if (!lignes.length) return null;
+
+  const remarquables = lignes.filter((l) => l.m.ampleur >= 1.4);
+  const secousses = lignes.filter((l) => l.m.rendu);
+
+  return (
+    <section>
+      <h2>
+        Ce que fait le marché
+        <span className="compte">sur 24 heures</span>
+      </h2>
+
+      <p className="note" style={{ marginTop: 0, marginBottom: 16 }}>
+        Des mesures, pas des prédictions&nbsp;: aucun de ces chiffres n’entre
+        dans le score du moteur.{" "}
+        <strong>L’ampleur compare le parcours du jour à la journée ordinaire de
+        l’actif</strong>, ce qui rend un indice et un memecoin comparables — 2,0
+        signifie «&nbsp;deux fois sa journée habituelle&nbsp;».{" "}
+        {remarquables.length
+          ? `${remarquables.length} actif(s) sortent de l’ordinaire.`
+          : "Aucun actif ne sort de l’ordinaire."}
+        {secousses.length > 0 && (
+          <>
+            {" "}
+            {secousses.length} a(ont) beaucoup bougé pour finir où il(s)
+            commençai(en)t&nbsp;: le parcours ne dit rien du sens.
+          </>
+        )}
+      </p>
+
+      <div className="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Actif</th>
+              <th>Ce qu’il fait</th>
+              <th className="num">24 h</th>
+              <th className="num">7 j</th>
+              <th className="num">Parcours</th>
+              <th className="num">Ampleur</th>
+              <th style={{ width: 120 }}>Dans sa journée</th>
+              <th className="num">Volume</th>
+            </tr>
+          </thead>
+          <tbody>
+            {lignes.map(({ s, m }) => (
+              <tr key={s.symbol}>
+                <td style={{ fontWeight: 600 }}>
+                  <a href={`/actif/${encodeURIComponent(s.symbol)}`}>{s.symbol}</a>
+                </td>
+                <td className={m.rendu ? "muted" : m.var_24h > 0 ? "up" : "down"}>
+                  {m.etat}
+                </td>
+                <td className={`num ${m.var_24h > 0 ? "up" : m.var_24h < 0 ? "down" : "muted"}`}>
+                  {m.var_24h >= 0 ? "+" : ""}
+                  {fmtNum(m.var_24h)} %
+                </td>
+                <td className="num muted">
+                  {m.var_7j === null
+                    ? "—"
+                    : `${m.var_7j >= 0 ? "+" : ""}${fmtNum(m.var_7j)} %`}
+                </td>
+                <td className="num muted">{fmtNum(m.amplitude_pct)} %</td>
+                <td className="num">
+                  {m.amplitude_ref_pct === null ? (
+                    <span className="muted" title="Moins d’une semaine d’historique : aucune journée ordinaire à laquelle comparer.">
+                      —
+                    </span>
+                  ) : (
+                    <strong style={{ fontWeight: m.ampleur >= 1.4 ? 600 : 400 }}>
+                      {fmtNum(m.ampleur)}&nbsp;×
+                    </strong>
+                  )}
+                </td>
+                <td>
+                  <Amplitude position={m.position_range} hausse={m.var_24h >= 0} />
+                </td>
+                <td className={`num ${m.volume_rel >= 2 ? "" : "muted"}`}>
+                  {m.volume_rel > 0 ? `${fmtNum(m.volume_rel, 1)} ×` : "—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <p className="note">
+        <strong>Parcours</strong> est la distance entre le plus haut et le plus
+        bas des 24 heures, et non l’écart entre les deux extrémités&nbsp;: un
+        actif qui monte de 6&nbsp;% puis rend tout affiche une variation de
+        +0,3&nbsp;% alors qu’il a parcouru six pour cent.{" "}
+        <strong>Dans sa journée</strong> place le prix actuel dans cette
+        amplitude — tout à droite, il finit sur son plus haut&nbsp;; au milieu,
+        il a rendu ce qu’il avait pris. <strong>Volume</strong> rapporte la
+        dernière bougie à sa médiane sur 48 heures, et vaut 0 sur les sources
+        qui n’en publient pas.
+      </p>
+    </section>
+  );
+}
+
+/** Position du prix dans l'amplitude des 24 h, en une graduation. */
+function Amplitude({ position, hausse }: { position: number; hausse: boolean }) {
+  const pct = Math.max(0, Math.min(1, position)) * 100;
+  return (
+    <span
+      className="amplitude"
+      title={`${pct.toFixed(0)} % de l’amplitude des 24 h — 0 sur le plus bas, 100 sur le plus haut`}
+    >
+      <i className={hausse ? "up" : "down"} style={{ left: `${pct}%` }} />
+    </span>
   );
 }

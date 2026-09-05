@@ -43,10 +43,15 @@ export function Dimensionnement({
   signaux,
   reglages,
   seuilSignal,
+  horsSeuil = false,
 }: {
   signaux: Signal[];
   reglages: ReglagesRisque;
   seuilSignal: number;
+  /** Les lignes proposées viennent de la liste de surveillance, pas des
+   *  configurations retenues : elles n'atteignent pas le seuil de conviction.
+   *  Le tableau doit le dire, sans quoi il ressemble à une recommandation. */
+  horsSeuil?: boolean;
 }) {
   // Les champs gardent la saisie telle quelle, pas le nombre qu'on en tire.
   // Sinon vider le champ pour retaper y réécrit aussitôt un « 0 », et l'on ne
@@ -91,17 +96,25 @@ export function Dimensionnement({
     }
   }
 
-  const plans: Plan[] = signaux.map((s) => ({
-    cle: s.symbol,
-    symbol: s.symbol,
-    label: s.label,
-    klass: s.klass,
-    score: s.score,
-    direction: s.direction === "short" ? "short" : "long",
-    entree: s.entry,
-    stop: s.stop,
-    objectif: s.target,
-  }));
+  const plans: Plan[] = signaux
+    // Un plan sans niveaux exploitables ne se dimensionne pas : l'écarter ici
+    // évite une ligne de tirets qui n'apprend rien.
+    .filter((s) => s.entry > 0 && s.stop > 0 && s.entry !== s.stop)
+    .map((s) => ({
+      cle: s.symbol,
+      symbol: s.symbol,
+      label: s.label,
+      klass: s.klass,
+      score: s.score,
+      // Hors seuil, `direction` vaut « neutre » : c'est le biais qui porte
+      // l'orientation du plan, et c'est lui qu'il faut dimensionner.
+      direction: (s.direction !== "neutre" ? s.direction : s.bias) === "short"
+        ? "short"
+        : "long",
+      entree: s.entry,
+      stop: s.stop,
+      objectif: s.target,
+    }));
 
   const e = nombre(libreEntree, 0);
   const st = nombre(libreStop, 0);
@@ -163,6 +176,15 @@ export function Dimensionnement({
 
       {plans.length ? (
         <>
+          {horsSeuil && (
+            <div className="warn" style={{ maxWidth: "76ch", marginBottom: 14 }}>
+              <strong>Aucune configuration n’atteint le seuil de conviction.</strong>{" "}
+              Les lignes ci-dessous sont celles de la liste de surveillance,
+              dimensionnées à titre d’exercice&nbsp;: elles montrent ce que
+              coûterait la position si vous décidiez de la prendre, elles ne
+              disent pas de la prendre. Le moteur, lui, reste à l’écart.
+            </div>
+          )}
           <div className="tablewrap">
             <table>
               <thead>

@@ -22,19 +22,71 @@ MetaTrader. **Par défaut, il ne transmet aucun ordre.**
 |---|---|---|
 | `ApiUrl` | `.../api/mt` | Point d'entrée du flux |
 | `Mode` | `actionable` | `actionable`, `watchlist` ou `all` |
-| `MinScore` | 68 | Conviction minimale retenue |
+| `MinScore` | **0** | 0 = suivre le seuil publié par l'API. Voir ci-dessous |
 | `RefreshSeconds` | 300 | Intervalle d'interrogation |
 | `AutoTrade` | **false** | Exécution réelle — désactivée par défaut |
 | `MaxRiskPercent` | 1.0 | Risque maximal par position, en % du solde |
 | `MaxTotalRisk` | 5.0 | Risque cumulé maximal |
 | `MaxPositions` | 5 | Positions simultanées maximales |
 | `MagicNumber` | 20260825 | Identifiant des ordres de cet EA |
+| `NotifyMobile` | true | Pousser chaque signal vers l'application mobile |
+
+## Le seuil, et pourquoi il valait 68
+
+`MinScore` valait 68 dans les versions précédentes. C'était le seuil
+d'**alerte Discord**, pas le seuil de **signal**, et les deux ne servent pas à
+la même chose.
+
+Mesuré sur les 3 182 relevés de `data/history.json` :
+
+| Seuil | Part des relevés qui le franchissent |
+|---|---|
+| 58 — seuil de signal | 5,6 % |
+| 68 — seuil d'alerte | **0,06 %**, soit 2 relevés sur 3 182 |
+
+Un EA réglé sur 68 ne prenait donc pratiquement jamais de position. Le
+comportement ressemblait à une panne alors que c'était un réglage.
+
+`MinScore = 0` fait suivre `thresholds.signal`, que l'API publie et qui vient
+du scan lui-même : si le seuil du moteur bouge, l'EA suit sans recompilation.
+Une valeur strictement positive continue de forcer un seuil manuel.
+
+## Recevoir les signaux sur un téléphone
+
+**L'application mobile MetaTrader 5 n'exécute pas d'Expert Advisor.** C'est une
+limite de la plateforme sur iOS comme sur Android : l'application affiche les
+graphiques, les positions et permet de passer des ordres à la main, mais elle
+ne fait tourner ni EA, ni indicateur, ni script. Aucun réglage ne le change.
+
+Trois montages possibles, du plus simple au plus complet :
+
+1. **Sans MetaTrader du tout.** Jimbot publie déjà ses alertes sur Discord, qui
+   fonctionne sur téléphone. C'est le seul montage qui ne demande aucune
+   machine allumée.
+2. **Notifications poussées.** L'EA tourne sur un terminal de bureau et pousse
+   chaque signal vers l'application mobile (`NotifyMobile`). Relever
+   l'identifiant MetaQuotes dans l'application (*Réglages → Messages*), le
+   coller dans *Outils → Options → Notifications* du terminal de bureau, et
+   cocher l'activation. Le téléphone reçoit le signal ; c'est vous qui passez
+   l'ordre, depuis l'application.
+3. **Exécution automatique.** L'EA tourne avec `AutoTrade` sur un VPS Windows
+   allumé en permanence, connecté au même compte courtier. L'application mobile
+   voit alors les positions ouvertes par l'EA et permet de les fermer ou de les
+   modifier. Un ordinateur personnel éteint la nuit ne convient pas : l'EA ne
+   tourne que quand le terminal tourne.
+
+Dans les trois cas, c'est le terminal de bureau ou le VPS qui décide ; le
+téléphone n'est qu'une fenêtre sur ce qu'il fait.
 
 ## Ce que fait l'EA
 
 - il interroge l'API à intervalle régulier et ignore un scan déjà traité,
   pour ne pas rouvrir la même position à chaque cycle ;
 - il affiche les configurations sur le graphique et les journalise ;
+- si `NotifyMobile` est activé, il pousse chaque configuration vers
+  l'application mobile, une seule fois par instrument et par sens — le scan
+  réémet la même configuration tant qu'elle tient, et sans cette mémoire le
+  téléphone sonnerait à chaque cycle pour la même chose ;
 - si `AutoTrade` est activé, il ouvre les positions correspondantes avec le
   stop et l'objectif fournis.
 

@@ -41,7 +41,41 @@ export type Signal = {
   target_basis: string;
   bias: "long" | "short" | "neutre";
   actionable: boolean;
+  /**
+   * Ce que l'actif fait en ce moment. Mesuré par le moteur, sans aucun modèle
+   * ni prédiction — voir `mouvement()` dans `engine/jimbot/strategy.py`.
+   *
+   * Optionnel : les instantanés antérieurs à son introduction n'en ont pas, et
+   * un actif dont l'historique ne couvre pas une semaine renvoie
+   * `disponible: false` plutôt qu'une intensité inventée sur trois jours.
+   */
+  mouvement?: Mouvement;
 };
+
+export type Mouvement =
+  | { disponible: false }
+  | {
+      disponible: true;
+      /** Variation nette, en pourcentage. `null` si l'historique est trop court. */
+      var_1h: number | null;
+      var_24h: number;
+      var_7j: number | null;
+      /** Distance réellement parcourue sur 24 h (haut − bas), en pourcentage. */
+      amplitude_pct: number;
+      /** Ce que parcourt cet actif un jour ordinaire. `null` faute d'étalon. */
+      amplitude_ref_pct: number | null;
+      /** Parcours du jour rapporté à cette journée ordinaire. 2 = deux fois. */
+      ampleur: number;
+      /** Part du parcours conservée : 1 finit sur un extrême, 0 revient au départ. */
+      retention: number;
+      /** Position dans l'amplitude des 24 h : 0 sur le plus bas, 1 sur le plus haut. */
+      position_range: number;
+      /** Volume de la dernière bougie rapporté à sa médiane sur 48 h. */
+      volume_rel: number;
+      etat: string;
+      /** Parcours ample dont il ne reste presque rien. */
+      rendu: boolean;
+    };
 
 export type Speech = {
   title: string;

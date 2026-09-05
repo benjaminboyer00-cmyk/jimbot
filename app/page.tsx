@@ -31,6 +31,7 @@ import {
   Validation,
   ApiSection,
   Kpi,
+  Marche,
   Memecoins,
   NewsSummary,
   Redevabilite,
@@ -119,6 +120,8 @@ export default async function Page() {
           <Kpi label="Trades fermés" value={String(perf.trades)} />
         </div>
 
+        <Marche signaux={snap.signals} />
+
         {snap.risk_off && snap.risk_off.count > 0 && (
           <WorldContext riskOff={snap.risk_off} />
         )}
@@ -168,8 +171,16 @@ export default async function Page() {
           )}
         </section>
 
+        {/* Le tableau se nourrissait des seules configurations retenues, et
+            celles-ci sont rares par construction — 5,6 % des relevés franchissent
+            le seuil. Le calculateur passait donc l'essentiel de son temps vide,
+            alors que c'est un outil qui n'a aucune raison de dépendre d'un
+            signal. À défaut de configuration retenue, il dimensionne les plans
+            de la liste de surveillance, en disant clairement qu'ils sont sous le
+            seuil. */}
         <Dimensionnement
-          signaux={actionable}
+          signaux={actionable.length ? actionable : (snap.watchlist ?? [])}
+          horsSeuil={actionable.length === 0}
           reglages={risque}
           seuilSignal={seuil.signal}
         />

@@ -173,6 +173,9 @@ class Signal:
     stop_strength: float = 0.0
     obstacle: float = 0.0
     plan_alternatives: list = field(default_factory=list)
+    # Ce que l'actif fait en ce moment. Mesuré, jamais prédit, et sans aucun
+    # effet sur le score : voir `mouvement()`.
+    mouvement: dict = field(default_factory=dict)
     warnings: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
@@ -414,6 +417,179 @@ def htf_bias(df_htf: pd.DataFrame | None) -> tuple[float, str]:
     return round(bias, 3), f"unité supérieure {label} (biais {bias:+.2f})"
 
 
+def _variation(df: pd.DataFrame, heures: float) -> float | None:
+    """Variation en pourcentage sur les `heures` écoulées, ou None.
+
+    Le décompte se fait sur les horodatages et non sur un nombre de bougies :
+    l'heure de Yahoo saute les week-ends et les séances fermées, si bien que
+    « 24 bougies en arrière » désignerait avant-hier sur un indice et hier sur
+    une crypto. Comparer deux actifs supposait de comparer deux durées.
+
+    Renvoie None — et non zéro — quand l'historique ne remonte pas assez loin.
+    Un actif ajouté hier n'a pas « fait 0 % sur sept jours » : on ne sait pas,
+    et l'écrire zéro le placerait au milieu d'un classement de variations.
+    """
+    close = df["close"]
+    if len(close) < 2 or not isinstance(close.index, pd.DatetimeIndex):
+        return None
+    fin = close.index[-1]
+    cible = fin - pd.Timedelta(hours=heures)
+    anterieurs = close.loc[close.index <= cible]
+    if anterieurs.empty:
+        return None
+    depart = float(anterieurs.iloc[-1])
+    arrivee = float(close.iloc[-1])
+    if not (depart > 0 and np.isfinite(depart) and np.isfinite(arrivee)):
+        return None
+    return (arrivee / depart - 1.0) * 100.0
+
+
+def _amplitude_habituelle(df: pd.DataFrame, jours: int = 30) -> float | None:
+    """Amplitude médiane d'une fenêtre de 24 h pour cet actif, en pourcentage.
+
+    Sert d'étalon au parcours du jour : « deux fois sa journée ordinaire » est
+    comparable d'un actif à l'autre, là où « 3,4 % » ne l'est pas. La médiane
+    plutôt que la moyenne, pour que la journée de krach qu'on cherche à
+    détecter ne devienne pas elle-même la référence.
+
+    Renvoie None si l'historique ne couvre pas au moins une semaine : sans
+    étalon, on préfère ne rien qualifier plutôt que qualifier sur trois jours.
+    """
+    if len(df) < 24 * 7 or not isinstance(df.index, pd.DatetimeIndex):
+        return None
+    recent = df.loc[df.index >= df.index[-1] - pd.Timedelta(days=jours)]
+    if len(recent) < 24 * 7:
+        recent = df
+    haut = recent["high"].rolling(24, min_periods=12).max()
+    bas = recent["low"].rolling(24, min_periods=12).min()
+    etendue = ((haut - bas) / recent["close"] * 100.0).dropna()
+    if etendue.empty:
+        return None
+    ref = float(etendue.median())
+    return ref if ref > 0 and np.isfinite(ref) else None
+
+
+def mouvement(df: pd.DataFrame) -> dict:
+    """Ce que l'actif est en train de faire, indépendamment de toute prédiction.
+
+    Le site savait dire ce que le moteur *pense* d'un actif, et ce qu'un signal
+    passé *a donné*. Il ne savait pas dire ce que le marché *fait* — or c'est la
+    première chose qu'on regarde en ouvrant un écran, et c'est la seule qui ne
+    demande aucun modèle : ce sont des mesures, pas des estimations.
+
+    Aucun de ces chiffres n'entre dans le score. Ils décrivent, ils ne prédisent
+    pas, et les mélanger reviendrait à rajouter des facteurs non mesurés à un
+    moteur dont la sonde a précisément montré que ses facteurs supposés
+    prédisaient à l'envers.
+    """
+    close = df["close"]
+    if not isinstance(close.index, pd.DatetimeIndex) or len(close) < 2:
+        return {"disponible": False}
+
+    var_1h = _variation(df, 1)
+    var_24h = _variation(df, 24)
+    var_7j = _variation(df, 24 * 7)
+
+    # Sans variation sur 24 h, il n'y a pas de mouvement à décrire : mieux vaut
+    # une case vide qu'une étiquette calculée sur rien.
+    if var_24h is None:
+        return {"disponible": False}
+
+    # Amplitude réellement parcourue sur 24 h, et non écart entre les deux
+    # extrémités. La distinction n'est pas théorique : un actif qui monte de
+    # 6 % puis rend tout affiche une variation nette de +0,3 %, et se lisait
+    # « calme » alors qu'il venait de parcourir six pour cent. C'est le
+    # parcours qui dit l'agitation ; la variation nette dit ce qu'il en reste.
+    fenetre = df.loc[df.index >= df.index[-1] - pd.Timedelta(hours=24)]
+    haut = float(fenetre["high"].max()) if len(fenetre) else float("nan")
+    bas = float(fenetre["low"].min()) if len(fenetre) else float("nan")
+    prix = float(close.iloc[-1])
+
+    if np.isfinite(haut) and np.isfinite(bas) and prix > 0 and haut > bas:
+        amplitude_pct = (haut - bas) / prix * 100.0
+        position = (prix - bas) / (haut - bas)
+    else:
+        amplitude_pct = abs(var_24h)
+        position = 0.5
+
+    # Le parcours rapporté à la journée *habituelle de cet actif*, et non à un
+    # ATR. L'ATR est calculé sur des bougies d'une heure : le rapporter à une
+    # amplitude de 24 h compare deux durées différentes, et sur les données
+    # réelles tous les actifs ressortaient entre 6 et 10 ATR, c'est-à-dire
+    # « violents » en permanence — un indicateur qui dit toujours la même
+    # chose n'informe pas.
+    #
+    # La référence est donc mesurée : la médiane des amplitudes glissantes sur
+    # 24 h de l'historique disponible. « Deux fois sa journée ordinaire » se
+    # compare d'un actif à l'autre sans rien supposer de la distribution.
+    amplitude_ref = _amplitude_habituelle(df)
+    ampleur = amplitude_pct / amplitude_ref if amplitude_ref else 0.0
+
+    # Part du parcours effectivement conservée : 1 quand l'actif finit sur un
+    # extrême, 0 quand il revient exactement d'où il est parti.
+    retention = abs(var_24h) / amplitude_pct if amplitude_pct > 0 else 0.0
+
+    # Volume des 24 h rapporté à une journée ordinaire, sur la même fenêtre que
+    # l'amplitude.
+    #
+    # La version précédente comparait la *dernière bougie* à une médiane de
+    # bougies. La dernière bougie horaire est en cours : selon qu'on scanne à
+    # h+05 ou à h+55, elle contient cinq minutes ou cinquante-cinq minutes de
+    # volume. BNB, en pleine cassure sur un volume de 5,7 fois la normale,
+    # ressortait ainsi à 0,2 — l'indicateur mesurait l'heure qu'il est, pas le
+    # marché.
+    #
+    # La médiane plutôt que la moyenne : une seule journée de capitulation
+    # suffit à doubler une moyenne sur trente points, et l'anomalie qu'on
+    # cherche à détecter deviendrait sa propre référence.
+    volume_rel = 0.0
+    if "volume" in df.columns and isinstance(df.index, pd.DatetimeIndex):
+        vol = df["volume"]
+        journee = float(vol.loc[vol.index >= vol.index[-1] - pd.Timedelta(hours=24)].sum())
+        glissant = vol.rolling(24, min_periods=12).sum().dropna()
+        med = float(glissant.median()) if len(glissant) >= 24 * 7 else 0.0
+        if med > 0 and np.isfinite(med) and np.isfinite(journee):
+            volume_rel = journee / med
+
+    # Étiquette lisible. Les seuils sont en multiples d'ATR pour rester
+    # comparables d'un actif à l'autre ; ils décrivent le parcours accompli,
+    # ils n'annoncent pas sa suite.
+    sens = "hausse" if var_24h > 0 else "baisse"
+
+    # Un parcours ample dont il ne reste presque rien n'est pas un mouvement
+    # directionnel : c'est une secousse. Elle se dit avant le sens, parce que
+    # le sens n'y veut plus dire grand-chose.
+    rendu = ampleur >= 1.2 and retention < 0.35
+
+    if not amplitude_ref:
+        etat = sens if abs(var_24h) > 0.05 else "journée calme"
+    elif ampleur < 0.7:
+        etat = "journée calme"
+    elif rendu:
+        etat = "secousse sans direction"
+    elif ampleur < 1.4:
+        etat = f"{sens} ordinaire"
+    elif ampleur < 2.2:
+        etat = f"{sens} marquée"
+    else:
+        etat = f"{sens} violente"
+
+    return {
+        "disponible": True,
+        "var_1h": None if var_1h is None else round(var_1h, 2),
+        "var_24h": round(var_24h, 2),
+        "var_7j": None if var_7j is None else round(var_7j, 2),
+        "amplitude_pct": round(amplitude_pct, 2),
+        "amplitude_ref_pct": None if not amplitude_ref else round(amplitude_ref, 2),
+        "ampleur": round(ampleur, 2),
+        "retention": round(retention, 3),
+        "position_range": round(position, 3),
+        "volume_rel": round(volume_rel, 2),
+        "etat": etat,
+        "rendu": rendu,
+    }
+
+
 def analyze(asset: Asset, df: pd.DataFrame, *, timeframe: str = "1h",
             df_htf: pd.DataFrame | None = None,
             news_score: float = 0.0, news_count: int = 0,
@@ -514,6 +690,7 @@ def analyze(asset: Asset, df: pd.DataFrame, *, timeframe: str = "1h",
         stop_basis=plan.stop_basis, target_basis=plan.target_basis,
         stop_strength=plan.stop_strength, obstacle=plan.obstacle,
         plan_alternatives=plan.alternatives,
+        mouvement=mouvement(df),
     )
 
 

@@ -20,7 +20,15 @@
 //--- Paramètres -----------------------------------------------------
 input string   ApiUrl          = "https://jimbot-seven.vercel.app/api/mt";
 input string   Mode            = "actionable";  // actionable | watchlist | all
-input int      MinScore        = 68;            // conviction minimale retenue
+// 0 = suivre le seuil publié par l'API (recommandé).
+//
+// La valeur précédente, 68, était le seuil d'*alerte* Discord et non le seuil
+// de *signal*. Mesuré sur 3 182 relevés, 5,6 % franchissent 58 mais seulement
+// 0,06 % franchissent 68 — deux relevés. L'EA livré ainsi ne prenait donc
+// pratiquement jamais de position, ce qui ressemblait à une panne alors que
+// c'était un réglage. Laisser 0 fait suivre `thresholds.signal`, qui vient du
+// scan et se déplace avec lui.
+input int      MinScore        = 0;             // 0 = seuil publié par l'API
 input int      RefreshSeconds  = 300;           // intervalle d'interrogation
 input bool     AutoTrade       = false;         // EXÉCUTION RÉELLE — désactivée par défaut
 input double   MaxRiskPercent  = 1.0;           // risque maximal par position, en % du solde
@@ -29,6 +37,14 @@ input int      MaxPositions    = 5;             // positions simultanées maxima
 input int      MagicNumber     = 20260825;      // identifiant des ordres de cet EA
 input int      SlippagePoints  = 20;
 input bool     ShowPanel       = true;          // afficher le panneau sur le graphique
+// Notification poussée vers l'application mobile MetaTrader.
+//
+// L'application mobile n'exécute pas d'Expert Advisor — c'est une limite de la
+// plateforme, pas un réglage. Le seul moyen de recevoir les signaux sur un
+// téléphone est donc que le terminal de bureau les y pousse. Renseigner
+// l'identifiant MetaQuotes du téléphone dans Outils → Options → Notifications,
+// puis activer ceci.
+input bool     NotifyMobile    = true;          // pousser les signaux vers le mobile
 
 //--- État interne ---------------------------------------------------
 CTrade         trade;
@@ -68,7 +84,11 @@ void OnTimer() { Poll(); }
 //+------------------------------------------------------------------+
 void Poll()
 {
-   string url = ApiUrl + "?mode=" + Mode + "&min_score=" + IntegerToString(MinScore);
+   // MinScore = 0 : on ne filtre pas côté requête, l'API applique déjà son
+   // propre seuil de signal et le publie dans `thresholds.signal`.
+   string url = ApiUrl + "?mode=" + Mode;
+   if(MinScore > 0)
+      url += "&min_score=" + IntegerToString(MinScore);
    string body = HttpGet(url);
    if(body == "")
    {
@@ -124,7 +144,29 @@ void ProcessSignals(const string body)
    }
 
    if(g_signal_count == 0)
-      Print("Jimbot : aucun signal au-dessus du seuil (", MinScore, ").");
+      Print("Jimbot : aucun signal au-dessus du seuil (",
+            MinScore > 0 ? IntegerToString(MinScore) : "seuil de l'API", ").");
+}
+
+//+------------------------------------------------------------------+
+//| Mémoire des notifications déjà poussées vers le mobile            |
+//+------------------------------------------------------------------+
+string g_notifies[];
+
+bool DejaNotifie(const string symbol, const string cmd)
+{
+   string cle = symbol + ":" + cmd;
+   for(int i = 0; i < ArraySize(g_notifies); i++)
+      if(g_notifies[i] == cle) return true;
+   return false;
+}
+
+void RetenirNotification(const string symbol, const string cmd)
+{
+   string cle = symbol + ":" + cmd;
+   int n = ArraySize(g_notifies);
+   ArrayResize(g_notifies, n + 1);
+   g_notifies[n] = cle;
 }
 
 //+------------------------------------------------------------------+
@@ -149,6 +191,20 @@ void HandleSignal(const string item)
    ArrayResize(g_panel_lines, ArraySize(g_panel_lines) + 1);
    g_panel_lines[ArraySize(g_panel_lines) - 1] = line;
    Print("Jimbot : ", line, "  SL ", sl, "  TP ", tp);
+
+   // Le même signal sur le téléphone. Un signal n'est notifié qu'une fois :
+   // le scan réémet la même configuration à chaque passage tant qu'elle tient,
+   // et sans mémoire le téléphone sonnerait toutes les cinq minutes pour la
+   // même chose — ce qui revient à le faire taire au bout d'une heure.
+   if(NotifyMobile && !DejaNotifie(symbol, cmd))
+   {
+      RetenirNotification(symbol, cmd);
+      SendNotification(StringFormat("Jimbot %s %s — entrée %s, stop %s, objectif %s (score %.0f)",
+                                    cmd, symbol,
+                                    DoubleToString(JsonNumber(item, "entry"), _Digits),
+                                    DoubleToString(sl, _Digits),
+                                    DoubleToString(tp, _Digits), score));
+   }
 
    if(!AutoTrade) return;
    if(symbol == "")

@@ -234,3 +234,125 @@ def test_serialisation_json_du_signal(asset, trending):
     import json
     sig = St.analyze(asset, trending, timeframe="1h")
     json.dumps(sig.to_dict())  # doit passer sans type non sérialisable
+
+
+# --------------------------------------------------------------------------
+# Mouvement : ce que l'actif fait, mesuré et non prédit
+# --------------------------------------------------------------------------
+def _bougies(n: int, depart: float = 100.0, pente: float = 0.0,
+             freq: str = "h") -> pd.DataFrame:
+    """Série horaire déterministe, éventuellement en pente constante."""
+    idx = pd.date_range("2026-09-01", periods=n, freq=freq, tz="UTC")
+    prix = depart * (1.0 + pente) ** np.arange(n)
+    return pd.DataFrame(
+        {"open": prix, "high": prix * 1.002, "low": prix * 0.998,
+         "close": prix, "volume": np.full(n, 100.0)},
+        index=idx,
+    )
+
+
+def test_variation_compte_en_heures_pas_en_bougies():
+    """Une séance fermée ne doit pas décaler la fenêtre de comparaison."""
+    df = _bougies(200, pente=0.001)
+    # On retire 30 bougies au milieu, comme un week-end sur un indice.
+    troue = pd.concat([df.iloc[:100], df.iloc[130:]])
+    plein = St._variation(df, 24)
+    avec_trou = St._variation(troue, 24)
+    # Les 24 dernières heures sont intactes dans les deux cas : même réponse.
+    assert plein == pytest.approx(avec_trou, abs=1e-9)
+
+
+def test_variation_inconnue_ne_vaut_pas_zero():
+    """Un historique trop court renvoie None, jamais « 0 % de variation »."""
+    assert St._variation(_bougies(10), 24 * 7) is None
+    assert St._variation(_bougies(200), 24 * 7) is not None
+
+
+def test_mouvement_indisponible_sur_index_non_temporel():
+    df = _bougies(50)
+    df.index = range(50)
+    assert St.mouvement(df) == {"disponible": False}
+
+
+def test_ampleur_se_compare_a_la_journee_habituelle_de_l_actif():
+    """Le même parcours en pourcentage ne dit pas la même chose selon l'actif.
+
+    Deux séries parcourent 4 % sur les dernières 24 h. L'une le fait tous les
+    jours, l'autre sort d'un mois de calme plat. Seule la seconde a bougé.
+    """
+    n = 24 * 20
+    idx = pd.date_range("2026-08-01", periods=n, freq="h", tz="UTC")
+    rng = np.random.default_rng(7)
+
+    def serie(amplitude_ordinaire: float) -> pd.DataFrame:
+        # Bruit calibré pour produire l'amplitude quotidienne voulue, puis on
+        # impose les mêmes dernières 24 h aux deux séries.
+        p = 100 * np.exp(np.cumsum(rng.normal(0, amplitude_ordinaire / 100 / 5, n)))
+        p[-24:] = np.linspace(p[-25], p[-25] * 1.04, 24)
+        return pd.DataFrame(
+            {"open": p, "high": p * 1.0005, "low": p * 0.9995, "close": p,
+             "volume": np.full(n, 100.0)}, index=idx)
+
+    agitee = St.mouvement(serie(4.0))
+    calme = St.mouvement(serie(0.4))
+
+    # Parcours identique sur 24 h, référence différente.
+    assert agitee["amplitude_pct"] == pytest.approx(calme["amplitude_pct"], rel=0.05)
+    assert agitee["amplitude_ref_pct"] > calme["amplitude_ref_pct"]
+    assert agitee["ampleur"] < calme["ampleur"]
+    assert "violente" in calme["etat"]
+
+
+def test_ampleur_sans_etalon_ne_qualifie_pas():
+    """Moins d'une semaine d'historique : pas de référence, donc pas
+    d'étiquette d'intensité inventée sur trois jours."""
+    court = St.mouvement(_bougies(72, pente=0.002))
+    assert court["disponible"] is True
+    assert court["amplitude_ref_pct"] is None
+    assert court["ampleur"] == 0.0
+    assert "violente" not in court["etat"] and "marquée" not in court["etat"]
+
+
+def test_mouvement_distingue_un_gain_tenu_d_un_gain_rendu():
+    """La seule variation nette confond « monté et tenu » avec « monté puis
+    rendu » : les deux parcourent autant, l'un n'en garde rien."""
+    n = 24 * 20
+    idx = pd.date_range("2026-08-01", periods=n, freq="h", tz="UTC")
+    plat = np.full(n - 24, 100.0)
+
+    tenu = np.concatenate([plat, np.linspace(100, 106, 24)])
+    rendu = np.concatenate([
+        plat, np.linspace(100, 106, 12), np.linspace(106, 100.3, 12)])
+
+    def cadre(p):
+        return pd.DataFrame(
+            {"open": p, "high": p * 1.001, "low": p * 0.999, "close": p,
+             "volume": np.full(n, 100.0)}, index=idx)
+
+    a = St.mouvement(cadre(tenu))
+    b = St.mouvement(cadre(rendu))
+
+    # Parcours comparable : l'ampleur seule ne les sépare pas, et c'est
+    # justement pourquoi elle se mesure sur le parcours et non sur les bouts.
+    assert a["amplitude_pct"] == pytest.approx(b["amplitude_pct"], rel=0.1)
+
+    # Ce qui les sépare, c'est ce qu'il reste du parcours.
+    assert a["retention"] > 0.9 and a["position_range"] > 0.9
+    assert b["retention"] < 0.2 and b["position_range"] < 0.2
+    assert not a["rendu"] and b["rendu"]
+    assert "hausse" in a["etat"] and b["etat"] == "secousse sans direction"
+
+    # Le piège que la variation nette seule ne voit pas : b affiche +0,3 %.
+    assert abs(b["var_24h"]) < 1.0
+
+
+def test_mouvement_n_entre_pas_dans_le_score(asset, trending):
+    """Garde-fou : le mouvement décrit, il ne prédit pas.
+
+    Aucun de ses champs ne doit apparaître parmi les facteurs, et faire varier
+    le mouvement ne doit pas faire varier le score — c'est la seule garantie
+    qu'une description ne s'est pas transformée en prédiction non mesurée."""
+    sig = St.analyze(asset, trending, timeframe="1h")
+    noms = {f["name"] for f in sig.factors}
+    assert noms.isdisjoint({"mouvement", "var_24h", "ampleur_atr", "volume_rel"})
+    assert sig.mouvement["disponible"] is True
