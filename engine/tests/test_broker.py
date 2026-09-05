@@ -284,3 +284,41 @@ def test_sans_taux_disponible_on_refuse_plutot_que_de_mal_dimensionner(faux):
     r = B.synchroniser([_signal()])
     assert api.ordres == []
     assert "conversion" in r["ignores"][0]["raison"]
+
+
+# --------------------------------------------------------------------------
+# Diagnostic : trois codes, trois causes, trois remèdes opposés
+# --------------------------------------------------------------------------
+def test_diagnostic_distingue_les_causes():
+    """Un message générique envoie vérifier ce qui fonctionne déjà.
+
+    Le cas rencontré en vrai : un 504 sur un jeton, un compte et une région
+    parfaitement corrects, et le message invitait à vérifier les trois.
+    """
+    assert "jeton refusé" in B.diagnostic("HTTP 401 : ...")
+    assert "compte introuvable" in B.diagnostic("HTTP 404 : ...")
+
+    d504 = B.diagnostic("HTTP 504 : ...")
+    assert "sont corrects" in d504, "un 504 ne doit pas accuser le jeton"
+    assert "CONNECTED" in d504, "il doit dire où regarder"
+
+    assert B.diagnostic("panne réseau") == "panne réseau"
+
+
+def test_les_lectures_courtier_ne_sont_jamais_mises_en_cache(monkeypatch):
+    """Une liste de positions périmée ferait rouvrir une position ouverte.
+
+    Le cache de `http_get_json` dure quatre minutes — sain pour des bougies,
+    dangereux pour l'état d'un compte.
+    """
+    vus = []
+
+    def faux_get(url, params=None, **kw):
+        vus.append(kw.get("cache"))
+        return {}
+
+    monkeypatch.setattr("jimbot.broker.http_get_json", faux_get)
+    api = B.MetaApi(token="x", account_id="y")
+    api._get("/positions")
+    api._get("/account-information")
+    assert vus == [False, False], f"cache actif sur une lecture courtier : {vus}"

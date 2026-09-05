@@ -59,6 +59,32 @@ class BrokerError(RuntimeError):
     """Refus ou échec côté courtier. Ne doit jamais interrompre un scan."""
 
 
+def diagnostic(message: str) -> str:
+    """Traduit un code HTTP en la seule chose qu'on puisse en faire.
+
+    Les trois codes rencontrés ici ont des causes distinctes et des remèdes
+    opposés, et un message générique envoie vérifier ce qui fonctionne déjà :
+    un 504 signifie que le jeton, le compte et la région sont bons, et que
+    c'est la connexion au courtier qui manque.
+    """
+    if "HTTP 401" in message or "HTTP 403" in message:
+        return ("jeton refusé (401). Le jeton est absent, expiré, révoqué, ou "
+                "n'a pas le droit d'accéder à ce compte.")
+    if "HTTP 404" in message:
+        return ("compte introuvable (404). L'identifiant de compte ou la région "
+                "ne correspond pas : un compte déployé à Londres ne répond pas "
+                "sur le point d'entrée de New York.")
+    if "HTTP 504" in message or "HTTP 502" in message:
+        return ("le terminal ne répond pas (504). Le jeton, l'identifiant de "
+                "compte et la région sont corrects — c'est MetaApi qui n'arrive "
+                "pas à joindre le serveur du courtier. Vérifiez que le compte "
+                "affiche CONNECTED sur app.metaapi.cloud/accounts ; s'il reste "
+                "DISCONNECTED, le mot de passe MetaTrader enregistré est faux.")
+    if "HTTP 429" in message:
+        return "trop de requêtes (429). Attendez une minute."
+    return message
+
+
 class MetaApi:
     """Client REST minimal : compte, positions, spécifications, ordres.
 
@@ -78,9 +104,18 @@ class MetaApi:
     def _get(self, chemin: str) -> dict | list:
         url = f"{self.base}/users/current/accounts/{self.account_id}{chemin}"
         try:
-            return http_get_json(url, headers={"auth-token": self.token})
+            # Jamais de cache sur une lecture de courtier.
+            #
+            # `http_get_json` garde ses réponses quatre minutes, ce qui est sain
+            # pour des bougies et dangereux ici : le scan tourne toutes les
+            # quinze minutes, mais rien n'empêche deux passages rapprochés, et
+            # une liste de positions vieille de quatre minutes ferait rouvrir
+            # une position déjà ouverte. Un solde périmé fausserait en plus le
+            # dimensionnement de toutes les suivantes.
+            return http_get_json(url, headers={"auth-token": self.token},
+                                 cache=False)
         except DataError as e:
-            raise BrokerError(f"lecture {chemin} : {e}") from e
+            raise BrokerError(f"lecture {chemin} : {diagnostic(str(e))}") from e
 
     def compte(self) -> Compte:
         d = self._get("/account-information")

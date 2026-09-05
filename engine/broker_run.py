@@ -63,7 +63,6 @@ def check() -> int:
         c = api.compte()
     except broker.BrokerError as e:
         print(f"\n  ÉCHEC : {e}\n")
-        print("  Vérifiez METAAPI_TOKEN, METAAPI_ACCOUNT_ID et METAAPI_REGION.")
         return 1
 
     print()
