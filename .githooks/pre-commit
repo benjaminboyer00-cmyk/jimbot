@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+#
+# Refuse un commit qui contient un secret.
+#
+# `.gitignore` protège des fichiers ; il ne protège de rien quand un jeton est
+# collé au milieu d'un fichier de code, d'un test ou d'un commentaire. Or c'est
+# exactement ce qui arrive : on colle une valeur « juste pour essayer », on
+# oublie, et elle part dans l'historique public. Un secret poussé une fois est
+# compromis pour toujours — le retirer d'un commit ultérieur ne l'efface pas de
+# l'historique, ni des copies déjà clonées.
+#
+# Le crochet lit ce qui est *indexé*, pas le répertoire de travail : c'est bien
+# ce qui partirait qui est examiné.
+#
+# Installation : git config core.hooksPath .githooks
+# Contournement, en connaissance de cause : git commit --no-verify
+
+set -uo pipefail
+
+rouge=$'\033[31m'; gras=$'\033[1m'; fin=$'\033[0m'
+faute=0
+
+signaler() {
+  printf '%s%sSECRET REFUSÉ%s  %s\n' "$rouge" "$gras" "$fin" "$1" >&2
+  faute=1
+}
+
+# --- 1. Fichiers qui n'ont rien à faire dans un dépôt ------------------------
+while IFS= read -r f; do
+  case "$f" in
+    .env|.env.*|*/.env|*/.env.*)
+      [ "$f" = ".env.example" ] && continue
+      signaler "le fichier « $f » contient des variables d'environnement" ;;
+    *.pem|*.key|*id_rsa*)
+      signaler "le fichier « $f » ressemble à une clé privée" ;;
+  esac
+done < <(git diff --cached --name-only --diff-filter=ACM)
+
+# --- 2. Motifs de secrets dans le contenu indexé ----------------------------
+#
+# Chaque motif vise une valeur réelle, jamais un nom de variable : `.env.example`
+# et la documentation citent ces clés en permanence, et un crochet qui crie sur
+# `METAAPI_TOKEN=` serait désarmé au bout d'une journée.
+motifs=(
+  'eyJ[A-Za-z0-9_-]\{20,\}\.[A-Za-z0-9_-]\{20,\}'   # jeton JWT (MetaApi)
+  'sk-ant-[A-Za-z0-9_-]\{20,\}'                      # clé Anthropic
+  'discord\.com/api/webhooks/[0-9]\{5,\}/[A-Za-z0-9_-]\{20,\}'
+  'xox[baprs]-[A-Za-z0-9-]\{20,\}'                   # jeton Slack
+  'gh[pousr]_[A-Za-z0-9]\{30,\}'                     # jeton GitHub
+  'AKIA[0-9A-Z]\{16\}'                               # clé AWS
+)
+
+while IFS= read -r f; do
+  contenu=$(git show ":$f" 2>/dev/null) || continue
+  for motif in "${motifs[@]}"; do
+    if printf '%s' "$contenu" | grep -qE "$(printf '%s' "$motif" | sed 's/\\{/{/g; s/\\}/}/g')"; then
+      signaler "« $f » contient ce qui ressemble à un jeton"
+      break
+    fi
+  done
+done < <(git diff --cached --name-only --diff-filter=ACM)
+
+if [ "$faute" -ne 0 ]; then
+  cat >&2 <<'FIN'
+
+  Rien n'a été commité.
+
+  Les secrets se posent dans l'environnement, jamais dans le dépôt :
+    - en local     : dans .env, qui est ignoré par git
+    - sur GitHub   : Settings > Secrets and variables > Actions
+
+  Si c'est un faux positif — une valeur d'exemple, un jeton de test — passez
+  outre avec :  git commit --no-verify
+
+FIN
+  exit 1
+fi
+exit 0

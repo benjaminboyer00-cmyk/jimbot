@@ -52,6 +52,28 @@ non falsifiable a posteriori.
 | `engine/jimbot/mt_symbols.py` | Table d'alias des instruments, publiée dans l'instantané pour que le site et l'API lisent la même |
 | `metatrader/` | Expert Advisor MQL5 prêt à l'emploi |
 
+### Secrets
+
+Aucun jeton ne doit entrer dans ce dépôt. Deux protections, parce que
+`.gitignore` ne protège que des fichiers et pas d'une valeur collée au milieu
+d'un fichier de code :
+
+```bash
+./.githooks/install.sh     # à lancer une fois par clone
+```
+
+Le crochet lit ce qui est **indexé** et refuse le commit s'il y trouve un jeton
+JWT (MetaApi), une clé Anthropic, un webhook Discord, un jeton GitHub ou Slack,
+ou un fichier `.env`. `core.hooksPath` étant une configuration locale, elle ne
+voyage pas avec le dépôt : un clone frais n'est protégé qu'après ce script.
+
+Un secret poussé une fois est compromis pour toujours — le retirer dans un
+commit ultérieur ne l'efface ni de l'historique, ni des clones déjà faits. La
+seule réponse est de le révoquer chez son émetteur.
+
+Les secrets vivent dans `.env` en local (ignoré par git) et dans
+*Settings → Secrets and variables → Actions* sur GitHub.
+
 ### Les fichiers de données
 
 | Fichier | Contenu |

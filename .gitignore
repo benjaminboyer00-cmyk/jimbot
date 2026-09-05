@@ -10,10 +10,22 @@ __pycache__/
 *.pyc
 .pytest_cache/
 
-# Environnement local
+# Environnement local.
+#
+# Le motif couvre toutes les variantes (.env.production, .env.metaapi...) parce
+# qu'un secret finit toujours dans le fichier auquel on n'avait pas pensé.
+# `.env.example` est réintroduit explicitement : il ne contient que des clés
+# vides et sert de documentation.
 .env
-.env.local
+.env.*
+!.env.example
 .vercel
+
+# Clés et jetons
+*.pem
+*.key
+*_rsa
+secrets.json
 
 # Système
 .DS_Store
