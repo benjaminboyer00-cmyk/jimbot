@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -26,6 +27,34 @@ from jimbot.config import UNIVERSE  # noqa: E402
 from jimbot.store import read  # noqa: E402
 
 log = logging.getLogger("jimbot.broker")
+
+
+def charger_env(chemin: Path) -> int:
+    """Charge un fichier .env dans l'environnement du processus.
+
+    Existe pour que le jeton n'ait jamais à être tapé dans un terminal : un
+    `export METAAPI_TOKEN=...` reste dans l'historique du shell, lisible par
+    tout ce qui tourne sous ce compte, et remonte à la moindre capture d'écran
+    d'un terminal. Le fichier, lui, est ignoré par git et refusé par le crochet
+    de pre-commit.
+
+    Les variables déjà présentes dans l'environnement gagnent : en intégration
+    continue, ce sont les secrets du dépôt qui font foi, et aucun fichier local
+    ne doit pouvoir les remplacer.
+    """
+    if not chemin.exists():
+        return 0
+    n = 0
+    for ligne in chemin.read_text(encoding="utf-8").splitlines():
+        ligne = ligne.strip()
+        if not ligne or ligne.startswith("#") or "=" not in ligne:
+            continue
+        cle, _, valeur = ligne.partition("=")
+        cle, valeur = cle.strip(), valeur.strip().strip('"').strip("'")
+        if valeur and not os.environ.get(cle):
+            os.environ[cle] = valeur
+            n += 1
+    return n
 
 
 def check() -> int:
@@ -111,6 +140,11 @@ def main() -> int:
     args = p.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(levelname)-7s %(message)s")
+
+    racine = Path(__file__).resolve().parents[1]
+    n = charger_env(racine / ".env")
+    if n:
+        log.info("%d variable(s) lue(s) depuis .env", n)
     if args.check:
         return check()
     return sync(dry_run=args.dry_run)
