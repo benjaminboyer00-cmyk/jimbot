@@ -172,6 +172,57 @@ def resoudre(ep: dict, df: pd.DataFrame | None, mesure_le: str) -> dict:
     return verdict
 
 
+# Instant où le moteur a changé de façon de construire ses plans.
+#
+# Jusque-là, les niveaux venaient de l'optimiseur d'espérance ; depuis, du plan
+# fixe (stop à 2,2 ATR, objectif à 2 R), après que le contrôle de robustesse a
+# montré que le second battait le premier. Un signal émis avant et un signal
+# émis après ne sont donc pas produits par le même système, et les moyenner
+# revient à noter deux stratégies sous un seul chiffre.
+#
+# La date sert à *séparer*, jamais à *supprimer*. Retirer du bilan les trades
+# d'une version antérieure sous prétexte qu'elle n'était pas au point, c'est
+# exactement le geste qui fabrique un historique : il ne reste alors que les
+# trades qu'on a choisi de garder. Les deux périodes restent affichées, chacune
+# avec son compte, et celle qui n'a pas assez de trades le dit.
+BASCULE_PLAN_FIXE = "2026-09-05T08:37:00+00:00"
+
+
+def _bilan(signaux: list[dict]) -> dict:
+    """Compte, taux de réussite et espérance d'un ensemble de signaux."""
+    tranches = [s for s in signaux
+                if s.get("issue") in {"cible", "stop", "expiration"}]
+    rs = [s["r_multiple"] for s in tranches if s.get("r_multiple") is not None]
+    gagnants = sum(1 for s in tranches if s["issue"] == "cible")
+    return {
+        "signaux": len(signaux),
+        "tranches": len(tranches),
+        "win_rate": round(gagnants / len(tranches) * 100, 1) if tranches else None,
+        "esperance_r": round(sum(rs) / len(rs), 3) if rs else None,
+        "total_r": round(sum(rs), 3) if rs else None,
+        "significatif": len(tranches) >= 30,
+    }
+
+
+def par_version(signaux: list[dict]) -> dict:
+    """Le bilan, coupé à la bascule de construction des plans.
+
+    Répond à « ne juge pas le moteur actuel sur les trades de l'ancien » sans
+    rien effacer : les deux périodes coexistent, et l'on voit du même coup
+    combien de trades la version courante a réellement produits.
+    """
+    bascule = _horodatage(BASCULE_PLAN_FIXE)
+    avant, apres = [], []
+    for s in signaux:
+        t = _horodatage(s.get("premiere_emission", ""))
+        (apres if (t and bascule and t >= bascule) else avant).append(s)
+    return {
+        "bascule": BASCULE_PLAN_FIXE,
+        "optimiseur_de_niveaux": _bilan(avant),
+        "plan_fixe": _bilan(apres),
+    }
+
+
 def resume(signaux: list[dict]) -> dict:
     """Bilan d'ensemble, en ne comptant que ce qui est tranché."""
     par_issue: dict[str, int] = {}
@@ -185,6 +236,7 @@ def resume(signaux: list[dict]) -> dict:
     gagnants = sum(1 for s in tranches if s["issue"] == "cible")
 
     return {
+        "par_version": par_version(signaux),
         "emissions": sum(s.get("emissions", 0) for s in signaux),
         "signaux": len(signaux),
         "publies_discord": sum(1 for s in signaux if s.get("alerte_discord")),

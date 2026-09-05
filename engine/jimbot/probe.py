@@ -45,6 +45,9 @@ WINDOW = 400
 # n'aurait aucun sens. Les valeurs retenues couvrent, dans chaque cas, de
 # quelques heures à quelques semaines de marché.
 HORIZONS_PAR_INTERVALLE: dict[str, tuple[int, ...]] = {
+    # 5 min : de un quart d'heure à deux heures. Au-delà, l'horizon n'a plus
+    # rien de scalping et l'unité horaire est mieux placée pour le mesurer.
+    "5m": (3, 6, 12, 24),
     "15m": (8, 24, 48, 96),
     "1h": (6, 12, 24, 48),
     "4h": (3, 6, 12, 30),
@@ -105,10 +108,16 @@ def probe_asset(asset: Asset, df: pd.DataFrame, *, step: int = 4,
         ligne = {"symbol": asset.symbol, "klass": asset.klass,
                  "regime": regime.name, "quality": regime.quality,
                  "index": i, "t": df.index[i].isoformat(), **valeurs}
-        # Rendement futur en unités d'ATR : comparable entre actifs de
-        # volatilités très différentes.
+        # Deux mesures du même rendement futur, parce qu'elles répondent à deux
+        # questions différentes. En unités d'ATR, il est comparable entre actifs
+        # de volatilités très différentes — c'est ce qu'il faut pour un
+        # coefficient d'information. En pourcentage, il se compare au spread et
+        # aux frais, qui sont eux aussi des pourcentages : c'est la seule forme
+        # dans laquelle « l'avantage survit-il aux coûts ? » a un sens.
+        ligne["atr_pct"] = float(atr_v / prix * 100.0) if prix > 0 else float("nan")
         for h in horizons:
             ligne[f"fwd_{h}"] = float((close[i + h] - prix) / atr_v)
+            ligne[f"pct_{h}"] = float((close[i + h] / prix - 1.0) * 100.0) if prix > 0 else float("nan")
         rows.append(ligne)
 
     log.info("%s : %d observation(s)", asset.symbol, len(rows))
@@ -245,3 +254,128 @@ def derived_weights(ic_regime: dict, plancher: float = 0.02) -> dict:
             poids[nom] = round(p if abs(p) >= plancher else 0.0, 4)
         out[regime] = poids
     return out
+
+
+# --------------------------------------------------------------------------
+# L'avantage survit-il aux coûts ?
+# --------------------------------------------------------------------------
+# Coût d'un aller-retour, en points de base du notionnel (1 pb = 0,01 %).
+#
+# Ces chiffres décident de tout à horizon court, et ils ne sont pas négociables
+# par le modèle : ils sont fixés par le courtier. Un scalping qui gagne 3 pb
+# bruts et paie 20 pb de frais perd, quelle que soit la qualité du signal.
+#
+# Les valeurs retenues sont celles d'un compte particulier ordinaire, sans
+# remise de volume :
+#   - binance_taker : 10 pb par côté, soit 20 pb l'aller-retour. C'est le tarif
+#     par défaut de Binance spot, celui qu'on paie en franchissant le carnet.
+#   - binance_maker : 10 pb par côté également au tarif de base, mais posé dans
+#     le carnet — on n'y ajoute pas le spread puisqu'on le fabrique.
+#   - cfd_serre : un CFD crypto chez un courtier retail, sans commission mais
+#     avec un spread de l'ordre de 5 pb par côté sur BTC en séance liquide.
+#   - parfait : aucun coût. Ne décrit aucun compte réel ; sert de borne haute,
+#     pour distinguer « le signal ne vaut rien » de « le signal vaut quelque
+#     chose mais moins que le péage ».
+COUTS_ALLER_RETOUR_PB: dict[str, float] = {
+    "parfait": 0.0,
+    "binance_maker": 20.0,
+    "cfd_serre": 10.0,
+    "binance_taker": 20.0,
+}
+
+
+def edge_net(rows: list[dict], score_col: str = "score",
+             horizons: tuple[int, ...] | None = None,
+             quantile: float = 0.2) -> dict:
+    """Rendement d'une stratégie de quintile, brut puis net de coûts.
+
+    Le coefficient d'information dit si un facteur porte de l'information. Il
+    ne dit pas si on peut en vivre : un IC de 0,05 sur un rendement dont
+    l'écart-type vaut 3 points de base ne paiera jamais 20 points de base de
+    frais. À horizon court, c'est cette seconde question qui tranche, et elle
+    se pose en pourcentages du notionnel — pas en unités d'ATR.
+
+    Le protocole est celui qu'on appliquerait à la main : à chaque pas, on
+    prend une position longue sur le quintile le mieux noté, courte sur le
+    moins bien noté, on la tient `h` bougies, et on paie l'aller-retour. La
+    moyenne des deux jambes est l'avantage brut par pari ; on en retranche le
+    coût, et le t de Student dit si ce qui reste se distingue de zéro.
+    """
+    if len(rows) < 200:
+        return {"note": "échantillon insuffisant"}
+
+    df = pd.DataFrame(rows)
+    if score_col not in df.columns:
+        return {"note": f"colonne « {score_col} » absente"}
+
+    horizons = horizons or tuple(
+        int(c.removeprefix("pct_")) for c in df.columns if c.startswith("pct_"))
+
+    out: dict = {"observations": len(df), "quantile": quantile,
+                 "couts_pb": COUTS_ALLER_RETOUR_PB, "par_horizon": {}}
+
+    for h in horizons:
+        col = f"pct_{h}"
+        if col not in df.columns:
+            continue
+        sub = df[[score_col, col]].dropna()
+        if len(sub) < 200 or sub[score_col].nunique() < 10:
+            continue
+
+        haut = sub[score_col].quantile(1 - quantile)
+        bas = sub[score_col].quantile(quantile)
+        longs = sub.loc[sub[score_col] >= haut, col]
+        courts = sub.loc[sub[score_col] <= bas, col]
+        if len(longs) < 50 or len(courts) < 50:
+            continue
+
+        # La jambe courte gagne quand le prix baisse : on retourne son signe
+        # pour que les deux jambes se moyennent comme deux paris de même sens.
+        paris = pd.concat([longs, -courts])
+        brut_pb = float(paris.mean()) * 100.0          # % -> points de base
+        ecart_pb = float(paris.std()) * 100.0
+        n = len(paris)
+        t_brut = brut_pb / (ecart_pb / np.sqrt(n)) if ecart_pb > 0 else float("nan")
+
+        entree = {
+            "n_paris": n,
+            "brut_pb": round(brut_pb, 2),
+            "ecart_type_pb": round(ecart_pb, 1),
+            "t_brut": round(float(t_brut), 2) if np.isfinite(t_brut) else None,
+            "significatif_brut": bool(np.isfinite(t_brut) and abs(t_brut) > 2.0),
+            "net_pb": {},
+        }
+        for nom, cout in COUTS_ALLER_RETOUR_PB.items():
+            net = brut_pb - cout
+            t_net = net / (ecart_pb / np.sqrt(n)) if ecart_pb > 0 else float("nan")
+            entree["net_pb"][nom] = {
+                "net_pb": round(net, 2),
+                "t": round(float(t_net), 2) if np.isfinite(t_net) else None,
+                "rentable": bool(np.isfinite(t_net) and net > 0 and t_net > 2.0),
+            }
+        out["par_horizon"][f"h{h}"] = entree
+
+    # Le coût que l'avantage brut permettrait de payer : c'est le chiffre à
+    # confronter au tarif d'un courtier avant d'ouvrir un compte.
+    meilleurs = [(h, e["brut_pb"]) for h, e in out["par_horizon"].items()]
+    if meilleurs:
+        h, brut = max(meilleurs, key=lambda kv: kv[1])
+        out["meilleur_horizon"] = h
+        out["cout_maximal_supportable_pb"] = round(brut, 2)
+
+    return out
+
+
+def score_combine(rows: list[dict], poids: dict[str, float]) -> list[dict]:
+    """Ajoute à chaque observation le score que produirait la production.
+
+    Mesurer les facteurs un par un ne dit pas ce que vaut leur combinaison :
+    c'est pourtant elle qu'on trade. Les poids sont passés explicitement plutôt
+    que lus dans `strategy`, pour qu'on puisse mesurer une pondération
+    candidate sans la mettre en production d'abord.
+    """
+    norme = sum(abs(p) for p in poids.values()) or 1.0
+    for r in rows:
+        somme = sum(r.get(nom, 0.0) * poids.get(nom, 0.0) for nom in poids)
+        r["score"] = somme / norme
+    return rows

@@ -32,9 +32,9 @@ from .base import BROWSER_UA, Candles, DataError, http_get_json, normalize
 log = logging.getLogger("jimbot.data.crypto")
 
 # Intervalles internes -> intervalle propre à chaque fournisseur.
-BINANCE_INTERVALS = {"15m": "15m", "1h": "1h", "4h": "4h", "1d": "1d"}
-COINBASE_GRANULARITY = {"15m": 900, "1h": 3600, "4h": 21600, "1d": 86400}
-KRAKEN_INTERVALS = {"15m": 15, "1h": 60, "4h": 240, "1d": 1440}
+BINANCE_INTERVALS = {"5m": "5m", "15m": "15m", "1h": "1h", "4h": "4h", "1d": "1d"}
+COINBASE_GRANULARITY = {"5m": 300, "15m": 900, "1h": 3600, "4h": 21600, "1d": 86400}
+KRAKEN_INTERVALS = {"5m": 5, "15m": 15, "1h": 60, "4h": 240, "1d": 1440}
 
 # Kraken conserve une nomenclature historique pour quelques actifs.
 KRAKEN_BASE = {"BTC": "XBT", "DOGE": "XDG"}
@@ -164,7 +164,8 @@ def klines_history(ref: str, interval: str = "1h", bars: int = 5000) -> Candles:
     `endTime`. Réservé au backtest : la production n'a besoin que de la fenêtre
     d'analyse courante.
     """
-    ms = {"15m": 900_000, "1h": 3_600_000, "4h": 14_400_000, "1d": 86_400_000}[interval]
+    ms = {"5m": 300_000, "15m": 900_000, "1h": 3_600_000,
+          "4h": 14_400_000, "1d": 86_400_000}[interval]
     host = "https://data-api.binance.vision"
     frames: list[pd.DataFrame] = []
     end: int | None = None

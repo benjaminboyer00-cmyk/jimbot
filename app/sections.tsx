@@ -1050,6 +1050,12 @@ export function Redevabilite({ suivi }: { suivi?: Suivi | null }) {
   const [dominant, nDominant] = [...parActif.entries()].sort((a, b) => b[1] - a[1])[0];
   const concentre = nDominant / suivi.signaux.length >= 0.5;
 
+  // Le moteur a changé de façon de construire ses plans : les signaux d'avant
+  // et d'après ne sortent pas du même système. La coupure est affichée plutôt
+  // que d'être appliquée en silence — retirer du bilan les trades d'une version
+  // antérieure, c'est ne garder que les trades qu'on a choisi de garder.
+  const v = r.par_version;
+
   return (
     <section>
       <h2>Ce qu’ont donné les signaux émis</h2>
@@ -1060,6 +1066,42 @@ export function Redevabilite({ suivi }: { suivi?: Suivi | null }) {
         leur a donnée ensuite. C’est la seule mesure de ce site qu’un lecteur
         puisse confronter à ce qu’il avait sous les yeux.
       </p>
+
+      {v && (
+        <div className="verdict" style={{ marginTop: 0, marginBottom: 18 }}>
+          <strong>Deux versions du moteur, comptées à part.</strong> Jusqu’au{" "}
+          {dateCourte(v.bascule)}, les niveaux venaient de l’optimiseur
+          d’espérance&nbsp;; depuis, du plan fixe qui l’a battu au contrôle de
+          robustesse. Moyenner les deux noterait deux stratégies sous un seul
+          chiffre.
+          <br />
+          <br />
+          <strong>Optimiseur de niveaux</strong> —{" "}
+          {v.optimiseur_de_niveaux.tranches} trade(s) tranché(s),{" "}
+          {v.optimiseur_de_niveaux.win_rate === null
+            ? "aucun résultat"
+            : `${fmtNum(v.optimiseur_de_niveaux.win_rate, 1)} % de réussite`}
+          .{" "}
+          <strong>Plan fixe</strong> —{" "}
+          {v.plan_fixe.tranches === 0 ? (
+            <>
+              <strong>aucun signal émis à ce jour.</strong> La version en
+              service n’a donc pas encore de bilan&nbsp;: tout ce qui figure
+              ci-dessous a été produit par la précédente. Écarter ces trades ne
+              relèverait pas la moyenne, cela supprimerait la seule mesure
+              existante.
+            </>
+          ) : (
+            <>
+              {v.plan_fixe.tranches} trade(s) tranché(s),{" "}
+              {v.plan_fixe.win_rate === null
+                ? "aucun résultat"
+                : `${fmtNum(v.plan_fixe.win_rate, 1)} % de réussite`}
+              {!v.plan_fixe.significatif && " — trop peu pour conclure"}.
+            </>
+          )}
+        </div>
+      )}
 
       <div className="kpis">
         <Kpi label="Signaux" value={String(r.signaux)} />

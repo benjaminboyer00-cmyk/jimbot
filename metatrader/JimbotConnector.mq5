@@ -45,6 +45,20 @@ input bool     ShowPanel       = true;          // afficher le panneau sur le gr
 // l'identifiant MetaQuotes du téléphone dans Outils → Options → Notifications,
 // puis activer ceci.
 input bool     NotifyMobile    = true;          // pousser les signaux vers le mobile
+// Auto-test : ouvre une position de volume minimal sur le meilleur plan
+// disponible, pour vérifier la chaîne complète — appel de l'API, lecture du
+// JSON, correspondance du symbole chez le courtier, calcul du volume, envoi de
+// l'ordre, pose du stop et de l'objectif.
+//
+// Il existe parce que le moteur n'émet un signal que 5,6 % du temps : sans lui,
+// on installe l'EA, on ne voit rien se produire pendant deux jours, et on ne
+// sait pas distinguer « ça marche et il n'y a rien à prendre » de « c'est
+// cassé ». L'auto-test répond à cette question en une minute.
+//
+// Il REFUSE de s'exécuter sur un compte réel. La vérification porte sur
+// ACCOUNT_TRADE_MODE, que le serveur du courtier renseigne — ce n'est pas une
+// case à cocher côté client.
+input bool     SelfTestOnDemo  = false;         // auto-test, compte démo uniquement
 
 //--- État interne ---------------------------------------------------
 CTrade         trade;
@@ -68,7 +82,81 @@ int OnInit()
 
    EventSetTimer(MathMax(30, RefreshSeconds));
    Poll();
+
+   if(SelfTestOnDemo) AutoTest();
    return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Auto-test : la chaîne complète, sur un compte de démonstration    |
+//+------------------------------------------------------------------+
+void AutoTest()
+{
+   long mode = AccountInfoInteger(ACCOUNT_TRADE_MODE);
+   if(mode != ACCOUNT_TRADE_MODE_DEMO)
+   {
+      Print("Jimbot AUTO-TEST REFUSÉ : ce compte n'est pas un compte de ",
+            "démonstration. L'auto-test ouvre une vraie position et ne ",
+            "s'exécute que sur un compte démo.");
+      return;
+   }
+
+   Print("--- Jimbot : auto-test sur compte de démonstration ---");
+
+   // On interroge `all` : le moteur ne franchit son seuil que 5,6 % du temps,
+   // et l'auto-test doit pouvoir s'exécuter n'importe quand. Le plan vient donc
+   // de la liste de surveillance — ce n'est pas une recommandation, c'est un
+   // plan valide dont on se sert pour éprouver la tuyauterie.
+   string body = HttpGet(ApiUrl + "?mode=all");
+   if(body == "")
+   {
+      Print("AUTO-TEST : ÉCHEC à l'étape 1 — aucune réponse de l'API. ",
+            "Le domaine est-il autorisé dans Outils > Options > Expert Advisors ?");
+      return;
+   }
+   Print("AUTO-TEST 1/5 : API joignable, ", StringLen(body), " octets reçus.");
+
+   int open_brace = StringFind(body, "{", StringFind(body, "[", StringFind(body, "\"signals\"")));
+   int close_brace = StringFind(body, "}", open_brace);
+   if(open_brace < 0 || close_brace < 0)
+   {
+      Print("AUTO-TEST : ÉCHEC à l'étape 2 — aucun signal dans la réponse.");
+      return;
+   }
+   string item = StringSubstr(body, open_brace, close_brace - open_brace + 1);
+   string cmd  = JsonString(item, "cmd");
+   double sl   = JsonNumber(item, "sl");
+   double tp   = JsonNumber(item, "tp");
+   Print("AUTO-TEST 2/5 : plan lu — ", JsonString(item, "internal"), " ", cmd,
+         "  SL ", sl, "  TP ", tp);
+
+   string symbol = ResolveSymbol(item);
+   if(symbol == "")
+   {
+      Print("AUTO-TEST : ÉCHEC à l'étape 3 — aucun des alias de cet instrument ",
+            "n'existe chez ce courtier. Les autres signaux peuvent très bien ",
+            "fonctionner : la nomenclature varie d'un instrument à l'autre.");
+      return;
+   }
+   Print("AUTO-TEST 3/5 : symbole reconnu chez ce courtier — ", symbol);
+
+   double volume = SymbolInfoDouble(symbol, SYMBOL_VOLUME_MIN);
+   Print("AUTO-TEST 4/5 : volume minimal du courtier — ", volume,
+         " lot(s). L'auto-test s'en tient là, il ne dimensionne pas par le risque.");
+
+   bool ok = (cmd == "BUY")
+             ? trade.Buy(volume, symbol, 0.0, sl, tp, "jimbot-autotest")
+             : trade.Sell(volume, symbol, 0.0, sl, tp, "jimbot-autotest");
+
+   if(ok)
+      Print("AUTO-TEST 5/5 : RÉUSSI — position ouverte sur ", symbol,
+            ", ticket ", trade.ResultOrder(),
+            ". Elle est visible dans l'onglet Trade et sur votre téléphone. ",
+            "Fermez-la à la main : l'auto-test ne la surveille pas.");
+   else
+      Print("AUTO-TEST : ÉCHEC à l'étape 5 — ", trade.ResultRetcodeDescription(),
+            " (code ", trade.ResultRetcode(), "). Le marché est-il ouvert ",
+            "pour cet instrument ?");
 }
 
 void OnDeinit(const int reason)

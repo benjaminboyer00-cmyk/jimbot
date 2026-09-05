@@ -259,3 +259,53 @@ def test_une_issue_etablie_n_est_jamais_recalculee():
     (garde,) = payload["signaux"]
     assert garde["issue"] == "cible"
     assert garde["r_multiple"] == 2.0
+
+
+# --------------------------------------------------------------------------
+# Segmentation par version du moteur
+# --------------------------------------------------------------------------
+def _sig(date: str, issue: str, r: float | None = None) -> dict:
+    return {"premiere_emission": date, "issue": issue, "r_multiple": r,
+            "emissions": 1, "symbol": "XAUUSD"}
+
+
+def test_par_version_coupe_a_la_bascule_sans_rien_supprimer():
+    """Les deux périodes coexistent : aucun signal ne disparaît du compte."""
+    from jimbot.ledger import BASCULE_PLAN_FIXE, par_version
+
+    avant = [_sig("2026-09-01T10:00:00+00:00", "cible", 2.0),
+             _sig("2026-09-04T10:00:00+00:00", "stop", -1.0)]
+    apres = [_sig("2026-09-06T10:00:00+00:00", "cible", 1.5)]
+
+    pv = par_version(avant + apres)
+    assert pv["bascule"] == BASCULE_PLAN_FIXE
+    assert pv["optimiseur_de_niveaux"]["tranches"] == 2
+    assert pv["plan_fixe"]["tranches"] == 1
+    # Rien n'est perdu en route.
+    total = (pv["optimiseur_de_niveaux"]["signaux"] + pv["plan_fixe"]["signaux"])
+    assert total == len(avant) + len(apres)
+
+
+def test_par_version_dit_zero_plutot_que_de_masquer():
+    """Une version sans trade rend un compte nul, pas un taux inventé.
+
+    C'est le cas réel au moment de l'écriture : les neuf signaux du suivi sont
+    tous antérieurs à la bascule, et la version en service n'a rien émis. Un
+    bilan qui les écarterait n'améliorerait pas la moyenne, il la supprimerait.
+    """
+    from jimbot.ledger import par_version
+
+    pv = par_version([_sig("2026-09-01T10:00:00+00:00", "cible", 2.0)])
+    assert pv["plan_fixe"]["tranches"] == 0
+    assert pv["plan_fixe"]["win_rate"] is None
+    assert pv["plan_fixe"]["significatif"] is False
+
+
+def test_un_bilan_court_n_est_jamais_declare_significatif():
+    from jimbot.ledger import par_version
+
+    signaux = [_sig(f"2026-09-0{1 + i % 4}T10:00:00+00:00", "cible", 1.0)
+               for i in range(12)]
+    pv = par_version(signaux)
+    assert pv["optimiseur_de_niveaux"]["tranches"] == 12
+    assert pv["optimiseur_de_niveaux"]["significatif"] is False

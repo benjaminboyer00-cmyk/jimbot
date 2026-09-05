@@ -432,8 +432,26 @@ export type Suivi = {
     esperance_r: number | null;
     total_r: number | null;
     significatif: boolean;
+    /** Bilan coupé à la bascule de construction des plans. Optionnel : les
+     *  instantanés antérieurs à son introduction ne le portent pas. */
+    par_version?: BilanParVersion;
   };
   signaux: SignalSuivi[];
+};
+
+export type BilanVersion = {
+  signaux: number;
+  tranches: number;
+  win_rate: number | null;
+  esperance_r: number | null;
+  total_r: number | null;
+  significatif: boolean;
+};
+
+export type BilanParVersion = {
+  bascule: string;
+  optimiseur_de_niveaux: BilanVersion;
+  plan_fixe: BilanVersion;
 };
 
 const DATA_DIR = path.join(process.cwd(), "data");
