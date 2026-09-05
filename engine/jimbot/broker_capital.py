@@ -68,6 +68,13 @@ EPICS: dict[str, str] = {
     "DOGE-USD": "DOGEUSD",
     "AVAX-USD": "AVAXUSD",
     "LINK-USD": "LINKUSD",
+    # Secteurs et actions : chez Capital.com, l'epic est le ticker.
+    "XLK": "XLK", "XLF": "XLF", "XLE": "XLE", "XLV": "XLV", "XLI": "XLI",
+    "XLY": "XLY", "XLP": "XLP", "XLU": "XLU", "XLB": "XLB", "XLRE": "XLRE",
+    "XLC": "XLC",
+    "NVDA": "NVDA", "AAPL": "AAPL", "MSFT": "MSFT", "AMZN": "AMZN",
+    "GOOGL": "GOOGL", "META": "META", "TSLA": "TSLA", "JPM": "JPM",
+    "XOM": "XOM", "LLY": "LLY",
 }
 
 # Nom attendu pour chaque epic, tel que Capital.com le renvoie. Sert à vérifier
@@ -90,6 +97,27 @@ NOMS_ATTENDUS: dict[str, str] = {
     "DOGEUSD": "DogeCoin/USD",
     "AVAXUSD": "Avalanche/USD",
     "LINKUSD": "ChainLink/USD",
+    "XLK": "Technology Select Sector SPDR Fund",
+    "XLF": "Financial Select Sector SPDR Fund",
+    "XLE": "Energy Select Sector SPDR Fund",
+    "XLV": "Health Care Select Sector SPDR Fund",
+    "XLI": "Industrial Select Sector SPDR Fund",
+    "XLY": "Consumer Discretionary Select Sector SPDR Fund",
+    "XLP": "Consumer Staples Select Sector SPDR Fund",
+    "XLU": "Utilities Select Sector SPDR Fund",
+    "XLB": "Materials Select Sector SPDR Fund",
+    "XLRE": "The Real Estate Select Sector SPDR Fund",
+    "XLC": "State Street Communication Services Select Sector SPDR ETF",
+    "NVDA": "NVIDIA Corp",
+    "AAPL": "Apple Inc",
+    "MSFT": "Microsoft Corp",
+    "AMZN": "Amazon.com Inc",
+    "GOOGL": "Alphabet Inc - A",
+    "META": "Meta Platforms Inc",
+    "TSLA": "Tesla Inc",
+    "JPM": "JPMorgan Chase & Co",
+    "XOM": "Exxon Mobil Corp",
+    "LLY": "Eli Lilly & Co",
 }
 
 # Capital.com limite le débit ; enchaîner seize lectures d'affilée en fait
@@ -304,6 +332,26 @@ def depuis_env() -> CapitalCom:
         mot_de_passe=_env("CAPITAL_PASSWORD", ""),
         demo=_env("CAPITAL_DEMO", "1") not in ("0", "", "false", "no"),
     )
+
+
+def verifier_forme(cle: str, identifiant: str, mot_de_passe: str) -> list[str]:
+    """Défauts repérables sans appeler l'API.
+
+    Capital.com fait saisir trois choses qui se ressemblent — une clé, un nom
+    de clé, un mot de passe de clé — et renvoie le même 401 pour les trois. La
+    forme des valeurs, elle, distingue certains cas sans consommer d'appel :
+    un identifiant sans arobase n'est pas une adresse, et l'erreur la plus
+    fréquente est d'y mettre le *nom* de la clé.
+    """
+    defauts = []
+    if identifiant and "@" not in identifiant:
+        defauts.append(
+            f"CAPITAL_IDENTIFIER vaut « {identifiant} » et ne ressemble pas à une "
+            f"adresse e-mail. Capital.com attend l'e-mail du compte ; c'est le "
+            f"nom donné à la clé qu'on y met par erreur.")
+    if cle and len(cle) < 10:
+        defauts.append("CAPITAL_API_KEY paraît trop courte pour une clé d'API.")
+    return defauts
 
 
 def diagnostiquer(cle: str, identifiant: str, mot_de_passe: str) -> dict:

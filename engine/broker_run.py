@@ -90,9 +90,20 @@ def check() -> int:
     print(f"  Trading    {'autorisé' if c.trading_autorise else 'REFUSÉ par le courtier'}")
 
     if not c.est_demo:
+        autorise = os.environ.get("JIMBOT_BROKER_ALLOW_LIVE", "0") not in (
+            "0", "", "false", "no")
+        arme = os.environ.get("JIMBOT_BROKER", "0") not in ("0", "", "false", "no")
         print()
-        print("  Ce compte n'est pas un compte de démonstration. Aucun ordre ne sera")
-        print("  transmis tant que JIMBOT_BROKER_ALLOW_LIVE n'est pas explicitement posé.")
+        if autorise and arme:
+            print("  ARMÉ. Les ordres partiront sur ce compte réel dès qu'un signal")
+            print("  franchira le seuil. JIMBOT_BROKER et JIMBOT_BROKER_ALLOW_LIVE")
+            print("  sont tous deux posés.")
+        elif autorise:
+            print("  Le compte réel est autorisé, mais l'exécution est éteinte :")
+            print("  JIMBOT_BROKER vaut 0. Aucun ordre ne partira.")
+        else:
+            print("  Compte réel NON autorisé. Aucun ordre ne sera transmis tant que")
+            print("  JIMBOT_BROKER_ALLOW_LIVE n'est pas explicitement posé.")
 
     print()
     print("  Instruments reconnus chez ce courtier")
@@ -134,6 +145,13 @@ def _diagnostic_capital() -> None:
     print(f"    identifiant  {ident or 'ABSENT'}")
     print(f"    mot de passe {'renseigné (' + str(len(mdp)) + ' caractères)' if mdp else 'ABSENT'}")
     print()
+
+    from jimbot.broker_capital import verifier_forme
+    defauts = verifier_forme(cle, ident, mdp)
+    if defauts:
+        for d in defauts:
+            print(f"    ⚠ {d}")
+        print()
 
     res = diagnostiquer(cle, ident, mdp)
     for nom, r in res.items():
