@@ -178,6 +178,8 @@ export type Snapshot = {
   signals: Signal[];
   /** Table d alias des instruments MetaTrader, publiee par le moteur. */
   mt_aliases?: Record<string, string[]>;
+  /** Rotation sectorielle. Optionnel : absent des instantanés antérieurs. */
+  rotation?: Rotation;
   regimes: Record<string, number>;
   memecoins: Memecoin[];
   meme_report: { screened?: number; retained?: number; near_misses?: unknown[] };
@@ -439,6 +441,43 @@ export type Suivi = {
     par_version?: BilanParVersion;
   };
   signaux: SignalSuivi[];
+};
+
+export type TitreRotation = {
+  symbol: string;
+  label: string;
+  var_24h: number;
+  ampleur: number;
+  retention: number;
+  etat: string;
+  score: number;
+  biais: "long" | "short" | "neutre";
+};
+
+export type SecteurRotation = {
+  symbol: string;
+  label: string;
+  var_24h: number;
+  var_7j: number | null;
+  ampleur: number;
+  retention: number;
+  etat: string;
+  /** Parcours ample ET conservé : le secteur a réellement attiré du capital. */
+  aimant: boolean;
+  titres: TitreRotation[];
+  /** Titres qui bougent nettement plus que leur secteur. */
+  percent: string[];
+};
+
+export type Rotation = {
+  seuils: { ampleur: number; retention: number };
+  secteurs: SecteurRotation[];
+  aimants: string[];
+  delaisses: string[];
+  /** Écart d'ampleur entre le secteur le plus et le moins actif. Proche de
+   *  zéro, les secteurs bougent tous pareil : c'est une marée, pas une
+   *  rotation, et le classement n'apprend rien. */
+  dispersion: number;
 };
 
 export type BilanVersion = {

@@ -15,6 +15,7 @@ import {
   type Probe,
   type Report,
   type RiskOff,
+  type Rotation as RotationType,
   type Signal,
   type Speech,
   type Suivi,
@@ -1410,5 +1411,128 @@ function Amplitude({ position, hausse }: { position: number; hausse: boolean }) 
     >
       <i className={hausse ? "up" : "down"} style={{ left: `${pct}%` }} />
     </span>
+  );
+}
+
+/**
+ * Rotation sectorielle.
+ *
+ * Un indice d'ensemble cache ce qui l'intéresse : le S&P 500 peut finir plat
+ * pendant que l'énergie parcourt deux fois sa journée ordinaire et que la
+ * technologie rend tout ce qu'elle avait pris. La moyenne dit « rien ne se
+ * passe » là où deux secteurs se sont échangé des capitaux.
+ *
+ * Le classement vient du moteur (`engine/jimbot/rotation.py`) et non d'un
+ * calcul local : le rapport PDF, l'API et cette page doivent classer à
+ * l'identique.
+ */
+export function Rotation({ rotation }: { rotation?: RotationType | null }) {
+  if (!rotation?.secteurs?.length) return null;
+  const { secteurs, aimants, delaisses, dispersion, seuils } = rotation;
+
+  // Sous ce seuil, tous les secteurs bougent pareil : le classement mesure
+  // alors le bruit, et le dire vaut mieux que de laisser lire un ordre.
+  const maree = dispersion < 0.5;
+
+  return (
+    <section>
+      <h2>
+        Où va l’argent
+        <span className="compte">{secteurs.length} secteurs</span>
+      </h2>
+
+      <p className="note" style={{ marginTop: 0, marginBottom: 16 }}>
+        <strong>L’ampleur compare chaque secteur à sa propre journée
+        ordinaire</strong>, ce qui rend l’énergie et la technologie comparables
+        alors qu’elles ne bougent pas des mêmes pourcentages. Un secteur n’est
+        retenu comme <em>aimant</em> que s’il a parcouru plus de{" "}
+        {fmtNum(seuils.ampleur, 1)} fois sa journée <strong>et</strong> gardé
+        plus de {fmtNum(seuils.retention * 100, 0)} % de ce parcours&nbsp;: un
+        mouvement ample qu’on rend n’a attiré aucun capital.
+        <br />
+        {maree ? (
+          <>
+            <strong>Aucune rotation en cours.</strong> Les secteurs bougent tous
+            de la même façon (dispersion {fmtNum(dispersion)})&nbsp;: c’est une
+            marée, pas un déplacement d’argent d’un secteur vers un autre.
+          </>
+        ) : (
+          <>
+            {aimants.length > 0 && (
+              <>L’argent va vers <strong>{aimants.join(", ")}</strong>. </>
+            )}
+            {delaisses.length > 0 && (
+              <>Il quitte <strong>{delaisses.join(", ")}</strong>. </>
+            )}
+            {aimants.length === 0 && delaisses.length === 0 &&
+              "Aucun secteur ne sort de l’ordinaire. "}
+            Dispersion {fmtNum(dispersion)}.
+          </>
+        )}
+      </p>
+
+      <div className="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Secteur</th>
+              <th>Ce qu’il fait</th>
+              <th className="num">24 h</th>
+              <th className="num">7 j</th>
+              <th className="num">Ampleur</th>
+              <th className="num">Gardé</th>
+              <th>Titres qui percent</th>
+            </tr>
+          </thead>
+          <tbody>
+            {secteurs.map((s) => (
+              <tr key={s.symbol}>
+                <td style={{ fontWeight: s.aimant ? 600 : 400 }}>
+                  {s.label}
+                  <span className="muted" style={{ marginLeft: 6 }}>{s.symbol}</span>
+                </td>
+                <td className={s.var_24h > 0 ? "up" : s.var_24h < 0 ? "down" : "muted"}>
+                  {s.etat}
+                </td>
+                <td className={`num ${s.var_24h > 0 ? "up" : s.var_24h < 0 ? "down" : "muted"}`}>
+                  {s.var_24h >= 0 ? "+" : ""}{fmtNum(s.var_24h)} %
+                </td>
+                <td className="num muted">
+                  {s.var_7j === null ? "—" : `${s.var_7j >= 0 ? "+" : ""}${fmtNum(s.var_7j)} %`}
+                </td>
+                <td className="num">
+                  <strong style={{ fontWeight: s.aimant ? 600 : 400 }}>
+                    {fmtNum(s.ampleur)}&nbsp;×
+                  </strong>
+                </td>
+                <td className="num muted">{fmtNum(s.retention * 100, 0)} %</td>
+                <td className="wide">
+                  {s.percent.length ? (
+                    s.titres
+                      .filter((t) => s.percent.includes(t.symbol))
+                      .map((t) => (
+                        <span key={t.symbol} className="pill" style={{ marginRight: 5 }}>
+                          {t.symbol} {t.var_24h >= 0 ? "+" : ""}
+                          {fmtNum(t.var_24h)} %
+                        </span>
+                      ))
+                  ) : (
+                    <span className="muted">—</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <p className="note">
+        <strong>Rien de tout ceci n’entre dans le score du moteur.</strong> Ce
+        sont des mesures de ce qui a eu lieu, pas des prédictions de ce qui
+        suivra&nbsp;: un secteur qui a attiré des capitaux hier ne les retient
+        pas nécessairement demain, et le moteur n’a aucune preuve mesurée du
+        contraire.
+      </p>
+    </section>
   );
 }

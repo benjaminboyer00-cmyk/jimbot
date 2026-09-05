@@ -77,7 +77,58 @@ UNIVERSE: list[Asset] = [
     Asset("SPX", "yahoo", "^GSPC", "index", "S&P 500"),
     Asset("NDX", "yahoo", "^IXIC", "index", "Nasdaq Composite"),
     Asset("DXY", "yahoo", "DX-Y.NYB", "index", "Dollar Index"),
+    # --- Secteurs américains (ETF SPDR) ---
+    #
+    # Onze fonds qui découpent le S&P 500 en secteurs, et qui répondent à une
+    # question que l'univers ne savait pas poser : *où* l'argent va, plutôt que
+    # si le marché monte. Un secteur qui parcourt deux fois sa journée
+    # ordinaire pendant que les dix autres dorment est une information ; le
+    # même mouvement sur l'indice d'ensemble est invisible.
+    #
+    # Ils sont suivis comme n'importe quel actif — mêmes facteurs, même
+    # calibrage. Rien n'est supposé de leur pouvoir prédictif : la sonde le
+    # mesurera comme elle a mesuré le reste.
+    Asset("XLK", "yahoo", "XLK", "secteur", "Technologie"),
+    Asset("XLF", "yahoo", "XLF", "secteur", "Finance"),
+    Asset("XLE", "yahoo", "XLE", "secteur", "Énergie"),
+    Asset("XLV", "yahoo", "XLV", "secteur", "Santé"),
+    Asset("XLI", "yahoo", "XLI", "secteur", "Industrie"),
+    Asset("XLY", "yahoo", "XLY", "secteur", "Consommation discrétionnaire"),
+    Asset("XLP", "yahoo", "XLP", "secteur", "Consommation de base"),
+    Asset("XLU", "yahoo", "XLU", "secteur", "Services aux collectivités"),
+    Asset("XLB", "yahoo", "XLB", "secteur", "Matériaux"),
+    Asset("XLRE", "yahoo", "XLRE", "secteur", "Immobilier"),
+    Asset("XLC", "yahoo", "XLC", "secteur", "Communication"),
+    # --- Actions ---
+    #
+    # Une par secteur dominant, choisies sur la liquidité seule : ce sont les
+    # plus échangées de leur secteur, donc celles dont le spread ne mange pas
+    # l'avantage. Aucun choix n'est fait sur la valorisation ou la qualité du
+    # bilan — le moteur ne sait pas encore lire un bilan, et prétendre le
+    # contraire en piochant des titres « prometteurs » ne ferait qu'ajouter un
+    # biais non mesuré.
+    Asset("NVDA", "yahoo", "NVDA", "action", "Nvidia"),
+    Asset("AAPL", "yahoo", "AAPL", "action", "Apple"),
+    Asset("MSFT", "yahoo", "MSFT", "action", "Microsoft"),
+    Asset("AMZN", "yahoo", "AMZN", "action", "Amazon"),
+    Asset("GOOGL", "yahoo", "GOOGL", "action", "Alphabet"),
+    Asset("META", "yahoo", "META", "action", "Meta"),
+    Asset("TSLA", "yahoo", "TSLA", "action", "Tesla"),
+    Asset("JPM", "yahoo", "JPM", "action", "JPMorgan"),
+    Asset("XOM", "yahoo", "XOM", "action", "ExxonMobil"),
+    Asset("LLY", "yahoo", "LLY", "action", "Eli Lilly"),
 ]
+
+# Secteur de rattachement de chaque action, pour la rotation sectorielle.
+# Écrit à la main plutôt que lu chez un fournisseur : la table tient en dix
+# lignes, et l'endpoint de fondamentaux de Yahoo demande désormais une
+# authentification.
+SECTEUR_DE: dict[str, str] = {
+    "NVDA": "XLK", "AAPL": "XLK", "MSFT": "XLK",
+    "AMZN": "XLY", "TSLA": "XLY",
+    "GOOGL": "XLC", "META": "XLC",
+    "JPM": "XLF", "XOM": "XLE", "LLY": "XLV",
+}
 
 # Actifs suivis pour le contexte uniquement : ils alimentent les corrélations
 # et les bêtas de valeur refuge, mais ne donnent jamais lieu à un signal.
@@ -136,6 +187,44 @@ class RiskProfile:
     max_notional_pct: float
 
 
+# Multiplicateur global du risque par trade.
+#
+# Existe pour les petits comptes, et il faut être clair sur ce qu'il fait.
+#
+# Le moteur risque `risk_pct × conviction` par trade, soit 0,16 % du capital
+# à un score de 58. Sur 50 €, cela fait huit centimes — une taille que plus
+# aucun courtier n'accepte, et la plupart des instruments sont refusés avant
+# même d'être envoyés. Le problème n'est pas le pourcentage, c'est que 50 €
+# n'a pas la taille d'un compte de trading.
+#
+# On peut monter le risque pour rendre les ordres passables. Ce n'est pas
+# gratuit, et l'arithmétique est simple : à 5 % par trade, vingt pertes
+# consécutives suffisent à effacer le compte, et l'espérance mesurée du moteur
+# est indiscernable de zéro (t = 1,13). Un multiplicateur élevé ne rend donc
+# pas la stratégie meilleure, il rend la ruine plus rapide.
+#
+# Vaut 1 par défaut : un dépôt cloné ne doit jamais se mettre à risquer plus
+# que ce que le moteur a mesuré.
+#
+# Lu à chaque appel et non à l'import. Une constante figée au chargement du
+# module ne peut être ni testée ni ajustée sans redémarrer, et un réglage qu'on
+# ne peut pas éprouver est un réglage dont on ignore s'il fonctionne — ce qui
+# est intenable pour celui qui décide de combien on perd.
+#
+# Plafonné à 10. Au-delà, le risque par trade dépasse ce que le portefeuille
+# papier, le rejeu et la sonde ont mesuré : le moteur ne décrirait plus la
+# stratégie dont il publie les résultats.
+RISK_MULT_MAX = 10.0
+
+
+def risk_mult() -> float:
+    """Multiplicateur courant du risque par trade, borné."""
+    v = _env_float("JIMBOT_RISK_MULT", 1.0)
+    if v <= 0:
+        return 1.0
+    return min(v, RISK_MULT_MAX)
+
+
 RISK: dict[str, RiskProfile] = {
     "crypto": RiskProfile(atr_stop_mult=2.0, rr_target=2.0, risk_pct=0.010,
                           max_positions=5, max_notional_pct=0.25),
@@ -146,6 +235,15 @@ RISK: dict[str, RiskProfile] = {
                          max_positions=4, max_notional_pct=0.60),
     "index": RiskProfile(atr_stop_mult=2.2, rr_target=2.0, risk_pct=0.008,
                          max_positions=3, max_notional_pct=0.50),
+    # Une action bouge plus qu'un indice et moins qu'une crypto ; son stop est
+    # plus large que celui d'un indice parce qu'un titre isolé encaisse des
+    # écarts de séance qu'un panier lisse.
+    "action": RiskProfile(atr_stop_mult=2.5, rr_target=2.0, risk_pct=0.008,
+                          max_positions=4, max_notional_pct=0.30),
+    # Un ETF sectoriel est un panier : moins volatil qu'un titre, donc stop
+    # plus serré et exposition plus large admissible.
+    "secteur": RiskProfile(atr_stop_mult=2.0, rr_target=2.0, risk_pct=0.008,
+                           max_positions=3, max_notional_pct=0.45),
 }
 
 

@@ -11,7 +11,7 @@ import math
 
 import numpy as np
 
-from .config import RISK
+from .config import RISK, risk_mult
 
 log = logging.getLogger("jimbot.risk")
 
@@ -57,7 +57,10 @@ def position_size(capital: float, entry: float, stop: float, klass: str,
     # Un score de 60 (seuil) engage la moitié du risque nominal, un score de
     # 100 l'engage entièrement : la conviction module l'exposition.
     conviction = float(np.clip((score - 50.0) / 50.0, 0.1, 1.0))
-    risk_pct = profile.risk_pct * conviction
+    # `RISK_MULT` permet à un petit compte de produire des tailles que le
+    # courtier accepte. Il ne change pas la qualité du signal, seulement la
+    # vitesse à laquelle on encaisse ce qu'il vaut — dans les deux sens.
+    risk_pct = profile.risk_pct * conviction * risk_mult()
     if kelly is not None and kelly > 0:
         # Le Kelly issu de l'historique réel plafonne le risque nominal,
         # il ne l'augmente jamais.

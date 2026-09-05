@@ -15,6 +15,7 @@ from . import calendar as cal
 from . import history, ledger, risk, stats
 from .config import MEMECOIN_CHAINS, REPORTS_DIR, RISK, SETTINGS, UNIVERSE, Asset
 from . import mt_symbols
+from . import rotation
 from .datasources import crypto, dexscreener, news as news_src, yahoo
 from .datasources.base import DataError
 from .paper import Portfolio, performance
@@ -252,6 +253,9 @@ def persist_scan(signals: list[dict], data: dict, portfolio: dict,
         # Publiée pour que le site et `/api/mt` lisent la même table que celle
         # qui sert à passer les ordres. Une copie aurait divergé.
         "mt_aliases": {a.symbol: mt_symbols.aliases(a.symbol) for a in UNIVERSE},
+        # Où l'argent va, plutôt que si le marché monte. Calculé ici pour que
+        # le tableau de bord, le rapport PDF et l'API classent à l'identique.
+        "rotation": rotation.classer(signals),
         "watchlist": watchlist,
         "agenda": agenda,
         "reports": list_reports(),

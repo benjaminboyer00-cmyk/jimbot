@@ -36,6 +36,7 @@ import {
   NewsSummary,
   Redevabilite,
   Reports,
+  Rotation,
   TradeJournal,
   Watchlist,
   WorldContext,
@@ -121,6 +122,8 @@ export default async function Page() {
         </div>
 
         <Marche signaux={snap.signals} />
+
+        <Rotation rotation={snap.rotation} />
 
         {snap.risk_off && snap.risk_off.count > 0 && (
           <WorldContext riskOff={snap.risk_off} />
