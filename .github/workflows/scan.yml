@@ -74,6 +74,12 @@ jobs:
           CAPITAL_IDENTIFIER: ${{ secrets.CAPITAL_IDENTIFIER }}
           CAPITAL_PASSWORD: ${{ secrets.CAPITAL_PASSWORD }}
           CAPITAL_DEMO: ${{ vars.CAPITAL_DEMO }}
+          # Sans cette variable, le moteur refuse tout compte que le courtier
+          # ne declare pas comme compte de demonstration. C'est la ligne qui
+          # separe « je passe des ordres depuis mon poste » de « un robot passe
+          # des ordres pendant que je dors ».
+          JIMBOT_BROKER_ALLOW_LIVE: ${{ vars.JIMBOT_BROKER_ALLOW_LIVE }}
+          JIMBOT_RISK_MULT: ${{ vars.JIMBOT_RISK_MULT }}
           METAAPI_TOKEN: ${{ secrets.METAAPI_TOKEN }}
           METAAPI_ACCOUNT_ID: ${{ secrets.METAAPI_ACCOUNT_ID }}
           METAAPI_REGION: ${{ vars.METAAPI_REGION }}

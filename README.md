@@ -72,7 +72,22 @@ commit ultérieur ne l'efface ni de l'historique, ni des clones déjà faits. La
 seule réponse est de le révoquer chez son émetteur.
 
 Les secrets vivent dans `.env` en local (ignoré par git) et dans
-*Settings → Secrets and variables → Actions* sur GitHub.
+*Settings → Secrets and variables → Actions* sur GitHub. Pour éviter de
+recopier sept valeurs à la main — une faute de frappe sur un identifiant de
+courtier se traduit par une panne qu'on met une heure à comprendre :
+
+```bash
+export GITHUB_TOKEN=ghp_...                      # portée « repo »
+python scripts/pousser_secrets.py --dry-run      # montre, n'envoie rien
+python scripts/pousser_secrets.py
+```
+
+Le script chiffre chaque secret avec la clé publique du dépôt, comme GitHub
+l'exige, et **n'affiche jamais une valeur** — seulement son nom et sa longueur,
+de quoi repérer une valeur tronquée sans la révéler. Les réglages qui engagent
+de l'argent réel (`JIMBOT_BROKER`, `JIMBOT_BROKER_ALLOW_LIVE`, `CAPITAL_DEMO`)
+sont retenus sauf `--armer-le-reel` : armer une exécution réelle par mégarde,
+en poussant un fichier de configuration, serait la pire façon de le faire.
 
 ### Les fichiers de données
 
