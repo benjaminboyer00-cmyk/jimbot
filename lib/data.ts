@@ -176,6 +176,8 @@ export type Snapshot = {
   /** Préréglages de risque du moteur. Voir `lib/sizing.ts`. */
   risque?: import("./sizing").ReglagesRisque;
   signals: Signal[];
+  /** Table d alias des instruments MetaTrader, publiee par le moteur. */
+  mt_aliases?: Record<string, string[]>;
   regimes: Record<string, number>;
   memecoins: Memecoin[];
   meme_report: { screened?: number; retained?: number; near_misses?: unknown[] };

@@ -14,6 +14,7 @@ import pandas as pd
 from . import calendar as cal
 from . import history, ledger, risk, stats
 from .config import MEMECOIN_CHAINS, REPORTS_DIR, RISK, SETTINGS, UNIVERSE, Asset
+from . import mt_symbols
 from .datasources import crypto, dexscreener, news as news_src, yahoo
 from .datasources.base import DataError
 from .paper import Portfolio, performance
@@ -248,6 +249,9 @@ def persist_scan(signals: list[dict], data: dict, portfolio: dict,
         "news_summary": news_summary,
         "news_engine": news_engine,
         "speeches": speeches,
+        # Publiée pour que le site et `/api/mt` lisent la même table que celle
+        # qui sert à passer les ordres. Une copie aurait divergé.
+        "mt_aliases": {a.symbol: mt_symbols.aliases(a.symbol) for a in UNIVERSE},
         "watchlist": watchlist,
         "agenda": agenda,
         "reports": list_reports(),

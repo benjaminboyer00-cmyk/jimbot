@@ -84,6 +84,68 @@ stop et son objectif, mais fermez-la à la main quand vous avez vu ce que vous
 vouliez voir. Repassez `SelfTestOnDemo` à `false` ensuite, sinon il rouvre une
 position à chaque rechargement de l'EA.
 
+## Trader depuis le téléphone, sans aucune machine allumée
+
+C'est le montage qui répond vraiment à « je veux que les trades du bot arrivent
+sur mon téléphone ». Il n'utilise pas l'Expert Advisor du tout.
+
+Le problème est structurel : l'app mobile n'exécute aucun code, et GitHub
+Actions ne peut pas faire tourner un terminal MetaTrader. Il manque la pièce
+qui passe les ordres. **MetaApi** est cette pièce — un service qui tient une
+connexion permanente à un compte MetaTrader et l'expose en REST.
+
+```
+GitHub Actions  ──POST /trade──>  MetaApi  ──>  compte MT5  ──>  app mobile
+   (le moteur)                    (le pont)      (le courtier)    (vous)
+```
+
+### Mise en place
+
+1. **Un compte MT5 de démonstration.** Chez un courtier, ou créé par l'API de
+   provisionnement de MetaApi, qui renvoie login, mot de passe et serveur.
+2. **Un compte MetaApi** sur `app.metaapi.cloud` : y ajouter le compte MT5,
+   relever le jeton et l'identifiant de compte. Service payant.
+3. **Vérifier avant d'armer**, en local :
+
+   ```bash
+   export METAAPI_TOKEN=... METAAPI_ACCOUNT_ID=...
+   python engine/broker_run.py --check     # lit le compte, ne touche à rien
+   python engine/broker_run.py --dry-run   # calcule les ordres, n'en passe aucun
+   ```
+
+   `--check` dit si le jeton fonctionne, si le compte est bien en démonstration,
+   et **lesquels de vos instruments ce courtier connaît** — la nomenclature
+   varie, et un instrument absent est ignoré sans que les autres en souffrent.
+4. **Armer**, dans les réglages du dépôt GitHub :
+   - secrets `METAAPI_TOKEN`, `METAAPI_ACCOUNT_ID`
+   - variable `JIMBOT_BROKER` à `1`
+
+   `JIMBOT_BROKER` est une *variable* et non un secret, délibérément : c'est un
+   interrupteur, et l'on doit pouvoir lire dans les réglages si l'exécution est
+   armée.
+5. **Sur le téléphone**, se connecter à ce compte dans l'app MT5. Les positions
+   ouvertes par le moteur y apparaissent.
+
+### Ce qui protège le compte
+
+| Garde-fou | Comportement |
+|---|---|
+| Compte réel | **Refus**, sauf `JIMBOT_BROKER_ALLOW_LIVE` explicite. Le type vient du serveur du courtier, pas d'un réglage local |
+| Interrupteur éteint | Rien ne part, même avec un jeton valide |
+| Espérance négative | Signal ignoré |
+| Signal déjà ouvert | Un `clientId` stable par scan empêche de rouvrir la même position tous les quarts d'heure |
+| Volume sous le lot minimal | On n'ouvre rien, plutôt que d'arrondir vers le haut et dépasser le risque |
+| Plafond de positions | `JIMBOT_BROKER_MAX_POSITIONS`, 5 par défaut |
+| Courtier injoignable | Journalisé, le scan se termine normalement |
+
+### Ce à quoi s'attendre sur un petit compte
+
+Avec 10 000 EUR, l'or à 4 000 et un stop à 40 points, le moteur dimensionne
+0,6 once. Sur un contrat de 100 onces, cela fait 0,006 lot — **sous le lot
+minimal de 0,01**, donc aucun ordre. Ce n'est pas une panne : c'est le
+dimensionnement par le risque qui refuse de prendre seize fois la somme prévue.
+Les instruments à petit contrat (CFD) passent, les gros contrats non.
+
 ## Recevoir les signaux sur un téléphone
 
 **L'application mobile MetaTrader 5 n'exécute pas d'Expert Advisor.** C'est une

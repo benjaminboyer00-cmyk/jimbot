@@ -48,6 +48,8 @@ non falsifiable a posteriori.
 | `lib/series.ts` | Dérivation des séries à partir des fichiers du moteur |
 | `lib/sizing.ts` | Taille de position pour le capital du lecteur, sur les préréglages du moteur |
 | `components/charts.tsx` | Graphiques SVG rendus côté serveur, sans dépendance |
+| `engine/jimbot/broker.py` | Exécution des signaux sur un compte MetaTrader via MetaApi, sans terminal ni VPS. Refuse tout compte non démo par défaut |
+| `engine/jimbot/mt_symbols.py` | Table d'alias des instruments, publiée dans l'instantané pour que le site et l'API lisent la même |
 | `metatrader/` | Expert Advisor MQL5 prêt à l'emploi |
 
 ### Les fichiers de données

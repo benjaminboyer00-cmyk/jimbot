@@ -74,6 +74,32 @@ def http_get_json(url: str, params: dict | None = None, *, timeout: int = 20,
     raise DataError(f"{url} injoignable après {retries} tentatives : {last_err}")
 
 
+def http_post_json(url: str, payload: dict, *, timeout: int = 20,
+                   headers: dict | None = None) -> Any:
+    """POST JSON, sans cache ni retry.
+
+    Les deux différences avec `http_get_json` sont délibérées. Un POST n'est
+    pas idempotent : le mettre en cache renverrait le résultat d'un ordre passé
+    au lieu d'en passer un, et le rejouer après un délai d'attente en
+    passerait deux. Quand la réponse se perd, on préfère ne pas savoir plutôt
+    que doubler une position — l'appelant relit l'état du compte au passage
+    suivant, ce qui est la seule façon sûre de reprendre.
+    """
+    try:
+        r = requests.post(url, json=payload, timeout=timeout,
+                          headers={"User-Agent": USER_AGENT,
+                                   "Content-Type": "application/json",
+                                   "Accept": "application/json", **(headers or {})})
+        if not r.ok:
+            detail = (r.text or "")[:300]
+            raise DataError(f"HTTP {r.status_code} : {detail}")
+        return r.json() if r.content else {}
+    except DataError:
+        raise
+    except Exception as e:  # noqa: BLE001
+        raise DataError(f"{url} : {e}") from e
+
+
 def normalize(df: pd.DataFrame) -> Candles:
     """Impose le contrat de sortie : colonnes, types, ordre, propreté.
 

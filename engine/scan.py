@@ -19,6 +19,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from jimbot import discord, narrator, pipeline  # noqa: E402
+from jimbot import broker
 from jimbot.config import SETTINGS  # noqa: E402
 from jimbot.paper import performance  # noqa: E402
 from jimbot.store import read  # noqa: E402
@@ -97,6 +98,22 @@ def main() -> int:
                 stats={"Capital": f"{portfolio['equity']:,.2f}",
                        "Trades": perf.get("trades", 0),
                        "Espérance": f"{perf.get('expectancy_r', 0):+.2f} R"})
+
+    # Raccordement courtier. Éteint par défaut : il ne s'active que si
+    # JIMBOT_BROKER est posé ET qu'un jeton MetaApi est présent. Un échec ici
+    # ne doit jamais empêcher le scan de committer ses données — le compte
+    # rattrapera au passage suivant, ce qui est la seule reprise sûre pour des
+    # ordres non idempotents.
+    if broker.actif():
+        actionnables = [s for s in signals if s.get("actionable")]
+        rapport = broker.synchroniser(actionnables)
+        if rapport.get("erreur"):
+            log.warning("courtier : %s", rapport["erreur"])
+        else:
+            log.info("courtier : %d ordre(s) transmis, %d ignoré(s)",
+                     len(rapport["ordres"]), len(rapport["ignores"]))
+            for o in rapport["ordres"]:
+                log.info("  %s %s %s lot(s)", o["actionType"], o["symbol"], o["volume"])
 
     log.info("scan terminé")
     return 0

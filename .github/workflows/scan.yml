@@ -62,6 +62,16 @@ jobs:
           JIMBOT_ALERT_THRESHOLD: ${{ vars.JIMBOT_ALERT_THRESHOLD }}
           JIMBOT_PING_THRESHOLD: ${{ vars.JIMBOT_PING_THRESHOLD }}
           JIMBOT_PAPER_CAPITAL: ${{ vars.JIMBOT_PAPER_CAPITAL }}
+          # Raccordement courtier. Sans METAAPI_TOKEN, `broker.actif()` est
+          # faux et rien ne part : le dépôt peut donc tourner tel quel chez
+          # quelqu'un qui n'a pas de compte. JIMBOT_BROKER est une variable et
+          # non un secret — c'est un interrupteur, pas une clé — de sorte qu'on
+          # voit dans les réglages du dépôt si l'exécution est armée.
+          JIMBOT_BROKER: ${{ vars.JIMBOT_BROKER }}
+          JIMBOT_BROKER_MAX_POSITIONS: ${{ vars.JIMBOT_BROKER_MAX_POSITIONS }}
+          METAAPI_TOKEN: ${{ secrets.METAAPI_TOKEN }}
+          METAAPI_ACCOUNT_ID: ${{ secrets.METAAPI_ACCOUNT_ID }}
+          METAAPI_REGION: ${{ vars.METAAPI_REGION }}
         run: |
           DEBUT=$(date +%s)
           OPTIONS="${{ inputs.no_alert && '--no-alert' || '' }}"

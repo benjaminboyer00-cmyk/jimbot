@@ -15,21 +15,21 @@
  */
 import { getSnapshot, seuils, type Signal } from "@/lib/data";
 import { jsonResponse, noStore, preflight } from "@/lib/api";
-import { MT_ALIASES, mtSymbol, mtDigits } from "@/lib/mt";
+import { mtAliases, mtSymbol, mtDigits, tableAlias } from "@/lib/mt";
 
 export const dynamic = "force-dynamic";
 export const OPTIONS = preflight;
 
 type Mode = "actionable" | "watchlist" | "all";
 
-function toMt(s: Signal, actionable: boolean) {
+function toMt(s: Signal, actionable: boolean, alias: Record<string, string[]>) {
   const digits = mtDigits(s.price);
   const round = (v: number) => Number(v.toFixed(digits));
   const dir = actionable ? s.direction : s.bias;
 
   return {
-    symbol: mtSymbol(s.symbol),
-    aliases: MT_ALIASES[s.symbol] ?? [mtSymbol(s.symbol)],
+    symbol: mtSymbol(s.symbol, alias),
+    aliases: mtAliases(s.symbol, alias),
     internal: s.symbol,
     name: s.label,
     // BUY / SELL : la convention MetaTrader, pas la nôtre.
@@ -66,16 +66,19 @@ export async function GET(request: Request) {
   const minScore = Number(url.searchParams.get("min_score") ?? "0");
   const symbolFilter = url.searchParams.get("symbol")?.toUpperCase();
 
+  // La table d'alias vient du moteur, qui est celui qui passe les ordres.
+  const alias = tableAlias(snap.mt_aliases);
   const seuil = seuils(snap);
   const actionable = snap.signals.filter((s) => s.actionable);
   const watchlist = snap.watchlist ?? [];
 
   let rows =
     mode === "watchlist"
-      ? watchlist.map((s) => toMt(s, false))
+      ? watchlist.map((s) => toMt(s, false, alias))
       : mode === "all"
-        ? [...actionable.map((s) => toMt(s, true)), ...watchlist.map((s) => toMt(s, false))]
-        : actionable.map((s) => toMt(s, true));
+        ? [...actionable.map((s) => toMt(s, true, alias)),
+           ...watchlist.map((s) => toMt(s, false, alias))]
+        : actionable.map((s) => toMt(s, true, alias));
 
   if (minScore > 0) rows = rows.filter((r) => r.score >= minScore);
   if (symbolFilter) {
