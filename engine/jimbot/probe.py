@@ -29,8 +29,9 @@ import pandas as pd
 from . import indicators as I
 from . import stats as S
 from .config import Asset
-from .strategy import (factor_breakout, factor_momentum, factor_mean_reversion,
-                       factor_structure, factor_trend, factor_volume, htf_bias)
+from .strategy import (factor_breakout, factor_flux, factor_grosses_mains,
+                       factor_momentum, factor_mean_reversion, factor_structure,
+                       factor_trend, factor_volume, htf_bias)
 
 log = logging.getLogger("jimbot.probe")
 
@@ -63,6 +64,10 @@ FACTORS = {
     "volume": factor_volume,
     "breakout": factor_breakout,
     "structure": factor_structure,
+    # Mesurés, pas encore utilisés : ils n'ont aucun poids dans le score. La
+    # sonde dira s'ils portent de l'information avant qu'on leur en donne un.
+    "flux": factor_flux,
+    "grosses_mains": factor_grosses_mains,
 }
 
 

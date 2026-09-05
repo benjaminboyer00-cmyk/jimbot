@@ -111,7 +111,20 @@ def normalize(df: pd.DataFrame) -> Candles:
     if missing:
         raise DataError(f"colonnes manquantes : {missing}")
 
-    out = df[required].astype("float64").copy()
+    # Colonnes de flux, conservées quand la source les fournit.
+    #
+    # Binance renvoie douze champs par bougie, dont le volume acheté à
+    # l'agressive et le nombre de transactions. Les deux étaient téléchargés
+    # puis jetés ici, alors qu'ils portent une information que le prix ne porte
+    # pas : *qui pousse*. Un volume identique dont 70 % est acheteur ne raconte
+    # pas la même chose qu'un volume dont 30 % l'est, et la taille moyenne
+    # d'une transaction dit si ce sont de gros intervenants ou une foule.
+    #
+    # Optionnelles : Yahoo ne les fournit pas, et le contrat de sortie ne peut
+    # pas les exiger sans exclure la moitié de l'univers.
+    flux = [c for c in ("taker_base", "trades") if c in df.columns]
+
+    out = df[required + flux].astype("float64").copy()
     out.index = pd.to_datetime(df.index, utc=True)
     out = out[~out.index.duplicated(keep="last")].sort_index()
 
@@ -121,6 +134,8 @@ def normalize(df: pd.DataFrame) -> Candles:
     # Cohérence OHLC : certaines API renvoient des high < low sur les bougies creuses.
     out["high"] = out[["open", "high", "low", "close"]].max(axis=1)
     out["low"] = out[["open", "high", "low", "close"]].min(axis=1)
+    for c in flux:
+        out[c] = out[c].fillna(0.0)
     return out[out["close"] > 0]
 
 

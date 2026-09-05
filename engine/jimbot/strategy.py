@@ -388,6 +388,115 @@ def factor_structure(df: pd.DataFrame) -> Factor:
                   " · ".join(detail) or "structure indéterminée")
 
 
+def factor_flux(df: pd.DataFrame) -> Factor:
+    """Déséquilibre entre acheteurs et vendeurs agressifs.
+
+    Le prix dit *où* le marché est allé ; ce facteur dit *qui l'y a poussé*.
+    Binance publie, pour chaque bougie, la part du volume achetée à l'agressive
+    — c'est-à-dire par des ordres qui ont franchi le carnet plutôt que d'y
+    attendre. Un volume identique dont 70 % est acheteur ne raconte pas la même
+    chose qu'un volume dont 30 % l'est, et le prix seul ne distingue pas les
+    deux.
+
+    C'est le plus proche substitut librement mesurable de « ce que font les
+    gros » : un mouvement de portefeuille observé sur la chaîne peut n'être
+    qu'un transfert interne, alors qu'un ordre agressif est de la pression
+    d'achat ou de vente effective.
+
+    Normalisé dans [-1, +1] : +1 pour un volume entièrement acheteur.
+
+    Aucun poids ne lui est attribué. Il est mesuré par la sonde avant d'entrer
+    où que ce soit — c'est précisément l'ordre qu'on n'avait pas respecté pour
+    les facteurs de tendance, dont la sonde a découvert qu'ils prédisaient à
+    l'envers.
+    """
+    if "taker_base" not in df.columns or len(df) < 24:
+        return Factor("flux", 0.0, 0.0, "flux indisponible sur cette source")
+
+    fen = df.tail(24)
+    vol = float(fen["volume"].sum())
+    acheteur = float(fen["taker_base"].sum())
+    if vol <= 0:
+        return Factor("flux", 0.0, 0.0, "volume nul")
+
+    part = acheteur / vol
+    valeur = float(np.clip(2.0 * part - 1.0, -1.0, 1.0))
+    sens = "acheteur" if valeur > 0 else "vendeur"
+    return Factor("flux", round(valeur, 4), 0.0,
+                  f"{part * 100:.0f} % du volume acheté à l'agressive sur 24 h "
+                  f"({sens})")
+
+
+def factor_grosses_mains(df: pd.DataFrame) -> Factor:
+    """Taille moyenne des transactions, rapportée à son habitude.
+
+    Le nombre de transactions et le volume donnent la taille moyenne d'un
+    échange. Quand elle enfle nettement, ce sont de plus gros intervenants qui
+    agissent — une même quantité échangée par cent mains ou par trois ne dit
+    pas la même chose du marché.
+
+    Signé par le déséquilibre acheteur/vendeur : de grosses mains qui vendent
+    et de grosses mains qui achètent ne sauraient porter le même signe. Le seul
+    grossissement, non signé, ne dirait que « il se passe quelque chose ».
+    """
+    if "trades" not in df.columns or "taker_base" not in df.columns or len(df) < 48:
+        return Factor("grosses_mains", 0.0, 0.0, "flux indisponible sur cette source")
+
+    taille = (df["volume"] / df["trades"].replace(0, np.nan)).dropna()
+    if len(taille) < 48:
+        return Factor("grosses_mains", 0.0, 0.0, "historique de flux trop court")
+
+    recent = float(taille.tail(6).mean())
+    habituel = float(taille.tail(168).median()) if len(taille) >= 168 else float(taille.median())
+    if not (habituel > 0 and np.isfinite(recent)):
+        return Factor("grosses_mains", 0.0, 0.0, "taille moyenne incalculable")
+
+    # Rapport à l'habitude, comprimé : au-delà du double, l'information
+    # supplémentaire est faible et la queue de distribution est épaisse.
+    grossissement = _squash(recent / habituel - 1.0, 1.0)
+
+    fen = df.tail(6)
+    vol = float(fen["volume"].sum())
+    part = float(fen["taker_base"].sum()) / vol if vol > 0 else 0.5
+    signe = math.copysign(1.0, part - 0.5) if part != 0.5 else 0.0
+
+    valeur = float(np.clip(grossissement * signe, -1.0, 1.0))
+    return Factor("grosses_mains", round(valeur, 4), 0.0,
+                  f"transactions {recent / habituel:.2f}× leur taille habituelle, "
+                  f"{'acheteuses' if signe > 0 else 'vendeuses'}")
+
+
+def factor_financement(df: pd.DataFrame) -> Factor:
+    """Encombrement du côté long, mesuré par ce qu'il coûte.
+
+    Sur un perpétuel, les positions longues paient les courtes quand le taux de
+    financement est positif, et l'inverse quand il est négatif. Un taux
+    fortement positif dit donc que les acheteurs à levier dominent *et* qu'ils
+    paient pour le rester : c'est une mesure directe d'encombrement, que le
+    prix ne donne pas.
+
+    Le signe attendu n'est pas évident, et c'est précisément pourquoi il se
+    mesure. Deux lectures s'opposent : un financement élevé accompagne une
+    tendance haussière, ou bien il signale une position surpeuplée prête à se
+    dénouer. Le poids reste nul tant que la sonde n'a pas tranché.
+
+    Normalisé par un taux de référence de 0,01 % par période de huit heures,
+    qui est l'ordre de grandeur d'un marché équilibré.
+    """
+    if "financement" not in df.columns:
+        return Factor("financement", 0.0, 0.0, "pas de perpétuel sur cet actif")
+
+    serie = df["financement"].dropna()
+    if len(serie) < 3:
+        return Factor("financement", 0.0, 0.0, "financement indisponible")
+
+    recent = float(serie.tail(3).mean())
+    valeur = _squash(recent / 0.0001, 1.0)
+    sens = "longs payeurs" if recent > 0 else "courts payeurs"
+    return Factor("financement", round(float(valeur), 4), 0.0,
+                  f"financement {recent * 100:.4f} % par 8 h ({sens})")
+
+
 def factor_sentiment(news_score: float, count: int) -> Factor:
     """Sentiment de presse, déjà borné dans [-1, 1] par la couche news."""
     if count == 0:
