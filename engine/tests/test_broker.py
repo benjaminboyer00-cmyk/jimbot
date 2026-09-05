@@ -21,14 +21,19 @@ class FauxApi:
     """Compte de courtier simulé, entièrement sous contrôle du test."""
 
     def __init__(self, *, type_compte=B.DEMO, solde=10_000.0, positions=None,
-                 connus=("XAUUSD", "BTCUSD"), trading=True):
+                 connus=("XAUUSD", "BTCUSD"), trading=True, devise="USD",
+                 prix=None):
         self._compte = B.Compte(
             login="123", serveur="Demo-Server", courtier="Courtier Test",
-            devise="EUR", solde=solde, equite=solde,
+            devise=devise, solde=solde, equite=solde,
             type_compte=type_compte, trading_autorise=trading)
         self._positions = positions or []
         self._connus = set(connus)
+        self._prix = prix or {}
         self.ordres: list[dict] = []
+
+    def prix(self, symbole):
+        return self._prix.get(symbole)
 
     def compte(self): return self._compte
     def positions(self): return self._positions
@@ -223,3 +228,59 @@ def test_client_id_est_stable_sur_un_meme_scan():
     assert B.client_id(s) == B.client_id(dict(s))
     autre = _signal(generated_at="2026-09-05T19:10:00+00:00")
     assert B.client_id(s) != B.client_id(autre)
+
+
+# --------------------------------------------------------------------------
+# Conversion de devise : le volume doit risquer la somme décidée
+# --------------------------------------------------------------------------
+def test_meme_devise_aucune_conversion(faux):
+    """Quand l'instrument est coté dans la devise du compte, rien ne change."""
+    api = faux(devise="USD")
+    api.specification = lambda s: {**SPEC, "profitCurrency": "USD"} if s in api._connus else None
+    B.synchroniser([_signal()])
+    assert len(api.ordres) == 1
+
+
+def test_devise_de_cotation_differente_corrige_le_volume(faux):
+    """Sur USDJPY, la distance au stop est en yens.
+
+    Sans conversion, 141 unités à 0,567 ¥ font 80 ¥ — environ 0,51 $ — au lieu
+    des 80 $ que le moteur croyait risquer : la position sortait cent
+    cinquante-six fois trop petite.
+    """
+    api = faux(devise="USD", solde=100_000.0, connus=("USDJPY",),
+               prix={"USDJPY": 156.0})
+    spec_jpy = {**SPEC, "profitCurrency": "JPY", "contractSize": 100_000.0,
+                "minVolume": 0.01, "volumeStep": 0.01, "digits": 3}
+    api.specification = lambda s: dict(spec_jpy) if s == "USDJPY" else None
+
+    s = _signal(symbol="USDJPY", klass="forex", entry=156.22, stop=155.65,
+                target=157.36)
+    B.synchroniser([s])
+
+    assert len(api.ordres) == 1, "l'ordre était refusé faute de conversion"
+    vol = api.ordres[0]["volume"]
+
+    # La perte au stop, ramenée en devise du compte, doit valoir le risque décidé.
+    from jimbot import risk as R
+    prevu = R.position_size(100_000.0, s["entry"], s["stop"], "forex",
+                            score=s["score"])["risk_amount"]
+    perte_jpy = vol * spec_jpy["contractSize"] * abs(s["entry"] - s["stop"])
+    perte_usd = perte_jpy / 156.0
+    assert perte_usd <= prevu + 1e-6, "le volume risque plus que prévu"
+    assert perte_usd > prevu * 0.5, "le volume risque bien moins que prévu"
+
+
+def test_taux_inverse_quand_la_paire_est_dans_l_autre_sens(faux):
+    api = faux(devise="EUR", prix={"EURUSD": 1.10})
+    assert B.taux_vers_compte(api, "USD", "EUR") == pytest.approx(1 / 1.10)
+
+
+def test_sans_taux_disponible_on_refuse_plutot_que_de_mal_dimensionner(faux):
+    """Envoyer un volume dont on sait qu'il est faux est pire que ne rien
+    envoyer — l'erreur peut aller vers le trop gros."""
+    api = faux(devise="EUR", connus=("XAUUSD",), prix={})
+    api.specification = lambda s: {**SPEC, "profitCurrency": "SGD"} if s == "XAUUSD" else None
+    r = B.synchroniser([_signal()])
+    assert api.ordres == []
+    assert "conversion" in r["ignores"][0]["raison"]

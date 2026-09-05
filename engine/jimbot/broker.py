@@ -101,6 +101,20 @@ class MetaApi:
         d = self._get("/positions")
         return d if isinstance(d, list) else []
 
+    def prix(self, symbole: str) -> float | None:
+        """Prix courant d'un instrument, ou None s'il est indisponible."""
+        try:
+            d = self._get(f"/symbols/{symbole}/current-price")
+        except BrokerError:
+            return None
+        if not isinstance(d, dict):
+            return None
+        for cle in ("bid", "ask", "last"):
+            v = d.get(cle)
+            if isinstance(v, (int, float)) and v > 0:
+                return float(v)
+        return None
+
     def specification(self, symbole: str) -> dict | None:
         try:
             d = self._get(f"/symbols/{symbole}/specification")
@@ -127,6 +141,36 @@ class MetaApi:
             return http_post_json(url, payload, headers={"auth-token": self.token})
         except DataError as e:
             raise BrokerError(f"ordre refusé : {e}") from e
+
+
+def taux_vers_compte(api: "MetaApi", devise_profit: str, devise_compte: str) -> float | None:
+    """Combien vaut une unité de `devise_profit` en `devise_compte`.
+
+    Sans ce taux, le dimensionnement est faux dès que l'instrument n'est pas
+    coté dans la devise du compte. Sur USDJPY, la distance au stop s'exprime en
+    yens : 141 unités à 0,567 ¥ font 80 ¥, soit environ 0,51 $ — pas les 80 $
+    que le moteur croyait risquer. La position sortait cent cinquante-six fois
+    trop petite. Dans l'autre sens — une devise de cotation plus forte que celle
+    du compte — l'erreur irait vers le trop gros, et coûterait.
+
+    Renvoie None quand aucune paire de conversion n'est disponible. L'appelant
+    doit alors refuser l'ordre : envoyer un volume dont on sait qu'il est faux
+    est pire que ne rien envoyer.
+    """
+    if not devise_profit or not devise_compte:
+        return None
+    if devise_profit == devise_compte:
+        return 1.0
+
+    # PROFITCOMPTE : le prix donne directement le taux.
+    direct = api.prix(f"{devise_profit}{devise_compte}")
+    if direct:
+        return direct
+    # COMPTEPROFIT : le taux est l'inverse.
+    inverse = api.prix(f"{devise_compte}{devise_profit}")
+    if inverse:
+        return 1.0 / inverse
+    return None
 
 
 def volume_pour(spec: dict, unites: float) -> float:
@@ -274,7 +318,23 @@ def synchroniser(signaux: list[dict], *, dry_run: bool = False) -> dict:
         from . import risk as R
         taille = R.position_size(compte.solde, float(s["entry"]), float(s["stop"]),
                                  s.get("klass", "crypto"), score=float(s.get("score", 60.0)))
-        volume = volume_pour(spec, float(taille.get("units", 0.0)))
+        unites = float(taille.get("units", 0.0))
+
+        # Le moteur raisonne comme si l'instrument était coté dans la devise du
+        # compte. Quand ce n'est pas le cas, la quantité doit être divisée par
+        # le taux, faute de quoi la perte au stop n'est pas celle qu'on a
+        # décidée. Sans taux disponible, on refuse.
+        devise_profit = str(spec.get("profitCurrency") or compte.devise)
+        taux = taux_vers_compte(api, devise_profit, compte.devise)
+        if taux is None or taux <= 0:
+            rapport["ignores"].append({
+                "symbol": nom,
+                "raison": f"conversion {devise_profit} vers {compte.devise} indisponible : "
+                          f"le volume serait faux"})
+            continue
+        unites = unites / taux
+
+        volume = volume_pour(spec, unites)
         if volume <= 0:
             rapport["ignores"].append({
                 "symbol": nom,
