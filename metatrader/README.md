@@ -30,6 +30,7 @@ MetaTrader. **Par défaut, il ne transmet aucun ordre.**
 | `MaxPositions` | 5 | Positions simultanées maximales |
 | `MagicNumber` | 20260825 | Identifiant des ordres de cet EA |
 | `NotifyMobile` | true | Pousser chaque signal vers l'application mobile |
+| `SelfTestOnDemo` | **false** | Auto-test de bout en bout, compte démo uniquement |
 
 ## Le seuil, et pourquoi il valait 68
 
@@ -50,6 +51,38 @@ comportement ressemblait à une panne alors que c'était un réglage.
 `MinScore = 0` fait suivre `thresholds.signal`, que l'API publie et qui vient
 du scan lui-même : si le seuil du moteur bouge, l'EA suit sans recompilation.
 Une valeur strictement positive continue de forcer un seuil manuel.
+
+## Vérifier que tout fonctionne, sur un compte démo
+
+Le moteur ne franchit son seuil que 5,6 % du temps, et l'EA ignore les plans à
+espérance négative. Conséquence : vous installez tout correctement, et il ne se
+passe **rien** pendant deux jours. Impossible de distinguer « ça marche et il
+n'y a rien à prendre » de « c'est cassé ».
+
+`SelfTestOnDemo` répond à cette question en une minute. Il prend le meilleur
+plan disponible, ouvre une position au **volume minimal du courtier**, et
+journalise les cinq étapes :
+
+```
+AUTO-TEST 1/5 : API joignable, 4213 octets reçus.
+AUTO-TEST 2/5 : plan lu — XAUUSD BUY  SL 4436.96  TP 4555.88
+AUTO-TEST 3/5 : symbole reconnu chez ce courtier — XAUUSD
+AUTO-TEST 4/5 : volume minimal du courtier — 0.01 lot(s).
+AUTO-TEST 5/5 : RÉUSSI — position ouverte sur XAUUSD, ticket 12345678.
+```
+
+Chaque étape qui échoue dit laquelle et pourquoi : domaine non autorisé,
+instrument absent chez le courtier, marché fermé.
+
+**Il refuse de s'exécuter sur un compte réel.** La vérification porte sur
+`ACCOUNT_TRADE_MODE`, que renseigne le serveur du courtier — ce n'est pas une
+case à cocher côté client. Sur un compte réel, il journalise le refus et
+n'ouvre rien.
+
+La position ouverte n'est **pas** surveillée par l'auto-test : elle porte son
+stop et son objectif, mais fermez-la à la main quand vous avez vu ce que vous
+vouliez voir. Repassez `SelfTestOnDemo` à `false` ensuite, sinon il rouvre une
+position à chaque rechargement de l'EA.
 
 ## Recevoir les signaux sur un téléphone
 
