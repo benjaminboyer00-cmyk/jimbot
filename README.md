@@ -90,6 +90,20 @@ bruitées : un optimiseur nourri d'une estimation imparfaite sélectionne son
 erreur. Le plan fixe ne peut pas tromper son propre estimateur, et c'est
 exactement ce qui le protège.
 
+Le réglage n'est pas un point chanceux. Contrôle de robustesse sur les R/R
+voisins, en comparant chaque variante à *son propre* seuil de rentabilité —
+sans quoi on comparerait des configurations non comparables :
+
+| plan | n | réussite | seuil | écart | espérance |
+|---|---|---|---|---|---|
+| 2 ATR / 1.5 R | 80 | 41.2 % | 40.0 % | +1.2 pt | +0.001 R |
+| 2 ATR / **2.0 R** | 91 | 40.7 % | 33.3 % | **+7.4 pt** | +0.186 R |
+| 2 ATR / **2.5 R** | 92 | 34.8 % | 28.6 % | **+6.2 pt** | +0.194 R |
+
+Il existe un plateau de 2.0 à 2.5 R. Seul 1.5 R s'effondre, et pour une raison
+identifiable : sa cible trop proche produit un gain qui ne couvre plus les
+frais de transaction.
+
 L'optimiseur reste accessible pour la recherche (`JIMBOT_PLAN_MODE=optimise`),
 et toute la détection de structure — pivots, congestions, Fibonacci, point de
 contrôle du volume — garde sa valeur descriptive dans les rapports. Elle n'entre
