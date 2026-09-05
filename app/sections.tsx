@@ -9,12 +9,22 @@ import {
   fmtNum,
   fmtPrice,
   REGIME_LABELS,
+  type Backtest,
+  type Probe,
   type Report,
   type RiskOff,
   type Signal,
   type Speech,
   type Trade,
 } from "@/lib/data";
+
+// Les formes `Backtest` et `Probe` décrivent des fichiers du moteur : elles
+// vivent dans `lib/data.ts`. On les ré-expose ici pour ne pas casser les
+// imports existants.
+export type { Backtest, Probe };
+
+import { calibration, courbesIC } from "@/lib/series";
+import { Calibration, Chart, PetitesMultiplesIC } from "@/components/charts";
 
 /* ------------------------------------------------------------------ */
 /* Résumé d'actualité                                                  */
@@ -648,33 +658,6 @@ export function Agenda({
 /* ------------------------------------------------------------------ */
 /* Validation historique                                               */
 /* ------------------------------------------------------------------ */
-export type Backtest = {
-  generated_at: string;
-  parametres: { bars: number; step: number; window: number; actifs: number };
-  calibration: {
-    trades: number;
-    win_rate_global: number;
-    prob_predite_moyenne: number;
-    esperance_realisee: number;
-    esperance_predite: number;
-    facteur_de_profit: number | null;
-    drawdown_max_R?: number;
-    ic95?: [number, number];
-    verdict?: string;
-    significatif?: boolean;
-    trades_necessaires?: number;
-    correlation_score_esperance?: number;
-    par_tranche_de_score?: {
-      tranche: string;
-      trades: number;
-      win_rate: number;
-      prob_predite: number;
-      esperance_realisee: number;
-    }[];
-  };
-  limites: string[];
-};
-
 export function Validation({ bt }: { bt?: Backtest }) {
   if (!bt?.calibration?.trades) return null;
   const c = bt.calibration;
@@ -746,7 +729,30 @@ export function Validation({ bt }: { bt?: Backtest }) {
 
       {c.par_tranche_de_score && c.par_tranche_de_score.length > 0 && (
         <>
-          <h3 style={{ marginTop: 20 }}>Le score discrimine-t-il ?</h3>
+          <h3 style={{ marginTop: 24 }}>Le score discrimine-t-il ?</h3>
+          <div className="charts" style={{ marginBottom: 16 }}>
+            <Chart
+              wide
+              title="Réussite prédite contre réussite observée"
+              sub="par tranche de score"
+              foot={
+                <>
+                  L’alignement des deux barres dit si le modèle sait annoncer
+                  sa propre probabilité de gain. Leur progression d’une tranche
+                  à l’autre dit si une conviction plus forte donne un meilleur
+                  résultat. Ce sont deux propriétés indépendantes, et seule la
+                  seconde justifie l’existence d’un seuil.
+                </>
+              }
+            >
+              <Calibration
+                points={calibration(bt)}
+                seuil={bt.effet_de_la_structure?.adosse_a_la_structure?.seuil_rentabilite}
+                w={860}
+                h={220}
+              />
+            </Chart>
+          </div>
           <div className="tablewrap">
             <table>
               <thead>
@@ -805,24 +811,6 @@ export function Validation({ bt }: { bt?: Backtest }) {
 /* ------------------------------------------------------------------ */
 /* Pouvoir prédictif des facteurs                                      */
 /* ------------------------------------------------------------------ */
-export type Probe = {
-  generated_at: string;
-  parametres: { bars: number; step: number; actifs: number };
-  coefficients: {
-    observations: number;
-    par_facteur: Record<
-      string,
-      {
-        ic_max: number;
-        meilleur_horizon: string;
-        significatif: boolean;
-        horizons: Record<string, { ic: number; t: number; significatif: boolean }>;
-      }
-    >;
-  };
-  note: string;
-};
-
 const HORIZONS = ["h6", "h12", "h24", "h48"];
 
 export function FactorPower({ probe }: { probe?: Probe }) {
@@ -844,6 +832,15 @@ export function FactorPower({ probe }: { probe?: Probe }) {
         information, indépendamment du reste du moteur.{" "}
         {probe.coefficients.observations.toLocaleString("fr-FR")} observations
         sur {probe.parametres.actifs} actifs.
+      </p>
+
+      <PetitesMultiplesIC courbes={courbesIC(probe)} />
+
+      <p className="note" style={{ marginBottom: 16 }}>
+        Un cadre par facteur, tous à la même échelle verticale : recadrer
+        chacun sur ses propres bornes ferait paraître le bruit aussi ample que
+        le signal. En abscisse l’horizon en bougies, en ordonnée le
+        coefficient d’information. Les points pleins se distinguent du bruit.
       </p>
 
       <div className="tablewrap">

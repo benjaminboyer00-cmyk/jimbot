@@ -41,7 +41,10 @@ non falsifiable a posteriori.
 | `engine/jimbot/calendar.py` | Échéances à venir : règles de calendrier et annonces de presse |
 | `engine/jimbot/backtest.py` | Validation walk-forward et calibration du modèle |
 | `engine/jimbot/probe.py` | Mesure du pouvoir prédictif de chaque facteur |
-| `app/` | Dashboard Next.js et routes d'API |
+| `app/` | Dashboard Next.js, page « Courbes » et routes d'API |
+| `lib/chart.ts` | Primitives de tracé : échelles, graduations rondes, splines monotones |
+| `lib/series.ts` | Dérivation des séries à partir des fichiers du moteur |
+| `components/charts.tsx` | Graphiques SVG rendus côté serveur, sans dépendance |
 | `metatrader/` | Expert Advisor MQL5 prêt à l'emploi |
 
 ## Principe du moteur
@@ -274,7 +277,7 @@ dans `.github/workflows/scan.yml` :
 
 ## API
 
-Trois routes en lecture seule, sans authentification, avec CORS ouvert — elles
+Quatre routes en lecture seule, sans authentification, avec CORS ouvert — elles
 ne servent que des données déjà publiques dans le dépôt.
 
 | Route | Contenu |
@@ -282,6 +285,33 @@ ne servent que des données déjà publiques dans le dépôt.
 | `/api/mt` | Flux au format MetaTrader : symbole, `BUY`/`SELL`, stop, objectif, risque suggéré. Paramètres `mode` (`actionable`, `watchlist`, `all`), `min_score`, `symbol` |
 | `/api/signals` | État complet du scan en JSON. Paramètre `actionable=1` pour filtrer |
 | `/api/reports` | Index des rapports PDF ; `?file=jimbot-AAAA-MM-JJ.pdf` télécharge le document |
+| `/api/curves` | Séries prêtes à tracer, et rendu SVG. Paramètres `serie`, `format`, `w`, `h` |
+
+### Service de courbes
+
+`/api/curves` expose les séries dérivées des mêmes fichiers que le dashboard :
+capital du portefeuille et repli, R cumulés (réels et rejoués), distribution
+des résultats, calibration par tranche de score, excursions MFE/MAE,
+coefficients d'information par facteur, score signé de l'univers suivi.
+
+```
+/api/curves                        index et toutes les séries
+/api/curves?serie=capital          une série en JSON
+/api/curves?serie=capital&format=svg&w=860&h=240
+```
+
+Le rendu `format=svg` produit une image **autonome** : elle embarque ses
+couleurs et sa propre requête `prefers-color-scheme`, donc elle s'affiche
+correctement dans un `README`, un message ou une page tierce, sans feuille de
+style ni JavaScript.
+
+```markdown
+![capital](https://votre-domaine/api/curves?serie=capital&format=svg)
+```
+
+Les séries sont dérivées par `lib/series.ts`, le même module que les pages :
+une courbe servie par l'API ne peut pas diverger de celle qui est affichée sur
+le site.
 
 ## MetaTrader 5
 

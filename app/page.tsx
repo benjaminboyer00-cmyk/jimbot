@@ -17,6 +17,10 @@ import {
   type Signal,
 } from "@/lib/data";
 
+import { serieEquite, cumulTradesPapier } from "@/lib/series";
+import { Chart, CourbeCapital, CourbeCumulR, PlanTrade, Sparkline } from "@/components/charts";
+import { Topbar } from "@/components/topbar";
+
 import {
   Agenda,
   FactorPower,
@@ -44,8 +48,8 @@ export default async function Page() {
   if (!snap) {
     return (
       <>
-        <Topbar stamp="en attente du premier scan" />
-        <main className="wrap">
+        <Topbar stamp="en attente du premier scan" actif="tableau" />
+        <main className="wrap" id="contenu">
           <section>
             <div className="empty">
               Aucune donnée pour l’instant. Lancez le workflow «&nbsp;Scan de
@@ -62,21 +66,29 @@ export default async function Page() {
   const perf = computePerf(trades, portfolio.initial);
   const actionable = snap.signals.filter((s) => s.direction !== "neutre");
   const ret = portfolio.initial ? (portfolio.equity / portfolio.initial - 1) * 100 : 0;
+  const capital = serieEquite(portfolio);
+  const cumul = cumulTradesPapier(trades);
 
   return (
     <>
       <Topbar
         stamp={`dernier scan ${timeAgo(snap.generated_at)}`}
         generatedAt={snap.generated_at}
+        actif="tableau"
       />
-      <main className="wrap">
+      <main className="wrap" id="contenu">
         <Staleness generatedAt={snap.generated_at} />
 
         <div className="kpis">
           <Kpi label="Signaux actifs" value={String(counts.actionable)} />
           <Kpi label="Achat" value={String(counts.long)} tone={counts.long ? "up" : undefined} />
           <Kpi label="Vente" value={String(counts.short)} tone={counts.short ? "down" : undefined} />
-          <Kpi label="Capital papier" value={fmtNum(portfolio.equity, 0)} />
+          <Kpi
+            label="Capital papier"
+            value={fmtNum(portfolio.equity, 0)}
+            spark={capital.points.map((p) => p.v)}
+            tone={ret > 0 ? "up" : ret < 0 ? "down" : undefined}
+          />
           <Kpi
             label="Performance"
             value={`${ret >= 0 ? "+" : ""}${fmtNum(ret)} %`}
@@ -98,11 +110,11 @@ export default async function Page() {
         {report?.briefing && (
           <section>
             <h2>Briefing</h2>
-            {report.briefing.split("\n\n").map((p, i) => (
-              <p key={i} style={{ marginBottom: 10, maxWidth: "76ch" }}>
-                {p}
-              </p>
-            ))}
+            <div className="prose">
+              {report.briefing.split("\n\n").map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+            </div>
             <p className="note">
               Rédigé {timeAgo(report.generated_at)} · moteur&nbsp;: {report.engine}
             </p>
@@ -209,6 +221,39 @@ export default async function Page() {
             />
             <Kpi label="Risque engagé" value={fmtNum(portfolio.open_risk)} />
             <Kpi label="Positions" value={String(portfolio.positions.length)} />
+          </div>
+
+          <div className="charts" style={{ marginTop: 16 }}>
+            <Chart
+              wide
+              title="Capital et repli"
+              sub={`${capital.points.length} relevés depuis l’ouverture`}
+              foot={
+                <>
+                  Un point par scan. Le trait pointillé est le capital de
+                  départ, le panneau du bas la distance au plus haut atteint.
+                  Le détail et les autres séries sont sur la page{" "}
+                  <a href="/courbes">Courbes</a>.
+                </>
+              }
+            >
+              <CourbeCapital serie={capital} />
+            </Chart>
+
+            {trades.length > 1 && (
+              <Chart
+                wide
+                title="R cumulés"
+                sub={`${cumul.gagnants} gagnants · ${cumul.perdants} perdants`}
+                foot={
+                  trades.length < 30
+                    ? "Moins de trente trades : la courbe décrit surtout du hasard. Elle est affichée pour ce qu’elle est, pas comme une preuve."
+                    : "Somme des R des trades fermés, dans l’ordre de clôture."
+                }
+              >
+                <CourbeCumulR serie={cumul} h={180} seed="accueil" />
+              </Chart>
+            )}
           </div>
 
           {portfolio.positions.length > 0 && (
@@ -362,30 +407,6 @@ export default async function Page() {
 
 /* ---------------------------------------------------------------- */
 
-function Topbar({ stamp, generatedAt }: { stamp: string; generatedAt?: string }) {
-  // Fraîcheur des données. L'ordonnanceur GitHub étrangle les planifications
-  // rapprochées : une exécution peut être retardée de plusieurs heures. Mieux
-  // vaut l'afficher que laisser croire à une surveillance continue.
-  const minutes = generatedAt
-    ? (Date.now() - new Date(generatedAt).getTime()) / 60000
-    : 0;
-  const perime = minutes > 90;
-
-  return (
-    <header className="topbar">
-      <div className="topbar-inner">
-        <div className="brand">
-          JIMBOT<span>analyse de marché</span>
-        </div>
-        <div className="stamp">
-          {perime && <span className="stale">données anciennes</span>}
-          {stamp}
-        </div>
-      </div>
-    </header>
-  );
-}
-
 /**
  * Avertit quand le dernier scan remonte à trop longtemps.
  *
@@ -411,11 +432,27 @@ function Staleness({ generatedAt }: { generatedAt: string }) {
   );
 }
 
-function Kpi({ label, value, tone }: { label: string; value: string; tone?: "up" | "down" }) {
+function Kpi({
+  label,
+  value,
+  tone,
+  spark,
+}: {
+  label: string;
+  value: string;
+  tone?: "up" | "down";
+  /** Série d'accompagnement : la forme du chemin parcouru sous le chiffre. */
+  spark?: number[];
+}) {
   return (
     <div className="kpi">
       <div className={`kpi-value ${tone ?? ""}`}>{value}</div>
       <div className="kpi-label">{label}</div>
+      {spark && spark.length > 1 && (
+        <div className="kpi-spark">
+          <Sparkline values={spark} tone={tone} seed={label} h={22} />
+        </div>
+      )}
     </div>
   );
 }
@@ -454,6 +491,16 @@ function SignalCard({ s }: { s: Signal }) {
         <Level label="Objectif" value={fmtPrice(s.target)} />
         <Level label="R/R" value={fmtNum(s.rr)} />
       </div>
+      {/* Le plan à l'échelle des prix : deux bandes dont le rapport des
+          largeurs *est* le R/R, plutôt qu'un chiffre à interpréter. */}
+      <PlanTrade
+        entry={s.entry}
+        stop={s.stop}
+        target={s.target}
+        price={s.price}
+        direction={s.direction === "short" ? "short" : "long"}
+      />
+
       {s.stop_basis && (
         <div className="plan-basis">
           <div>

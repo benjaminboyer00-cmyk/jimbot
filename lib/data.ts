@@ -169,6 +169,115 @@ export type Performance = {
   max_loss_streak?: number;
 };
 
+/* ------------------------------------------------------------------ */
+/* Validation et sondage de facteurs                                   */
+/*                                                                     */
+/* Ces deux formes vivaient dans `app/sections.tsx`, ce qui obligeait   */
+/* `lib/` à importer depuis `app/` pour se typer lui-même. Elles sont   */
+/* remontées ici : la couche de données décrit ses propres fichiers.    */
+/* ------------------------------------------------------------------ */
+
+export type BacktestTrade = {
+  symbol: string;
+  klass: string;
+  direction: "long" | "short";
+  score: number;
+  win_prob: number;
+  expected_r: number;
+  rr: number;
+  regime: string;
+  entry: number;
+  stop: number;
+  target: number;
+  exit: number;
+  outcome: "cible" | "stop" | "expiration" | string;
+  r_multiple: number;
+  bars_held: number;
+  mfe: number;
+  mae: number;
+  stop_atr: number;
+  stop_basis: string;
+  target_basis: string;
+  stop_strength: number;
+  obstacle: number;
+  index: number;
+};
+
+export type Backtest = {
+  generated_at: string;
+  parametres: { bars: number; step: number; window: number; actifs: number };
+  calibration: {
+    trades: number;
+    win_rate_global: number;
+    prob_predite_moyenne: number;
+    esperance_realisee: number;
+    esperance_predite: number;
+    facteur_de_profit: number | null;
+    drawdown_max_R?: number;
+    ic95?: [number, number];
+    verdict?: string;
+    significatif?: boolean;
+    trades_necessaires?: number;
+    correlation_score_esperance?: number;
+    par_tranche_de_score?: {
+      tranche: string;
+      trades: number;
+      win_rate: number;
+      prob_predite: number;
+      esperance_realisee: number;
+      esperance_predite?: number;
+    }[];
+    par_regime?: Record<string, { trades: number; esperance: number; win_rate: number }>;
+    par_classe?: Record<string, { trades: number; esperance: number; win_rate: number }>;
+    par_issue?: Record<string, { trades: number; esperance: number; win_rate: number }>;
+  };
+  effet_de_la_structure?: {
+    adosse_a_la_structure?: {
+      trades: number;
+      win_rate: number;
+      esperance: number;
+      rr_moyen: number;
+      /** Taux de réussite en deçà duquel le R/R moyen ne suffit plus. */
+      seuil_rentabilite: number;
+      ecart_au_seuil: number;
+    };
+  };
+  effet_des_penalites?: {
+    par_distance_de_stop_atr?: {
+      tranche: string;
+      trades: number;
+      win_rate: number;
+      seuil_rentabilite: number;
+      ecart_au_seuil: number;
+      esperance: number;
+      prob_predite: number;
+    }[];
+  };
+  limites: string[];
+  trades?: BacktestTrade[];
+};
+
+export type ProbeHorizon = { ic: number; t: number; n?: number; significatif: boolean };
+
+export type Probe = {
+  generated_at: string;
+  parametres: { bars: number; step: number; actifs: number; horizons?: string[] };
+  coefficients: {
+    observations: number;
+    horizons?: string[];
+    par_facteur: Record<
+      string,
+      {
+        ic_max: number;
+        meilleur_horizon: string;
+        significatif: boolean;
+        horizons: Record<string, ProbeHorizon>;
+      }
+    >;
+  };
+  note: string;
+};
+
 const DATA_DIR = path.join(process.cwd(), "data");
 
 /**
@@ -227,10 +336,8 @@ async function readJson<T>(name: string, fallback: T): Promise<T> {
 
 export const getSnapshot = () => readJson<Snapshot | null>("latest", null);
 export const getTrades = () => readJson<Trade[]>("trades", []);
-export const getProbe = () =>
-  readJson<import("@/app/sections").Probe | null>("probe", null);
-export const getBacktest = () =>
-  readJson<import("@/app/sections").Backtest | null>("backtest", null);
+export const getProbe = () => readJson<Probe | null>("probe", null);
+export const getBacktest = () => readJson<Backtest | null>("backtest", null);
 export const getLastReport = () =>
   readJson<{ path: string; generated_at: string; briefing: string; engine: string } | null>(
     "last_report",
