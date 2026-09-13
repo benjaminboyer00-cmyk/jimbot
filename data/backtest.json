@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-06T09:08:40+00:00",
+  "generated_at": "2026-09-13T10:00:39+00:00",
   "parametres": {
     "bars": 5000,
     "step": 2,
@@ -7,51 +7,51 @@
     "actifs": 36
   },
   "calibration": {
-    "trades": 222,
-    "win_rate_global": 35.6,
+    "trades": 226,
+    "win_rate_global": 37.6,
     "prob_predite_moyenne": 34.7,
     "esperance_predite": 0.01,
-    "esperance_realisee": 0.045,
+    "esperance_realisee": 0.113,
     "r_median": -1.012,
-    "ecart_type_r": 1.413,
+    "ecart_type_r": 1.427,
     "erreur_standard": 0.095,
-    "t_statistique": 0.48,
+    "t_statistique": 1.19,
     "ic95": [
-      -0.141,
-      0.231
+      -0.073,
+      0.299
     ],
     "significatif": false,
-    "verdict": "espérance indiscernable de zéro (t=0.48, il faudrait environ 3889 trades pour trancher)",
-    "trades_necessaires": 3889,
+    "verdict": "espérance indiscernable de zéro (t=1.19, il faudrait environ 642 trades pour trancher)",
+    "trades_necessaires": 642,
     "par_tranche_de_score": [
       {
         "tranche": "58-65",
-        "trades": 160,
-        "win_rate": 33.8,
+        "trades": 166,
+        "win_rate": 36.7,
         "prob_predite": 34.6,
-        "esperance_realisee": -0.002,
+        "esperance_realisee": 0.097,
         "esperance_predite": 0.008
       },
       {
         "tranche": "65-72",
-        "trades": 62,
-        "win_rate": 40.3,
+        "trades": 60,
+        "win_rate": 40.0,
         "prob_predite": 35.1,
-        "esperance_realisee": 0.166,
+        "esperance_realisee": 0.156,
         "esperance_predite": 0.015
       }
     ],
     "correlation_score_esperance": 1.0,
     "par_regime": {
       "tendance_baissière": {
-        "trades": 104,
-        "esperance": 0.273,
-        "win_rate": 43.3
+        "trades": 106,
+        "esperance": 0.293,
+        "win_rate": 43.4
       },
       "tendance_haussière": {
-        "trades": 118,
-        "esperance": -0.156,
-        "win_rate": 28.8
+        "trades": 120,
+        "esperance": -0.047,
+        "win_rate": 32.5
       }
     },
     "par_classe": {
@@ -61,14 +61,14 @@
         "win_rate": 34.2
       },
       "crypto": {
-        "trades": 26,
-        "esperance": -0.001,
-        "win_rate": 34.6
+        "trades": 28,
+        "esperance": 0.41,
+        "win_rate": 46.4
       },
       "forex": {
-        "trades": 76,
-        "esperance": 0.038,
-        "win_rate": 35.5
+        "trades": 78,
+        "esperance": 0.087,
+        "win_rate": 37.2
       },
       "index": {
         "trades": 41,
@@ -78,40 +78,40 @@
     },
     "par_issue": {
       "cible": {
-        "trades": 79,
+        "trades": 85,
         "esperance": 1.935,
         "win_rate": 100.0
       },
       "expiration": {
-        "trades": 2,
-        "esperance": 0.222,
+        "trades": 3,
+        "esperance": 0.396,
         "win_rate": 0.0
       },
       "stop": {
-        "trades": 141,
+        "trades": 138,
         "esperance": -1.016,
         "win_rate": 0.0
       }
     },
-    "facteur_de_profit": 1.07,
-    "drawdown_max_R": 37.56
+    "facteur_de_profit": 1.182,
+    "drawdown_max_R": 31.57
   },
   "avantage_par_distance": [
     {
       "distance_atr": "3.6-3.7",
-      "trades": 76,
-      "win_rate": 35.5,
+      "trades": 78,
+      "win_rate": 37.2,
       "prob_predite": 34.7,
-      "biais": -0.9,
-      "esperance_realisee": 0.038
+      "biais": -2.5,
+      "esperance_realisee": 0.087
     },
     {
       "distance_atr": "3.7-4.5",
-      "trades": 48,
-      "win_rate": 37.5,
-      "prob_predite": 34.7,
-      "biais": -2.8,
-      "esperance_realisee": 0.089
+      "trades": 50,
+      "win_rate": 44.0,
+      "prob_predite": 34.8,
+      "biais": -9.2,
+      "esperance_realisee": 0.316
     },
     {
       "distance_atr": "4.5-5.1",
@@ -132,23 +132,23 @@
   ],
   "effet_de_la_structure": {
     "adosse_a_la_structure": {
-      "trades": 222,
-      "win_rate": 35.6,
-      "esperance": 0.045,
+      "trades": 226,
+      "win_rate": 37.6,
+      "esperance": 0.113,
       "rr_moyen": 2.0,
       "seuil_rentabilite": 33.3,
-      "ecart_au_seuil": 2.3
+      "ecart_au_seuil": 4.3
     }
   },
   "effet_des_penalites": {
     "par_distance_de_stop_atr": [
       {
         "tranche": "1.6-2.2",
-        "trades": 102,
-        "win_rate": 35.3,
+        "trades": 106,
+        "win_rate": 39.6,
         "seuil_rentabilite": 33.3,
-        "ecart_au_seuil": 2.0,
-        "esperance": 0.028,
+        "ecart_au_seuil": 6.3,
+        "esperance": 0.172,
         "prob_predite": 34.7
       },
       {
@@ -171,549 +171,299 @@
   ],
   "trades": [
     {
-      "symbol": "ETH-USD",
+      "symbol": "BNB-USD",
       "klass": "crypto",
       "direction": "short",
-      "score": 68.16,
-      "win_prob": 0.352,
-      "expected_r": 0.011,
-      "rr": 2.0,
-      "regime": "tendance_haussière",
-      "entry": 2184.42724,
-      "stop": 2234.9779914,
-      "target": 2086.6040172,
-      "exit": 2087.64731921,
-      "outcome": "cible",
-      "r_multiple": 1.915,
-      "bars_held": 9,
-      "mfe": 2.1,
-      "mae": -0.49,
-      "stop_atr": 2.04,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "index": 756
-    },
-    {
-      "symbol": "ETH-USD",
-      "klass": "crypto",
-      "direction": "short",
-      "score": 68.24,
+      "score": 63.28,
       "win_prob": 0.35,
-      "expected_r": 0.005,
-      "rr": 2.0,
-      "regime": "tendance_haussière",
-      "entry": 2234.552165,
-      "stop": 2284.60149907,
-      "target": 2137.80700186,
-      "exit": 2285.74379982,
-      "outcome": "stop",
-      "r_multiple": -1.023,
-      "bars_held": 2,
-      "mfe": 0.0,
-      "mae": -1.08,
-      "stop_atr": 2.05,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "index": 818
-    },
-    {
-      "symbol": "ETH-USD",
-      "klass": "crypto",
-      "direction": "short",
-      "score": 64.08,
-      "win_prob": 0.351,
-      "expected_r": 0.011,
-      "rr": 2.0,
-      "regime": "tendance_haussière",
-      "entry": 2359.869475,
-      "stop": 2417.95691515,
-      "target": 2247.2361697,
-      "exit": 2248.35978778,
-      "outcome": "cible",
-      "r_multiple": 1.92,
-      "bars_held": 39,
-      "mfe": 2.14,
-      "mae": -0.45,
-      "stop_atr": 2.04,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "index": 836
-    },
-    {
-      "symbol": "SOL-USD",
-      "klass": "crypto",
-      "direction": "long",
-      "score": 62.6,
-      "win_prob": 0.348,
-      "expected_r": -0.0,
-      "rr": 2.0,
-      "regime": "tendance_baissière",
-      "entry": 82.991475,
-      "stop": 81.13796249,
-      "target": 86.57407502,
-      "exit": 81.09739351,
-      "outcome": "stop",
-      "r_multiple": -1.022,
-      "bars_held": 52,
-      "mfe": 0.7,
-      "mae": -1.01,
-      "stop_atr": 2.05,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "index": 1092
-    },
-    {
-      "symbol": "SOL-USD",
-      "klass": "crypto",
-      "direction": "short",
-      "score": 65.19,
-      "win_prob": 0.347,
-      "expected_r": 0.0,
-      "rr": 2.0,
-      "regime": "tendance_haussière",
-      "entry": 90.05495,
-      "stop": 92.2227507,
-      "target": 85.8544986,
-      "exit": 85.89742585,
-      "outcome": "cible",
-      "r_multiple": 1.918,
-      "bars_held": 47,
-      "mfe": 1.97,
-      "mae": -0.31,
-      "stop_atr": 2.04,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "index": 1578
-    },
-    {
-      "symbol": "SOL-USD",
-      "klass": "crypto",
-      "direction": "long",
-      "score": 68.22,
-      "win_prob": 0.355,
-      "expected_r": 0.006,
-      "rr": 2.0,
-      "regime": "tendance_baissière",
-      "entry": 86.093025,
-      "stop": 84.62711535,
-      "target": 88.89576931,
-      "exit": 84.58480179,
-      "outcome": "stop",
-      "r_multiple": -1.029,
-      "bars_held": 38,
-      "mfe": 0.82,
-      "mae": -1.77,
-      "stop_atr": 2.06,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "index": 2288
-    },
-    {
-      "symbol": "SOL-USD",
-      "klass": "crypto",
-      "direction": "short",
-      "score": 63.47,
-      "win_prob": 0.345,
       "expected_r": 0.006,
       "rr": 2.0,
       "regime": "tendance_haussière",
-      "entry": 75.272345,
-      "stop": 77.81839797,
-      "target": 70.29320406,
-      "exit": 77.85730717,
-      "outcome": "stop",
-      "r_multiple": -1.015,
-      "bars_held": 47,
-      "mfe": 1.32,
-      "mae": -1.17,
-      "stop_atr": 2.03,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "index": 3352
-    },
-    {
-      "symbol": "SOL-USD",
-      "klass": "crypto",
-      "direction": "short",
-      "score": 59.57,
-      "win_prob": 0.345,
-      "expected_r": 0.0,
-      "rr": 2.0,
-      "regime": "tendance_haussière",
-      "entry": 96.741605,
-      "stop": 99.60322841,
-      "target": 91.16354318,
-      "exit": 99.65303002,
-      "outcome": "stop",
-      "r_multiple": -1.017,
-      "bars_held": 1,
-      "mfe": 0.2,
-      "mae": -2.1,
-      "stop_atr": 2.03,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "index": 4634
-    },
-    {
-      "symbol": "SOL-USD",
-      "klass": "crypto",
-      "direction": "short",
-      "score": 60.37,
-      "win_prob": 0.346,
-      "expected_r": 0.005,
-      "rr": 2.0,
-      "regime": "tendance_haussière",
-      "entry": 109.08543,
-      "stop": 112.30361126,
-      "target": 102.81277747,
-      "exit": 102.86418386,
+      "entry": 739.520055,
+      "stop": 756.45285464,
+      "target": 706.76429073,
+      "exit": 707.11767288,
       "outcome": "cible",
-      "r_multiple": 1.933,
-      "bars_held": 19,
-      "mfe": 2.11,
-      "mae": -0.28,
-      "stop_atr": 2.03,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "index": 4774
-    },
-    {
-      "symbol": "BNB-USD",
-      "klass": "crypto",
-      "direction": "long",
-      "score": 64.01,
-      "win_prob": 0.348,
-      "expected_r": 0.007,
-      "rr": 2.0,
-      "regime": "tendance_baissière",
-      "entry": 634.306995,
-      "stop": 616.68667871,
-      "target": 668.59664258,
-      "exit": 616.37833537,
-      "outcome": "stop",
-      "r_multiple": -1.017,
-      "bars_held": 17,
-      "mfe": 0.71,
-      "mae": -1.03,
+      "r_multiple": 1.914,
+      "bars_held": 14,
+      "mfe": 2.16,
+      "mae": -0.37,
       "stop_atr": 2.04,
       "stop_basis": "plan fixe (2.0 ATR)",
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2714
+      "index": 2472
     },
     {
       "symbol": "BNB-USD",
       "klass": "crypto",
       "direction": "long",
-      "score": 61.47,
-      "win_prob": 0.348,
-      "expected_r": 0.002,
-      "rr": 2.0,
-      "regime": "tendance_baissière",
-      "entry": 633.426555,
-      "stop": 618.0503941,
-      "target": 663.22921179,
-      "exit": 617.7413689,
-      "outcome": "stop",
-      "r_multiple": -1.02,
-      "bars_held": 7,
-      "mfe": 0.38,
-      "mae": -1.12,
-      "stop_atr": 2.04,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "index": 2724
-    },
-    {
-      "symbol": "BNB-USD",
-      "klass": "crypto",
-      "direction": "long",
-      "score": 61.29,
-      "win_prob": 0.348,
-      "expected_r": 0.003,
-      "rr": 2.0,
-      "regime": "tendance_baissière",
-      "entry": 627.47358,
-      "stop": 611.72061006,
-      "target": 658.03877988,
-      "exit": 611.41474975,
-      "outcome": "stop",
-      "r_multiple": -1.019,
-      "bars_held": 8,
-      "mfe": 0.16,
-      "mae": -1.8,
-      "stop_atr": 2.04,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "index": 2728
-    },
-    {
-      "symbol": "BNB-USD",
-      "klass": "crypto",
-      "direction": "long",
-      "score": 62.29,
+      "score": 61.97,
       "win_prob": 0.349,
       "expected_r": 0.006,
       "rr": 2.0,
       "regime": "tendance_baissière",
-      "entry": 623.081385,
-      "stop": 607.92307704,
-      "target": 652.46384592,
-      "exit": 607.6191155,
+      "entry": 628.564125,
+      "stop": 612.47373391,
+      "target": 659.80253218,
+      "exit": 612.16749704,
       "outcome": "stop",
-      "r_multiple": -1.02,
-      "bars_held": 6,
-      "mfe": 0.46,
-      "mae": -1.58,
+      "r_multiple": -1.019,
+      "bars_held": 9,
+      "mfe": 0.09,
+      "mae": -1.83,
       "stop_atr": 2.04,
       "stop_basis": "plan fixe (2.0 ATR)",
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2730
+      "index": 2558
     },
     {
-      "symbol": "BTC-USD",
+      "symbol": "BNB-USD",
       "klass": "crypto",
       "direction": "short",
-      "score": 67.92,
-      "win_prob": 0.356,
-      "expected_r": 0.018,
+      "score": 62.19,
+      "win_prob": 0.348,
+      "expected_r": 0.001,
       "rr": 2.0,
       "regime": "tendance_haussière",
-      "entry": 76270.495675,
-      "stop": 77797.06187513,
-      "target": 73331.82624974,
-      "exit": 77835.96040607,
+      "entry": 712.0438,
+      "stop": 728.80773249,
+      "target": 679.58453503,
+      "exit": 679.9243273,
+      "outcome": "cible",
+      "r_multiple": 1.916,
+      "bars_held": 27,
+      "mfe": 2.09,
+      "mae": -0.84,
+      "stop_atr": 2.04,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 4464
+    },
+    {
+      "symbol": "ETH-USD",
+      "klass": "crypto",
+      "direction": "long",
+      "score": 65.56,
+      "win_prob": 0.348,
+      "expected_r": 0.005,
+      "rr": 2.0,
+      "regime": "tendance_baissière",
+      "entry": 1982.540775,
+      "stop": 1931.89753878,
+      "target": 2080.85492244,
+      "exit": 1930.93159001,
       "outcome": "stop",
-      "r_multiple": -1.025,
-      "bars_held": 1,
-      "mfe": 0.02,
-      "mae": -2.12,
+      "r_multiple": -1.019,
+      "bars_held": 38,
+      "mfe": 0.31,
+      "mae": -1.04,
+      "stop_atr": 2.04,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 420
+    },
+    {
+      "symbol": "ETH-USD",
+      "klass": "crypto",
+      "direction": "short",
+      "score": 61.37,
+      "win_prob": 0.348,
+      "expected_r": 0.001,
+      "rr": 2.0,
+      "regime": "tendance_haussière",
+      "entry": 2356.651085,
+      "stop": 2415.05642121,
+      "target": 2243.37715758,
+      "exit": 2244.49884616,
+      "outcome": "cible",
+      "r_multiple": 1.92,
+      "bars_held": 38,
+      "mfe": 2.08,
+      "mae": -0.34,
+      "stop_atr": 2.04,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 668
+    },
+    {
+      "symbol": "ETH-USD",
+      "klass": "crypto",
+      "direction": "long",
+      "score": 59.48,
+      "win_prob": 0.345,
+      "expected_r": 0.012,
+      "rr": 2.0,
+      "regime": "tendance_baissière",
+      "entry": 1523.32128,
+      "stop": 1457.82440527,
+      "target": 1652.03118947,
+      "exit": 1651.20517388,
+      "outcome": "cible",
+      "r_multiple": 1.953,
+      "bars_held": 42,
+      "mfe": 3.03,
+      "mae": -0.27,
+      "stop_atr": 2.02,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 2618
+    },
+    {
+      "symbol": "SOL-USD",
+      "klass": "crypto",
+      "direction": "long",
+      "score": 64.69,
+      "win_prob": 0.347,
+      "expected_r": 0.003,
+      "rr": 2.0,
+      "regime": "tendance_baissière",
+      "entry": 84.38217,
+      "stop": 82.10688365,
+      "target": 88.80623269,
+      "exit": 82.06583021,
+      "outcome": "stop",
+      "r_multiple": -1.018,
+      "bars_held": 38,
+      "mfe": 0.67,
+      "mae": -1.16,
+      "stop_atr": 2.04,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 420
+    },
+    {
+      "symbol": "SOL-USD",
+      "klass": "crypto",
+      "direction": "long",
+      "score": 69.81,
+      "win_prob": 0.357,
+      "expected_r": 0.027,
+      "rr": 2.0,
+      "regime": "tendance_baissière",
+      "entry": 83.06151,
+      "stop": 81.16428269,
+      "target": 86.73143462,
+      "exit": 81.12370055,
+      "outcome": "stop",
+      "r_multiple": -1.021,
+      "bars_held": 55,
+      "mfe": 0.65,
+      "mae": -1.02,
+      "stop_atr": 2.04,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 920
+    },
+    {
+      "symbol": "SOL-USD",
+      "klass": "crypto",
+      "direction": "short",
+      "score": 68.45,
+      "win_prob": 0.352,
+      "expected_r": 0.012,
+      "rr": 2.0,
+      "regime": "tendance_haussière",
+      "entry": 88.965495,
+      "stop": 91.06526998,
+      "target": 84.89946003,
+      "exit": 84.94190976,
+      "outcome": "cible",
+      "r_multiple": 1.916,
+      "bars_held": 61,
+      "mfe": 2.16,
+      "mae": -0.84,
+      "stop_atr": 2.04,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 1408
+    },
+    {
+      "symbol": "SOL-USD",
+      "klass": "crypto",
+      "direction": "short",
+      "score": 68.06,
+      "win_prob": 0.355,
+      "expected_r": 0.016,
+      "rr": 2.0,
+      "regime": "tendance_haussière",
+      "entry": 73.52322,
+      "stop": 75.05961348,
+      "target": 70.56077304,
+      "exit": 70.59605343,
+      "outcome": "cible",
+      "r_multiple": 1.905,
+      "bars_held": 56,
+      "mfe": 2.5,
+      "mae": -0.96,
       "stop_atr": 2.05,
       "stop_basis": "plan fixe (2.0 ATR)",
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4614
+      "index": 2972
     },
     {
-      "symbol": "AVAX-USD",
-      "klass": "crypto",
-      "direction": "long",
-      "score": 61.58,
-      "win_prob": 0.346,
-      "expected_r": 0.002,
-      "rr": 2.0,
-      "regime": "tendance_baissière",
-      "entry": 8.474235,
-      "stop": 8.2437618,
-      "target": 8.9224764,
-      "exit": 8.91801516,
-      "outcome": "cible",
-      "r_multiple": 1.926,
-      "bars_held": 7,
-      "mfe": 2.11,
-      "mae": -0.06,
-      "stop_atr": 2.04,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "index": 442
-    },
-    {
-      "symbol": "AVAX-USD",
+      "symbol": "SOL-USD",
       "klass": "crypto",
       "direction": "short",
-      "score": 67.75,
-      "win_prob": 0.351,
-      "expected_r": 0.015,
+      "score": 60.51,
+      "win_prob": 0.346,
+      "expected_r": 0.009,
       "rr": 2.0,
       "regime": "tendance_haussière",
-      "entry": 10.25487,
-      "stop": 10.52676914,
-      "target": 9.72646172,
-      "exit": 10.53203252,
-      "outcome": "stop",
-      "r_multiple": -1.019,
-      "bars_held": 21,
-      "mfe": 0.79,
-      "mae": -1.09,
-      "stop_atr": 2.04,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "index": 818
-    },
-    {
-      "symbol": "AVAX-USD",
-      "klass": "crypto",
-      "direction": "long",
-      "score": 58.25,
-      "win_prob": 0.343,
-      "expected_r": 0.002,
-      "rr": 2.0,
-      "regime": "tendance_baissière",
-      "entry": 7.3206585,
-      "stop": 7.03628925,
-      "target": 7.8784215,
-      "exit": 7.03277111,
-      "outcome": "stop",
-      "r_multiple": -1.012,
-      "bars_held": 3,
-      "mfe": 0.66,
-      "mae": -1.11,
-      "stop_atr": 2.03,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "index": 2762
-    },
-    {
-      "symbol": "AVAX-USD",
-      "klass": "crypto",
-      "direction": "long",
-      "score": 65.14,
-      "win_prob": 0.347,
-      "expected_r": 0.008,
-      "rr": 2.0,
-      "regime": "tendance_baissière",
-      "entry": 6.341169,
-      "stop": 6.154548,
-      "target": 6.70490401,
-      "exit": 6.70155156,
-      "outcome": "cible",
-      "r_multiple": 1.931,
-      "bars_held": 22,
-      "mfe": 1.96,
-      "mae": -0.19,
-      "stop_atr": 2.03,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "index": 2900
-    },
-    {
-      "symbol": "AVAX-USD",
-      "klass": "crypto",
-      "direction": "long",
-      "score": 67.57,
-      "win_prob": 0.35,
-      "expected_r": 0.019,
-      "rr": 2.0,
-      "regime": "tendance_baissière",
-      "entry": 6.2481225,
-      "stop": 6.05117251,
-      "target": 6.63265497,
-      "exit": 6.04814692,
-      "outcome": "stop",
-      "r_multiple": -1.015,
-      "bars_held": 13,
-      "mfe": 0.7,
-      "mae": -1.11,
-      "stop_atr": 2.03,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "index": 3086
-    },
-    {
-      "symbol": "AVAX-USD",
-      "klass": "crypto",
-      "direction": "long",
-      "score": 60.55,
-      "win_prob": 0.346,
-      "expected_r": 0.01,
-      "rr": 2.0,
-      "regime": "tendance_baissière",
-      "entry": 5.8819395,
-      "stop": 5.65824052,
-      "target": 6.32051896,
-      "exit": 6.3173587,
+      "entry": 99.100425,
+      "stop": 102.69942638,
+      "target": 92.05114724,
+      "exit": 92.09717281,
       "outcome": "cible",
       "r_multiple": 1.946,
-      "bars_held": 36,
-      "mfe": 2.07,
-      "mae": -0.36,
+      "bars_held": 1,
+      "mfe": 3.16,
+      "mae": -0.24,
       "stop_atr": 2.03,
       "stop_basis": "plan fixe (2.0 ATR)",
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3114
+      "index": 4466
     },
     {
-      "symbol": "AVAX-USD",
+      "symbol": "SOL-USD",
       "klass": "crypto",
       "direction": "short",
-      "score": 62.09,
-      "win_prob": 0.345,
-      "expected_r": 0.003,
+      "score": 60.83,
+      "win_prob": 0.347,
+      "expected_r": 0.007,
       "rr": 2.0,
       "regime": "tendance_haussière",
-      "entry": 6.7536215,
-      "stop": 6.96503765,
-      "target": 6.34092471,
-      "exit": 6.96852017,
-      "outcome": "stop",
-      "r_multiple": -1.016,
-      "bars_held": 99,
-      "mfe": 1.74,
-      "mae": -1.18,
+      "entry": 109.1454,
+      "stop": 112.42696598,
+      "target": 102.74606805,
+      "exit": 102.79744108,
+      "outcome": "cible",
+      "r_multiple": 1.934,
+      "bars_held": 20,
+      "mfe": 2.09,
+      "mae": -0.27,
       "stop_atr": 2.03,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "index": 3352
-    },
-    {
-      "symbol": "AVAX-USD",
-      "klass": "crypto",
-      "direction": "short",
-      "score": 61.88,
-      "win_prob": 0.348,
-      "expected_r": 0.008,
-      "rr": 2.0,
-      "regime": "tendance_haussière",
-      "entry": 7.2033965,
-      "stop": 7.40200225,
-      "target": 6.81699551,
-      "exit": 7.40570325,
-      "outcome": "stop",
-      "r_multiple": -1.019,
-      "bars_held": 9,
-      "mfe": 0.27,
-      "mae": -1.22,
-      "stop_atr": 2.04,
       "stop_basis": "plan fixe (2.0 ATR)",
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
@@ -721,104 +471,404 @@
       "index": 4604
     },
     {
-      "symbol": "LINK-USD",
+      "symbol": "SOL-USD",
       "klass": "crypto",
       "direction": "short",
-      "score": 65.56,
-      "win_prob": 0.349,
-      "expected_r": 0.003,
+      "score": 60.24,
+      "win_prob": 0.346,
+      "expected_r": 0.004,
       "rr": 2.0,
       "regime": "tendance_haussière",
-      "entry": 9.51524,
-      "stop": 9.74280061,
-      "target": 9.07439878,
-      "exit": 9.07893598,
+      "entry": 109.055445,
+      "stop": 112.23763903,
+      "target": 102.85472194,
+      "exit": 102.9061493,
       "outcome": "cible",
-      "r_multiple": 1.917,
-      "bars_held": 9,
-      "mfe": 2.18,
-      "mae": -0.37,
-      "stop_atr": 2.04,
+      "r_multiple": 1.932,
+      "bars_held": 18,
+      "mfe": 2.13,
+      "mae": -0.22,
+      "stop_atr": 2.03,
       "stop_basis": "plan fixe (2.0 ATR)",
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 756
+      "index": 4606
     },
     {
-      "symbol": "LINK-USD",
+      "symbol": "AVAX-USD",
       "klass": "crypto",
-      "direction": "short",
-      "score": 67.6,
-      "win_prob": 0.351,
-      "expected_r": 0.012,
+      "direction": "long",
+      "score": 67.27,
+      "win_prob": 0.352,
+      "expected_r": 0.005,
       "rr": 2.0,
-      "regime": "tendance_haussière",
-      "entry": 9.69515,
-      "stop": 9.94205192,
-      "target": 9.21589617,
-      "exit": 9.94702295,
-      "outcome": "stop",
-      "r_multiple": -1.02,
-      "bars_held": 16,
-      "mfe": 0.55,
-      "mae": -1.15,
-      "stop_atr": 2.04,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "index": 818
-    },
-    {
-      "symbol": "LINK-USD",
-      "klass": "crypto",
-      "direction": "short",
-      "score": 67.15,
-      "win_prob": 0.355,
-      "expected_r": 0.01,
-      "rr": 2.0,
-      "regime": "tendance_haussière",
-      "entry": 10.15492,
-      "stop": 10.35041634,
-      "target": 9.77916733,
-      "exit": 9.78405691,
+      "regime": "tendance_baissière",
+      "entry": 9.014505,
+      "stop": 8.83323309,
+      "target": 9.36353383,
+      "exit": 9.35885206,
       "outcome": "cible",
-      "r_multiple": 1.897,
-      "bars_held": 41,
-      "mfe": 1.97,
-      "mae": -0.54,
+      "r_multiple": 1.9,
+      "bars_held": 22,
+      "mfe": 2.13,
+      "mae": -0.25,
       "stop_atr": 2.05,
       "stop_basis": "plan fixe (2.0 ATR)",
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2048
+      "index": 1484
+    },
+    {
+      "symbol": "AVAX-USD",
+      "klass": "crypto",
+      "direction": "short",
+      "score": 68.5,
+      "win_prob": 0.355,
+      "expected_r": 0.007,
+      "rr": 2.0,
+      "regime": "tendance_haussière",
+      "entry": 9.725135,
+      "stop": 9.90301241,
+      "target": 9.38397518,
+      "exit": 9.38866717,
+      "outcome": "cible",
+      "r_multiple": 1.892,
+      "bars_held": 31,
+      "mfe": 2.0,
+      "mae": -0.31,
+      "stop_atr": 2.06,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 1878
+    },
+    {
+      "symbol": "AVAX-USD",
+      "klass": "crypto",
+      "direction": "long",
+      "score": 58.18,
+      "win_prob": 0.343,
+      "expected_r": 0.0,
+      "rr": 2.0,
+      "regime": "tendance_baissière",
+      "entry": 7.437717,
+      "stop": 7.16077304,
+      "target": 7.98045393,
+      "exit": 7.15719265,
+      "outcome": "stop",
+      "r_multiple": -1.013,
+      "bars_held": 4,
+      "mfe": 0.26,
+      "mae": -1.56,
+      "stop_atr": 2.03,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 2592
+    },
+    {
+      "symbol": "AVAX-USD",
+      "klass": "crypto",
+      "direction": "long",
+      "score": 62.86,
+      "win_prob": 0.35,
+      "expected_r": 0.033,
+      "rr": 2.0,
+      "regime": "tendance_baissière",
+      "entry": 6.3101535,
+      "stop": 5.91495267,
+      "target": 7.09109466,
+      "exit": 6.6036965,
+      "outcome": "expiration",
+      "r_multiple": 0.743,
+      "bars_held": 120,
+      "mfe": 1.65,
+      "mae": -0.14,
+      "stop_atr": 2.02,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 2618
+    },
+    {
+      "symbol": "AVAX-USD",
+      "klass": "crypto",
+      "direction": "long",
+      "score": 61.09,
+      "win_prob": 0.347,
+      "expected_r": 0.005,
+      "rr": 2.0,
+      "regime": "tendance_baissière",
+      "entry": 6.045021,
+      "stop": 5.86850742,
+      "target": 6.38898516,
+      "exit": 5.86557317,
+      "outcome": "stop",
+      "r_multiple": -1.017,
+      "bars_held": 14,
+      "mfe": 0.84,
+      "mae": -1.76,
+      "stop_atr": 2.03,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 2930
+    },
+    {
+      "symbol": "AVAX-USD",
+      "klass": "crypto",
+      "direction": "long",
+      "score": 61.79,
+      "win_prob": 0.347,
+      "expected_r": 0.012,
+      "rr": 2.0,
+      "regime": "tendance_baissière",
+      "entry": 5.9239605,
+      "stop": 5.7201821,
+      "target": 6.3226358,
+      "exit": 5.71732201,
+      "outcome": "stop",
+      "r_multiple": -1.014,
+      "bars_held": 1,
+      "mfe": 0.0,
+      "mae": -1.19,
+      "stop_atr": 2.03,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 2944
+    },
+    {
+      "symbol": "AVAX-USD",
+      "klass": "crypto",
+      "direction": "short",
+      "score": 60.51,
+      "win_prob": 0.346,
+      "expected_r": 0.002,
+      "rr": 2.0,
+      "regime": "tendance_haussière",
+      "entry": 7.1674145,
+      "stop": 7.36035923,
+      "target": 6.79228154,
+      "exit": 7.36403941,
+      "outcome": "stop",
+      "r_multiple": -1.019,
+      "bars_held": 7,
+      "mfe": 0.0,
+      "mae": -1.18,
+      "stop_atr": 2.04,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 4436
+    },
+    {
+      "symbol": "AVAX-USD",
+      "klass": "crypto",
+      "direction": "short",
+      "score": 63.29,
+      "win_prob": 0.35,
+      "expected_r": 0.016,
+      "rr": 2.0,
+      "regime": "tendance_haussière",
+      "entry": 7.680158,
+      "stop": 7.91202235,
+      "target": 7.22795529,
+      "exit": 7.91597836,
+      "outcome": "stop",
+      "r_multiple": -1.017,
+      "bars_held": 17,
+      "mfe": 1.34,
+      "mae": -1.06,
+      "stop_atr": 2.03,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 4446
+    },
+    {
+      "symbol": "AVAX-USD",
+      "klass": "crypto",
+      "direction": "short",
+      "score": 59.31,
+      "win_prob": 0.345,
+      "expected_r": 0.006,
+      "rr": 2.0,
+      "regime": "tendance_haussière",
+      "entry": 7.858069,
+      "stop": 8.13236579,
+      "target": 7.32126841,
+      "exit": 8.13643197,
+      "outcome": "stop",
+      "r_multiple": -1.015,
+      "bars_held": 6,
+      "mfe": 0.31,
+      "mae": -1.67,
+      "stop_atr": 2.03,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 4460
+    },
+    {
+      "symbol": "AVAX-USD",
+      "klass": "crypto",
+      "direction": "short",
+      "score": 61.77,
+      "win_prob": 0.348,
+      "expected_r": 0.014,
+      "rr": 2.0,
+      "regime": "tendance_haussière",
+      "entry": 8.0569695,
+      "stop": 8.33520896,
+      "target": 7.51258208,
+      "exit": 7.51633837,
+      "outcome": "cible",
+      "r_multiple": 1.943,
+      "bars_held": 3,
+      "mfe": 3.8,
+      "mae": -0.93,
+      "stop_atr": 2.03,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 4464
+    },
+    {
+      "symbol": "AVAX-USD",
+      "klass": "crypto",
+      "direction": "short",
+      "score": 61.45,
+      "win_prob": 0.347,
+      "expected_r": 0.014,
+      "rr": 2.0,
+      "regime": "tendance_haussière",
+      "entry": 8.23588,
+      "stop": 8.53079242,
+      "target": 7.65841516,
+      "exit": 7.66224437,
+      "outcome": "cible",
+      "r_multiple": 1.945,
+      "bars_held": 1,
+      "mfe": 4.19,
+      "mae": -0.23,
+      "stop_atr": 2.03,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 4466
+    },
+    {
+      "symbol": "LINK-USD",
+      "klass": "crypto",
+      "direction": "short",
+      "score": 67.09,
+      "win_prob": 0.35,
+      "expected_r": 0.001,
+      "rr": 2.0,
+      "regime": "tendance_haussière",
+      "entry": 9.47526,
+      "stop": 9.66744003,
+      "target": 9.10511994,
+      "exit": 9.67227375,
+      "outcome": "stop",
+      "r_multiple": -1.025,
+      "bars_held": 5,
+      "mfe": 0.39,
+      "mae": -1.74,
+      "stop_atr": 2.05,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 644
     },
     {
       "symbol": "LINK-USD",
       "klass": "crypto",
       "direction": "long",
-      "score": 64.97,
-      "win_prob": 0.352,
-      "expected_r": 0.003,
+      "score": 64.66,
+      "win_prob": 0.35,
+      "expected_r": 0.001,
       "rr": 2.0,
       "regime": "tendance_baissière",
-      "entry": 9.694845,
-      "stop": 9.50030468,
-      "target": 10.06939065,
-      "exit": 9.49555453,
+      "entry": 8.96448,
+      "stop": 8.77186502,
+      "target": 9.33626996,
+      "exit": 8.76747909,
       "outcome": "stop",
-      "r_multiple": -1.024,
-      "bars_held": 38,
-      "mfe": 0.8,
-      "mae": -1.82,
+      "r_multiple": -1.023,
+      "bars_held": 59,
+      "mfe": 1.27,
+      "mae": -1.06,
       "stop_atr": 2.05,
       "stop_basis": "plan fixe (2.0 ATR)",
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2288
+      "index": 730
+    },
+    {
+      "symbol": "LINK-USD",
+      "klass": "crypto",
+      "direction": "long",
+      "score": 69.32,
+      "win_prob": 0.354,
+      "expected_r": 0.015,
+      "rr": 2.0,
+      "regime": "tendance_baissière",
+      "entry": 8.6043,
+      "stop": 8.42148161,
+      "target": 8.95703677,
+      "exit": 8.41727087,
+      "outcome": "stop",
+      "r_multiple": -1.023,
+      "bars_held": 37,
+      "mfe": 0.52,
+      "mae": -1.28,
+      "stop_atr": 2.05,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 920
+    },
+    {
+      "symbol": "LINK-USD",
+      "klass": "crypto",
+      "direction": "short",
+      "score": 69.43,
+      "win_prob": 0.357,
+      "expected_r": 0.017,
+      "rr": 2.0,
+      "regime": "tendance_haussière",
+      "entry": 10.084955,
+      "stop": 10.27198682,
+      "target": 9.72602635,
+      "exit": 10.27712281,
+      "outcome": "stop",
+      "r_multiple": -1.027,
+      "bars_held": 57,
+      "mfe": 1.68,
+      "mae": -1.31,
+      "stop_atr": 2.06,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 1878
     },
     {
       "symbol": "XAUUSD",
@@ -843,7 +893,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1256
+      "index": 1170
     },
     {
       "symbol": "XAUUSD",
@@ -868,7 +918,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1388
+      "index": 1302
     },
     {
       "symbol": "XAUUSD",
@@ -893,7 +943,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1390
+      "index": 1304
     },
     {
       "symbol": "XAUUSD",
@@ -918,7 +968,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1392
+      "index": 1306
     },
     {
       "symbol": "XAUUSD",
@@ -943,7 +993,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1394
+      "index": 1308
     },
     {
       "symbol": "XAUUSD",
@@ -968,7 +1018,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1396
+      "index": 1310
     },
     {
       "symbol": "XAUUSD",
@@ -993,7 +1043,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1398
+      "index": 1312
     },
     {
       "symbol": "XAUUSD",
@@ -1018,7 +1068,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1400
+      "index": 1314
     },
     {
       "symbol": "XAUUSD",
@@ -1043,7 +1093,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1402
+      "index": 1316
     },
     {
       "symbol": "XAUUSD",
@@ -1068,7 +1118,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1512
+      "index": 1426
     },
     {
       "symbol": "XAUUSD",
@@ -1093,7 +1143,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1514
+      "index": 1428
     },
     {
       "symbol": "XAUUSD",
@@ -1118,7 +1168,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1516
+      "index": 1430
     },
     {
       "symbol": "XAUUSD",
@@ -1143,7 +1193,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1518
+      "index": 1432
     },
     {
       "symbol": "XAUUSD",
@@ -1168,7 +1218,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1520
+      "index": 1434
     },
     {
       "symbol": "XAUUSD",
@@ -1193,7 +1243,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1524
+      "index": 1438
     },
     {
       "symbol": "XAUUSD",
@@ -1218,7 +1268,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1526
+      "index": 1440
     },
     {
       "symbol": "XAUUSD",
@@ -1243,7 +1293,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1874
+      "index": 1788
     },
     {
       "symbol": "XAUUSD",
@@ -1268,7 +1318,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1884
+      "index": 1798
     },
     {
       "symbol": "XAUUSD",
@@ -1293,7 +1343,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1886
+      "index": 1800
     },
     {
       "symbol": "XAUUSD",
@@ -1318,7 +1368,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1888
+      "index": 1802
     },
     {
       "symbol": "XAUUSD",
@@ -1343,7 +1393,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1890
+      "index": 1804
     },
     {
       "symbol": "XAUUSD",
@@ -1368,7 +1418,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1892
+      "index": 1806
     },
     {
       "symbol": "XAUUSD",
@@ -1393,7 +1443,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1984
+      "index": 1898
     },
     {
       "symbol": "XAUUSD",
@@ -1418,7 +1468,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1992
+      "index": 1906
     },
     {
       "symbol": "XAUUSD",
@@ -1443,7 +1493,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1994
+      "index": 1908
     },
     {
       "symbol": "XAUUSD",
@@ -1468,7 +1518,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2274
+      "index": 2188
     },
     {
       "symbol": "XAUUSD",
@@ -1493,7 +1543,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2282
+      "index": 2196
     },
     {
       "symbol": "XAUUSD",
@@ -1518,7 +1568,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2292
+      "index": 2206
     },
     {
       "symbol": "XAUUSD",
@@ -1543,7 +1593,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2294
+      "index": 2208
     },
     {
       "symbol": "XAUUSD",
@@ -1568,7 +1618,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2296
+      "index": 2210
     },
     {
       "symbol": "XAUUSD",
@@ -1593,7 +1643,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2298
+      "index": 2212
     },
     {
       "symbol": "XAUUSD",
@@ -1618,7 +1668,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2300
+      "index": 2214
     },
     {
       "symbol": "XAUUSD",
@@ -1643,7 +1693,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2498
+      "index": 2412
     },
     {
       "symbol": "XAUUSD",
@@ -1668,7 +1718,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2500
+      "index": 2414
     },
     {
       "symbol": "XAUUSD",
@@ -1693,7 +1743,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2514
+      "index": 2428
     },
     {
       "symbol": "XAUUSD",
@@ -1718,7 +1768,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2936
+      "index": 2850
     },
     {
       "symbol": "XAUUSD",
@@ -1743,7 +1793,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3046
+      "index": 2960
     },
     {
       "symbol": "XAUUSD",
@@ -1768,7 +1818,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3048
+      "index": 2962
     },
     {
       "symbol": "XAUUSD",
@@ -1793,7 +1843,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3204
+      "index": 3118
     },
     {
       "symbol": "XAUUSD",
@@ -1818,7 +1868,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3208
+      "index": 3122
     },
     {
       "symbol": "XAUUSD",
@@ -1843,7 +1893,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3210
+      "index": 3124
     },
     {
       "symbol": "XAUUSD",
@@ -1868,7 +1918,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3212
+      "index": 3126
     },
     {
       "symbol": "XAUUSD",
@@ -1893,7 +1943,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3272
+      "index": 3186
     },
     {
       "symbol": "XAUUSD",
@@ -1918,7 +1968,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3586
+      "index": 3500
     },
     {
       "symbol": "XAUUSD",
@@ -1943,7 +1993,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3588
+      "index": 3502
     },
     {
       "symbol": "XAUUSD",
@@ -1968,7 +2018,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3592
+      "index": 3506
     },
     {
       "symbol": "XAUUSD",
@@ -1993,7 +2043,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3594
+      "index": 3508
     },
     {
       "symbol": "XAUUSD",
@@ -2018,7 +2068,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3596
+      "index": 3510
     },
     {
       "symbol": "XAUUSD",
@@ -2043,7 +2093,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3744
+      "index": 3658
     },
     {
       "symbol": "XAUUSD",
@@ -2068,7 +2118,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3746
+      "index": 3660
     },
     {
       "symbol": "XAUUSD",
@@ -2093,7 +2143,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3748
+      "index": 3662
     },
     {
       "symbol": "XAUUSD",
@@ -2118,7 +2168,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3750
+      "index": 3664
     },
     {
       "symbol": "XAUUSD",
@@ -2143,7 +2193,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3798
+      "index": 3712
     },
     {
       "symbol": "XAUUSD",
@@ -2168,7 +2218,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3800
+      "index": 3714
     },
     {
       "symbol": "XAUUSD",
@@ -2193,7 +2243,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3806
+      "index": 3720
     },
     {
       "symbol": "XAUUSD",
@@ -2218,7 +2268,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3808
+      "index": 3722
     },
     {
       "symbol": "XAUUSD",
@@ -2243,7 +2293,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3814
+      "index": 3728
     },
     {
       "symbol": "XAUUSD",
@@ -2268,7 +2318,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3890
+      "index": 3804
     },
     {
       "symbol": "XAUUSD",
@@ -2293,7 +2343,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3962
+      "index": 3876
     },
     {
       "symbol": "XAUUSD",
@@ -2318,7 +2368,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4096
+      "index": 4010
     },
     {
       "symbol": "XAUUSD",
@@ -2343,7 +2393,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4098
+      "index": 4012
     },
     {
       "symbol": "XAUUSD",
@@ -2368,7 +2418,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4100
+      "index": 4014
     },
     {
       "symbol": "XAUUSD",
@@ -2393,7 +2443,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4472
+      "index": 4386
     },
     {
       "symbol": "XAUUSD",
@@ -2418,7 +2468,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4476
+      "index": 4390
     },
     {
       "symbol": "XAUUSD",
@@ -2443,7 +2493,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4482
+      "index": 4396
     },
     {
       "symbol": "XAUUSD",
@@ -2468,7 +2518,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4484
+      "index": 4398
     },
     {
       "symbol": "XAUUSD",
@@ -2493,7 +2543,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4486
+      "index": 4400
     },
     {
       "symbol": "XAUUSD",
@@ -2518,7 +2568,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4488
+      "index": 4402
     },
     {
       "symbol": "XAUUSD",
@@ -2543,7 +2593,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4490
+      "index": 4404
     },
     {
       "symbol": "XAUUSD",
@@ -2568,7 +2618,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4762
+      "index": 4676
     },
     {
       "symbol": "XAUUSD",
@@ -2593,7 +2643,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4764
+      "index": 4678
     },
     {
       "symbol": "XAUUSD",
@@ -2618,7 +2668,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4782
+      "index": 4696
     },
     {
       "symbol": "XAUUSD",
@@ -2643,7 +2693,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4784
+      "index": 4698
     },
     {
       "symbol": "XAUUSD",
@@ -2668,7 +2718,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4898
+      "index": 4812
     },
     {
       "symbol": "XAUUSD",
@@ -2693,7 +2743,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4932
+      "index": 4846
     },
     {
       "symbol": "XAUUSD",
@@ -2718,7 +2768,57 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4966
+      "index": 4880
+    },
+    {
+      "symbol": "XAUUSD",
+      "klass": "forex",
+      "direction": "long",
+      "score": 59.22,
+      "win_prob": 0.345,
+      "expected_r": 0.004,
+      "rr": 2.0,
+      "regime": "tendance_baissière",
+      "entry": 4405.0505625,
+      "stop": 4367.86251982,
+      "target": 4477.77496036,
+      "exit": 4477.21523849,
+      "outcome": "cible",
+      "r_multiple": 1.941,
+      "bars_held": 17,
+      "mfe": 1.99,
+      "mae": -0.65,
+      "stop_atr": 1.83,
+      "stop_basis": "plan fixe (1.8 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 4928
+    },
+    {
+      "symbol": "XAUUSD",
+      "klass": "forex",
+      "direction": "long",
+      "score": 58.79,
+      "win_prob": 0.344,
+      "expected_r": 0.002,
+      "rr": 2.0,
+      "regime": "tendance_baissière",
+      "entry": 4397.94957733,
+      "stop": 4361.21118179,
+      "target": 4469.77734345,
+      "exit": 4469.21862128,
+      "outcome": "cible",
+      "r_multiple": 1.94,
+      "bars_held": 15,
+      "mfe": 2.21,
+      "mae": -0.38,
+      "stop_atr": 1.83,
+      "stop_basis": "plan fixe (1.8 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "index": 4930
     },
     {
       "symbol": "SPX",
@@ -2743,7 +2843,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1516
+      "index": 1488
     },
     {
       "symbol": "SPX",
@@ -2768,7 +2868,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2342
+      "index": 2314
     },
     {
       "symbol": "SPX",
@@ -2793,7 +2893,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3614
+      "index": 3586
     },
     {
       "symbol": "SPX",
@@ -2818,7 +2918,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4566
+      "index": 4538
     },
     {
       "symbol": "NDX",
@@ -2843,7 +2943,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 844
+      "index": 816
     },
     {
       "symbol": "NDX",
@@ -2868,7 +2968,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 846
+      "index": 818
     },
     {
       "symbol": "NDX",
@@ -2893,7 +2993,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 848
+      "index": 820
     },
     {
       "symbol": "NDX",
@@ -2918,7 +3018,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 850
+      "index": 822
     },
     {
       "symbol": "NDX",
@@ -2943,7 +3043,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 852
+      "index": 824
     },
     {
       "symbol": "NDX",
@@ -2968,7 +3068,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 854
+      "index": 826
     },
     {
       "symbol": "NDX",
@@ -2993,7 +3093,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1130
+      "index": 1102
     },
     {
       "symbol": "NDX",
@@ -3018,7 +3118,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1412
+      "index": 1384
     },
     {
       "symbol": "NDX",
@@ -3043,7 +3143,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1414
+      "index": 1386
     },
     {
       "symbol": "NDX",
@@ -3068,7 +3168,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1522
+      "index": 1494
     },
     {
       "symbol": "NDX",
@@ -3093,7 +3193,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1698
+      "index": 1670
     },
     {
       "symbol": "NDX",
@@ -3118,7 +3218,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2322
+      "index": 2294
     },
     {
       "symbol": "NDX",
@@ -3143,7 +3243,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2340
+      "index": 2312
     },
     {
       "symbol": "NDX",
@@ -3168,7 +3268,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2342
+      "index": 2314
     },
     {
       "symbol": "NDX",
@@ -3193,7 +3293,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2622
+      "index": 2594
     },
     {
       "symbol": "NDX",
@@ -3218,7 +3318,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2700
+      "index": 2672
     },
     {
       "symbol": "NDX",
@@ -3243,7 +3343,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2708
+      "index": 2680
     },
     {
       "symbol": "NDX",
@@ -3268,7 +3368,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2712
+      "index": 2684
     },
     {
       "symbol": "NDX",
@@ -3293,7 +3393,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3516
+      "index": 3488
     },
     {
       "symbol": "NDX",
@@ -3318,7 +3418,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3674
+      "index": 3646
     },
     {
       "symbol": "NDX",
@@ -3343,7 +3443,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3970
+      "index": 3942
     },
     {
       "symbol": "NDX",
@@ -3368,7 +3468,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3972
+      "index": 3944
     },
     {
       "symbol": "NDX",
@@ -3393,7 +3493,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3974
+      "index": 3946
     },
     {
       "symbol": "NDX",
@@ -3418,7 +3518,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3976
+      "index": 3948
     },
     {
       "symbol": "NDX",
@@ -3443,7 +3543,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4224
+      "index": 4196
     },
     {
       "symbol": "NDX",
@@ -3468,7 +3568,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4226
+      "index": 4198
     },
     {
       "symbol": "NDX",
@@ -3493,7 +3593,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4228
+      "index": 4200
     },
     {
       "symbol": "NDX",
@@ -3518,7 +3618,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4264
+      "index": 4236
     },
     {
       "symbol": "NDX",
@@ -3543,7 +3643,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4314
+      "index": 4286
     },
     {
       "symbol": "NDX",
@@ -3568,7 +3668,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4316
+      "index": 4288
     },
     {
       "symbol": "NDX",
@@ -3593,7 +3693,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4318
+      "index": 4290
     },
     {
       "symbol": "NDX",
@@ -3618,7 +3718,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4404
+      "index": 4376
     },
     {
       "symbol": "NDX",
@@ -3643,7 +3743,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4418
+      "index": 4390
     },
     {
       "symbol": "NDX",
@@ -3668,7 +3768,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4566
+      "index": 4538
     },
     {
       "symbol": "NDX",
@@ -3693,7 +3793,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4832
+      "index": 4804
     },
     {
       "symbol": "NDX",
@@ -3718,7 +3818,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4834
+      "index": 4806
     },
     {
       "symbol": "NDX",
@@ -3743,7 +3843,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4840
+      "index": 4812
     },
     {
       "symbol": "NVDA",
@@ -3768,7 +3868,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 644
+      "index": 616
     },
     {
       "symbol": "NVDA",
@@ -3793,7 +3893,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 852
+      "index": 824
     },
     {
       "symbol": "NVDA",
@@ -3818,7 +3918,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 854
+      "index": 826
     },
     {
       "symbol": "NVDA",
@@ -3843,7 +3943,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1328
+      "index": 1300
     },
     {
       "symbol": "NVDA",
@@ -3868,7 +3968,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1330
+      "index": 1302
     },
     {
       "symbol": "NVDA",
@@ -3893,7 +3993,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1332
+      "index": 1304
     },
     {
       "symbol": "NVDA",
@@ -3918,7 +4018,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1412
+      "index": 1384
     },
     {
       "symbol": "NVDA",
@@ -3943,7 +4043,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1418
+      "index": 1390
     },
     {
       "symbol": "NVDA",
@@ -3968,7 +4068,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1420
+      "index": 1392
     },
     {
       "symbol": "NVDA",
@@ -3993,7 +4093,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1422
+      "index": 1394
     },
     {
       "symbol": "NVDA",
@@ -4018,7 +4118,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1426
+      "index": 1398
     },
     {
       "symbol": "NVDA",
@@ -4043,7 +4143,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1496
+      "index": 1468
     },
     {
       "symbol": "NVDA",
@@ -4068,7 +4168,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1502
+      "index": 1474
     },
     {
       "symbol": "NVDA",
@@ -4093,7 +4193,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1504
+      "index": 1476
     },
     {
       "symbol": "NVDA",
@@ -4118,7 +4218,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1506
+      "index": 1478
     },
     {
       "symbol": "NVDA",
@@ -4143,7 +4243,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1508
+      "index": 1480
     },
     {
       "symbol": "NVDA",
@@ -4168,7 +4268,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1922
+      "index": 1894
     },
     {
       "symbol": "NVDA",
@@ -4193,7 +4293,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2252
+      "index": 2224
     },
     {
       "symbol": "NVDA",
@@ -4218,7 +4318,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2356
+      "index": 2328
     },
     {
       "symbol": "NVDA",
@@ -4243,7 +4343,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2358
+      "index": 2330
     },
     {
       "symbol": "NVDA",
@@ -4268,7 +4368,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2490
+      "index": 2462
     },
     {
       "symbol": "NVDA",
@@ -4293,7 +4393,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4838
+      "index": 4810
     },
     {
       "symbol": "MSFT",
@@ -4318,7 +4418,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4314
+      "index": 4286
     },
     {
       "symbol": "AMZN",
@@ -4343,7 +4443,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2588
+      "index": 2560
     },
     {
       "symbol": "AMZN",
@@ -4368,7 +4468,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3614
+      "index": 3586
     },
     {
       "symbol": "AMZN",
@@ -4393,7 +4493,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4006
+      "index": 3978
     },
     {
       "symbol": "META",
@@ -4418,7 +4518,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2322
+      "index": 2294
     },
     {
       "symbol": "META",
@@ -4443,7 +4543,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2588
+      "index": 2560
     },
     {
       "symbol": "TSLA",
@@ -4468,7 +4568,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 826
+      "index": 798
     },
     {
       "symbol": "TSLA",
@@ -4493,7 +4593,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 846
+      "index": 818
     },
     {
       "symbol": "TSLA",
@@ -4518,7 +4618,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 852
+      "index": 824
     },
     {
       "symbol": "TSLA",
@@ -4543,7 +4643,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 854
+      "index": 826
     },
     {
       "symbol": "TSLA",
@@ -4568,7 +4668,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 856
+      "index": 828
     },
     {
       "symbol": "TSLA",
@@ -4593,7 +4693,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 858
+      "index": 830
     },
     {
       "symbol": "TSLA",
@@ -4618,7 +4718,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 860
+      "index": 832
     },
     {
       "symbol": "TSLA",
@@ -4643,7 +4743,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1204
+      "index": 1176
     },
     {
       "symbol": "TSLA",
@@ -4668,7 +4768,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1216
+      "index": 1188
     },
     {
       "symbol": "TSLA",
@@ -4693,7 +4793,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1218
+      "index": 1190
     },
     {
       "symbol": "TSLA",
@@ -4718,7 +4818,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1224
+      "index": 1196
     },
     {
       "symbol": "TSLA",
@@ -4743,7 +4843,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1360
+      "index": 1332
     },
     {
       "symbol": "TSLA",
@@ -4768,7 +4868,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1362
+      "index": 1334
     },
     {
       "symbol": "TSLA",
@@ -4793,7 +4893,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1374
+      "index": 1346
     },
     {
       "symbol": "TSLA",
@@ -4818,7 +4918,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1838
+      "index": 1810
     },
     {
       "symbol": "TSLA",
@@ -4843,7 +4943,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1840
+      "index": 1812
     },
     {
       "symbol": "TSLA",
@@ -4868,7 +4968,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1842
+      "index": 1814
     },
     {
       "symbol": "TSLA",
@@ -4893,7 +4993,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1844
+      "index": 1816
     },
     {
       "symbol": "TSLA",
@@ -4918,7 +5018,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1966
+      "index": 1938
     },
     {
       "symbol": "TSLA",
@@ -4943,7 +5043,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1976
+      "index": 1948
     },
     {
       "symbol": "TSLA",
@@ -4968,7 +5068,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1978
+      "index": 1950
     },
     {
       "symbol": "TSLA",
@@ -4993,7 +5093,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1980
+      "index": 1952
     },
     {
       "symbol": "TSLA",
@@ -5018,7 +5118,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1982
+      "index": 1954
     },
     {
       "symbol": "TSLA",
@@ -5043,7 +5143,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1984
+      "index": 1956
     },
     {
       "symbol": "TSLA",
@@ -5068,7 +5168,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1986
+      "index": 1958
     },
     {
       "symbol": "TSLA",
@@ -5093,7 +5193,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1988
+      "index": 1960
     },
     {
       "symbol": "TSLA",
@@ -5118,7 +5218,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 1990
+      "index": 1962
     },
     {
       "symbol": "TSLA",
@@ -5143,7 +5243,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2004
+      "index": 1976
     },
     {
       "symbol": "TSLA",
@@ -5168,7 +5268,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2010
+      "index": 1982
     },
     {
       "symbol": "TSLA",
@@ -5193,7 +5293,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2260
+      "index": 2232
     },
     {
       "symbol": "TSLA",
@@ -5218,7 +5318,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2262
+      "index": 2234
     },
     {
       "symbol": "TSLA",
@@ -5243,7 +5343,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2264
+      "index": 2236
     },
     {
       "symbol": "TSLA",
@@ -5268,7 +5368,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2342
+      "index": 2314
     },
     {
       "symbol": "TSLA",
@@ -5293,7 +5393,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2380
+      "index": 2352
     },
     {
       "symbol": "TSLA",
@@ -5318,7 +5418,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2388
+      "index": 2360
     },
     {
       "symbol": "TSLA",
@@ -5343,7 +5443,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2618
+      "index": 2590
     },
     {
       "symbol": "TSLA",
@@ -5368,7 +5468,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2628
+      "index": 2600
     },
     {
       "symbol": "TSLA",
@@ -5393,7 +5493,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2636
+      "index": 2608
     },
     {
       "symbol": "TSLA",
@@ -5418,7 +5518,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2704
+      "index": 2676
     },
     {
       "symbol": "TSLA",
@@ -5443,7 +5543,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2706
+      "index": 2678
     },
     {
       "symbol": "TSLA",
@@ -5468,7 +5568,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2708
+      "index": 2680
     },
     {
       "symbol": "TSLA",
@@ -5493,7 +5593,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2710
+      "index": 2682
     },
     {
       "symbol": "TSLA",
@@ -5518,7 +5618,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2712
+      "index": 2684
     },
     {
       "symbol": "TSLA",
@@ -5543,7 +5643,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3124
+      "index": 3096
     },
     {
       "symbol": "TSLA",
@@ -5568,7 +5668,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3298
+      "index": 3270
     },
     {
       "symbol": "TSLA",
@@ -5593,7 +5693,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3300
+      "index": 3272
     },
     {
       "symbol": "TSLA",
@@ -5618,7 +5718,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3302
+      "index": 3274
     },
     {
       "symbol": "TSLA",
@@ -5643,7 +5743,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3304
+      "index": 3276
     },
     {
       "symbol": "TSLA",
@@ -5668,7 +5768,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 3970
+      "index": 3942
     },
     {
       "symbol": "TSLA",
@@ -5693,7 +5793,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 4418
+      "index": 4390
     },
     {
       "symbol": "LLY",
@@ -5718,7 +5818,7 @@
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
-      "index": 2680
+      "index": 2652
     }
   ]
 }
