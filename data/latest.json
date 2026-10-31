@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-31T15:03:48+00:00",
+  "generated_at": "2026-10-31T19:02:24+00:00",
   "seuils": {
     "signal": 58.0,
     "alerte": 68.0,
@@ -53,7 +53,7 @@
     "risque_portefeuille_max": 0.06,
     "risque_correle_max": 0.035
   },
-  "news_summary": "80 articles retenus sur le cycle, dont 29 d'actualité internationale et 51 d'actualité de marché.\n\nSur le plan géopolitique, l'indice de tension s'établit à +0.65 sur [-1, +1] sur 28 articles porteurs. Les faits dominants : Texas brothers sentenced to 15 years in prison for armed crypto robbery, kidnapping ; Iran lawmakers call for withdrawal from NPT: Will we have war or peace? ; Iran warns of unfettered retaliation if attacked as mediators try for peace.\n\nL'information de marché la plus chargée est négative : « Bitcoin price metrics hint at rebound as $1.6B liquidations follow Binance hack » (Cointelegraph, -10.2).\n\nÀ venir : Emploi américain (NFP) (dans 6 j) ; Expiration mensuelle des options (dans 20 j).\n\nActifs les plus couverts : BTC-USD (9 art., -0.97), SPX (3 art., -0.52), USDJPY (1 art., -0.19), ETH-USD (1 art., -0.34).",
+  "news_summary": "80 articles retenus sur le cycle, dont 30 d'actualité internationale et 50 d'actualité de marché.\n\nSur le plan géopolitique, l'indice de tension s'établit à +0.64 sur [-1, +1] sur 29 articles porteurs. Les faits dominants : Texas brothers sentenced to 15 years in prison for armed crypto robbery, kidnapping ; Face aux spéculations de nouvelles frappes sur l'Iran, Mojtaba Khamenei menace de riposter ; Cédric Chetaille, contre-amiral : « Nous assistons à une forme de nouvelle “guerre des éto.\n\nL'information de marché la plus chargée est négative : « Bitcoin price metrics hint at rebound as $1.6B liquidations follow Binance hack » (Cointelegraph, -10.2).\n\nÀ venir : Emploi américain (NFP) (dans 6 j) ; Expiration mensuelle des options (dans 20 j).\n\nActifs les plus couverts : BTC-USD (9 art., -0.71), SPX (3 art., -0.47), ETH-USD (1 art., -0.31), NDX (1 art., -0.59).",
   "news_engine": "gabarit",
   "speeches": [],
   "mt_aliases": {
@@ -235,7 +235,7 @@
             "ampleur": 0.56,
             "retention": 0.72,
             "etat": "journée calme",
-            "score": 25.45,
+            "score": 25.42,
             "biais": "long"
           }
         ],
@@ -363,7 +363,7 @@
             "ampleur": 1.28,
             "retention": 0.313,
             "etat": "secousse sans direction",
-            "score": 24.17,
+            "score": 24.16,
             "biais": "long"
           },
           {
@@ -449,19 +449,124 @@
   },
   "watchlist": [
     {
+      "symbol": "LINK-USD",
+      "label": "Chainlink",
+      "klass": "crypto",
+      "direction": "neutre",
+      "score": 57.98,
+      "raw_score": -56.68,
+      "price": 11.77,
+      "regime": {
+        "name": "tendance_haussière",
+        "trend_strength": 0.478,
+        "hurst": 0.542,
+        "vol_percentile": 0.687,
+        "quality": 0.833,
+        "choppiness": 39.7,
+        "variance_ratio": 1.437,
+        "confidence_mult": 1.0
+      },
+      "factors": [
+        {
+          "name": "trend",
+          "value": 0.5681,
+          "weight": -0.295,
+          "detail": "EMA partiellement alignées · prix à +2.9 ATR de l'EMA 50 · pente +0.16 %/bougie (R²=0.83)",
+          "contribution": -0.1676
+        },
+        {
+          "name": "momentum",
+          "value": 0.4198,
+          "weight": 0.0,
+          "detail": "MACD hist z=+0.29 · RSI 66 · ROC(10) +2.6 %",
+          "contribution": 0.0
+        },
+        {
+          "name": "mean_reversion",
+          "value": -0.7407,
+          "weight": 0.15,
+          "detail": "%B=0.97 · RSI 66 · écart VWAP +1.8 ATR",
+          "contribution": -0.1111
+        },
+        {
+          "name": "volume",
+          "value": -0.0696,
+          "weight": 0.0,
+          "detail": "volume z=-1.12 · variation 5 bougies +2.4 % · pente OBV -0.67",
+          "contribution": -0.0
+        },
+        {
+          "name": "breakout",
+          "value": 0.2441,
+          "weight": -0.165,
+          "detail": "dans le canal, position 91 %",
+          "contribution": -0.0403
+        },
+        {
+          "name": "structure",
+          "value": 0.9992,
+          "weight": -0.29,
+          "detail": "Supertrend haussier · au-dessus du nuage Ichimoku",
+          "contribution": -0.2898
+        },
+        {
+          "name": "sentiment",
+          "value": 0.0,
+          "weight": 0.1,
+          "detail": "aucune actualité rattachée",
+          "contribution": 0.0
+        }
+      ],
+      "entry": 11.77,
+      "stop": 12.00501969,
+      "target": 11.29996062,
+      "rr": 2.0,
+      "atr": 0.11750984,
+      "atr_pct": 1.0,
+      "timeframe": "1h",
+      "htf_alignment": "short",
+      "news_score": -0.247,
+      "news_count": 0,
+      "generated_at": "2026-10-31T19:02:24+00:00",
+      "bias": "short",
+      "actionable": false,
+      "win_prob": 0.342,
+      "expected_r": -0.023,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "plan_alternatives": [],
+      "mouvement": {
+        "disponible": true,
+        "var_1h": 0.01,
+        "var_24h": 5.66,
+        "var_7j": 1.98,
+        "amplitude_pct": 6.16,
+        "amplitude_ref_pct": 5.1,
+        "ampleur": 1.21,
+        "retention": 0.918,
+        "position_range": 0.937,
+        "volume_rel": 1.45,
+        "etat": "hausse ordinaire",
+        "rendu": false
+      },
+      "warnings": []
+    },
+    {
       "symbol": "XAUUSD",
       "label": "Or / Dollar",
       "klass": "forex",
       "direction": "neutre",
-      "score": 35.92,
-      "raw_score": 60.13,
+      "score": 35.93,
+      "raw_score": 60.14,
       "price": 3898.89990234,
       "regime": {
         "name": "tendance_baissière",
-        "trend_strength": 0.809,
+        "trend_strength": 0.773,
         "hurst": 0.614,
-        "vol_percentile": 0.824,
-        "quality": 0.791,
+        "vol_percentile": 0.818,
+        "quality": 0.79,
         "choppiness": 29.4,
         "variance_ratio": 1.007,
         "confidence_mult": 0.832
@@ -469,30 +574,30 @@
       "factors": [
         {
           "name": "trend",
-          "value": -0.7129,
+          "value": -0.713,
           "weight": -0.295,
           "detail": "EMA 20/50/200 alignées · prix à -5.1 ATR de l'EMA 50 · pente -0.10 %/bougie (R²=0.79)",
           "contribution": 0.2103
         },
         {
           "name": "momentum",
-          "value": -0.6826,
+          "value": -0.683,
           "weight": 0.0,
-          "detail": "MACD hist z=-1.67 · RSI 22 · ROC(10) -2.3 %",
+          "detail": "MACD hist z=-1.66 · RSI 22 · ROC(10) -2.3 %",
           "contribution": -0.0
         },
         {
           "name": "mean_reversion",
-          "value": 0.8087,
+          "value": 0.81,
           "weight": 0.15,
           "detail": "%B=0.17 · RSI 22 · écart VWAP -2.8 ATR",
-          "contribution": 0.1213
+          "contribution": 0.1215
         },
         {
           "name": "volume",
-          "value": 0.4463,
+          "value": 0.478,
           "weight": 0.0,
-          "detail": "volume z=-1.28 · variation 5 bougies -0.2 % · pente OBV +7.92",
+          "detail": "volume z=-1.28 · variation 5 bougies -0.2 % · pente OBV +8.06",
           "contribution": 0.0
         },
         {
@@ -518,16 +623,16 @@
         }
       ],
       "entry": 3898.89990234,
-      "stop": 3866.33874397,
-      "target": 3964.02221908,
+      "stop": 3866.50109478,
+      "target": 3963.69751748,
       "rr": 2.0,
-      "atr": 18.08953243,
+      "atr": 17.99933754,
       "atr_pct": 0.46,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": 0.32,
+      "news_score": 0.318,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
@@ -560,8 +665,8 @@
       "label": "Nasdaq Composite",
       "klass": "index",
       "direction": "neutre",
-      "score": 13.74,
-      "raw_score": 53.53,
+      "score": 13.9,
+      "raw_score": 54.04,
       "price": 25436.99804688,
       "regime": {
         "name": "chaotique",
@@ -597,9 +702,9 @@
         },
         {
           "name": "volume",
-          "value": -0.011,
+          "value": -0.1457,
           "weight": 0.0,
-          "detail": "volume z=-2.09 · variation 5 bougies -0.3 % · pente OBV -1.80",
+          "detail": "volume z=-2.09 · variation 5 bougies -0.3 % · pente OBV -2.68",
           "contribution": -0.0
         },
         {
@@ -618,10 +723,10 @@
         },
         {
           "name": "sentiment",
-          "value": -0.661,
+          "value": -0.593,
           "weight": 0.1,
-          "detail": "1 article(s), sentiment pondéré -0.66",
-          "contribution": -0.0661
+          "detail": "1 article(s), sentiment pondéré -0.59",
+          "contribution": -0.0593
         }
       ],
       "entry": 25436.99804688,
@@ -632,9 +737,9 @@
       "atr_pct": 0.57,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": -0.661,
+      "news_score": -0.593,
       "news_count": 1,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
@@ -654,7 +759,7 @@
         "ampleur": 0.83,
         "retention": 1.483,
         "position_range": 0.527,
-        "volume_rel": 0.33,
+        "volume_rel": 0.32,
         "etat": "baisse ordinaire",
         "rendu": false
       },
@@ -662,111 +767,6 @@
         "signal contraire à l'unité de temps supérieure (unité supérieure baissière (biais -1.00))",
         "volatilité au plus haut de son historique, glissement probable"
       ]
-    },
-    {
-      "symbol": "LINK-USD",
-      "label": "Chainlink",
-      "klass": "crypto",
-      "direction": "neutre",
-      "score": 50.05,
-      "raw_score": -44.48,
-      "price": 11.506,
-      "regime": {
-        "name": "tendance_haussière",
-        "trend_strength": 0.402,
-        "hurst": 0.546,
-        "vol_percentile": 0.708,
-        "quality": 0.775,
-        "choppiness": 52.4,
-        "variance_ratio": 1.427,
-        "confidence_mult": 1.0
-      },
-      "factors": [
-        {
-          "name": "trend",
-          "value": 0.4349,
-          "weight": -0.295,
-          "detail": "EMA partiellement alignées · prix à +1.0 ATR de l'EMA 50 · pente +0.19 %/bougie (R²=0.77)",
-          "contribution": -0.1283
-        },
-        {
-          "name": "momentum",
-          "value": 0.118,
-          "weight": 0.0,
-          "detail": "MACD hist z=-0.07 · RSI 55 · ROC(10) +0.8 %",
-          "contribution": 0.0
-        },
-        {
-          "name": "mean_reversion",
-          "value": -0.1823,
-          "weight": 0.15,
-          "detail": "%B=0.58 · RSI 55 · écart VWAP +0.2 ATR",
-          "contribution": -0.0273
-        },
-        {
-          "name": "volume",
-          "value": 0.0,
-          "weight": 0.0,
-          "detail": "volume z=-1.16 · variation 5 bougies -0.5 % · pente OBV +0.01",
-          "contribution": 0.0
-        },
-        {
-          "name": "breakout",
-          "value": 0.0784,
-          "weight": -0.165,
-          "detail": "dans le canal, position 63 %",
-          "contribution": -0.0129
-        },
-        {
-          "name": "structure",
-          "value": 0.9803,
-          "weight": -0.29,
-          "detail": "Supertrend haussier · au-dessus du nuage Ichimoku",
-          "contribution": -0.2843
-        },
-        {
-          "name": "sentiment",
-          "value": 0.0,
-          "weight": 0.1,
-          "detail": "aucune actualité rattachée",
-          "contribution": 0.0
-        }
-      ],
-      "entry": 11.506,
-      "stop": 11.75272137,
-      "target": 11.01255726,
-      "rr": 2.0,
-      "atr": 0.12336069,
-      "atr_pct": 1.07,
-      "timeframe": "1h",
-      "htf_alignment": "short",
-      "news_score": -0.249,
-      "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
-      "bias": "short",
-      "actionable": false,
-      "win_prob": 0.333,
-      "expected_r": -0.046,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "plan_alternatives": [],
-      "mouvement": {
-        "disponible": true,
-        "var_1h": 0.14,
-        "var_24h": 4.03,
-        "var_7j": 1.04,
-        "amplitude_pct": 6.41,
-        "amplitude_ref_pct": 5.1,
-        "ampleur": 1.26,
-        "retention": 0.629,
-        "position_range": 0.671,
-        "volume_rel": 1.81,
-        "etat": "hausse ordinaire",
-        "rendu": false
-      },
-      "warnings": []
     },
     {
       "symbol": "GOOGL",
@@ -803,16 +803,16 @@
         },
         {
           "name": "mean_reversion",
-          "value": 0.6908,
+          "value": 0.6906,
           "weight": 0.15,
-          "detail": "%B=0.33 · RSI 25 · écart VWAP -2.3 ATR",
+          "detail": "%B=0.33 · RSI 25 · écart VWAP -2.2 ATR",
           "contribution": 0.1036
         },
         {
           "name": "volume",
-          "value": -0.303,
+          "value": -0.3463,
           "weight": 0.0,
-          "detail": "volume z=-0.88 · variation 5 bougies -0.3 % · pente OBV -9.79",
+          "detail": "volume z=-0.88 · variation 5 bougies -0.3 % · pente OBV -9.76",
           "contribution": -0.0
         },
         {
@@ -838,16 +838,16 @@
         }
       ],
       "entry": 279.83999634,
-      "stop": 271.15053618,
-      "target": 297.21891665,
+      "stop": 271.12718524,
+      "target": 297.26561854,
       "rr": 2.0,
-      "atr": 3.47578406,
-      "atr_pct": 1.24,
+      "atr": 3.48512444,
+      "atr_pct": 1.25,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
@@ -881,8 +881,8 @@
       "label": "S&P 500",
       "klass": "index",
       "direction": "neutre",
-      "score": 23.62,
-      "raw_score": 53.11,
+      "score": 23.84,
+      "raw_score": 53.52,
       "price": 7580.06982422,
       "regime": {
         "name": "chaotique",
@@ -911,17 +911,17 @@
         },
         {
           "name": "mean_reversion",
-          "value": 0.7146,
+          "value": 0.7179,
           "weight": 0.15,
-          "detail": "%B=0.20 · RSI 34 · écart VWAP -2.8 ATR",
-          "contribution": 0.1072
+          "detail": "%B=0.20 · RSI 34 · écart VWAP -2.9 ATR",
+          "contribution": 0.1077
         },
         {
           "name": "volume",
-          "value": -0.0975,
+          "value": 0.2794,
           "weight": 0.0,
-          "detail": "volume z=-1.93 · variation 5 bougies -0.3 % · pente OBV -3.26",
-          "contribution": -0.0
+          "detail": "volume z=-2.04 · variation 5 bougies -0.3 % · pente OBV +2.86",
+          "contribution": 0.0
         },
         {
           "name": "breakout",
@@ -939,10 +939,10 @@
         },
         {
           "name": "sentiment",
-          "value": -0.524,
+          "value": -0.475,
           "weight": 0.1,
-          "detail": "3 article(s), sentiment pondéré -0.52",
-          "contribution": -0.0524
+          "detail": "3 article(s), sentiment pondéré -0.47",
+          "contribution": -0.0475
         }
       ],
       "entry": 7580.06982422,
@@ -953,9 +953,9 @@
       "atr_pct": 0.37,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": -0.524,
+      "news_score": -0.475,
       "news_count": 3,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
@@ -975,7 +975,7 @@
         "ampleur": 0.9,
         "retention": 1.259,
         "position_range": 0.478,
-        "volume_rel": 0.48,
+        "volume_rel": 0.5,
         "etat": "baisse ordinaire",
         "rendu": false
       },
@@ -998,20 +998,20 @@
         "vol_percentile": 0.997,
         "quality": 0.795,
         "choppiness": 34.8,
-        "variance_ratio": 0.865,
+        "variance_ratio": 0.863,
         "confidence_mult": 0.816
       },
       "factors": [
         {
           "name": "trend",
-          "value": 0.8183,
+          "value": 0.8184,
           "weight": -0.295,
           "detail": "EMA 20/50/200 alignées · prix à +5.1 ATR de l'EMA 50 · pente +0.34 %/bougie (R²=0.79)",
           "contribution": -0.2414
         },
         {
           "name": "momentum",
-          "value": 0.4999,
+          "value": 0.5003,
           "weight": 0.0,
           "detail": "MACD hist z=+0.22 · RSI 71 · ROC(10) +3.9 %",
           "contribution": 0.0
@@ -1025,9 +1025,9 @@
         },
         {
           "name": "volume",
-          "value": 0.4438,
+          "value": 0.4439,
           "weight": 0.0,
-          "detail": "volume z=-1.06 · variation 5 bougies -0.5 % · pente OBV +4.33",
+          "detail": "volume z=-1.06 · variation 5 bougies -0.5 % · pente OBV +4.34",
           "contribution": 0.0
         },
         {
@@ -1053,16 +1053,16 @@
         }
       ],
       "entry": 1417.54003906,
-      "stop": 1459.01811452,
-      "target": 1334.58388814,
+      "stop": 1458.97112048,
+      "target": 1334.67787622,
       "rr": 2.0,
-      "atr": 16.59123018,
+      "atr": 16.57243257,
       "atr_pct": 1.17,
       "timeframe": "1h",
       "htf_alignment": "short",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "short",
       "actionable": false,
       "win_prob": 0.333,
@@ -1096,40 +1096,40 @@
       "label": "Amazon",
       "klass": "action",
       "direction": "neutre",
-      "score": 24.17,
-      "raw_score": 40.75,
+      "score": 24.16,
+      "raw_score": 40.74,
       "price": 240.3500061,
       "regime": {
         "name": "tendance_baissière",
         "trend_strength": 0.917,
-        "hurst": 0.526,
-        "vol_percentile": 0.863,
+        "hurst": 0.525,
+        "vol_percentile": 0.866,
         "quality": 0.415,
-        "choppiness": 30.9,
-        "variance_ratio": 1.087,
+        "choppiness": 31.0,
+        "variance_ratio": 1.085,
         "confidence_mult": 0.877
       },
       "factors": [
         {
           "name": "trend",
-          "value": -0.6599,
+          "value": -0.6598,
           "weight": -0.295,
           "detail": "EMA 20/50/200 alignées · prix à -2.8 ATR de l'EMA 50 · pente -0.12 %/bougie (R²=0.42)",
-          "contribution": 0.1947
+          "contribution": 0.1946
         },
         {
           "name": "momentum",
-          "value": -0.3248,
+          "value": -0.3234,
           "weight": 0.0,
           "detail": "MACD hist z=-0.08 · RSI 35 · ROC(10) -1.8 %",
           "contribution": -0.0
         },
         {
           "name": "mean_reversion",
-          "value": 0.4761,
+          "value": 0.4753,
           "weight": 0.15,
           "detail": "%B=0.29 · RSI 35 · écart VWAP -0.7 ATR",
-          "contribution": 0.0714
+          "contribution": 0.0713
         },
         {
           "name": "volume",
@@ -1161,16 +1161,16 @@
         }
       ],
       "entry": 240.3500061,
-      "stop": 233.29507173,
-      "target": 254.45987486,
+      "stop": 233.28397963,
+      "target": 254.48205906,
       "rr": 2.0,
-      "atr": 2.82197375,
-      "atr_pct": 1.17,
+      "atr": 2.82641059,
+      "atr_pct": 1.18,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
@@ -1199,65 +1199,65 @@
       ]
     },
     {
-      "symbol": "AVAX-USD",
-      "label": "Avalanche",
-      "klass": "crypto",
+      "symbol": "TSLA",
+      "label": "Tesla",
+      "klass": "action",
       "direction": "neutre",
-      "score": 14.08,
-      "raw_score": 28.13,
-      "price": 8.501,
+      "score": 3.9,
+      "raw_score": -12.46,
+      "price": 399.80999756,
       "regime": {
-        "name": "range",
-        "trend_strength": 0.211,
-        "hurst": 0.49,
-        "vol_percentile": 0.163,
-        "quality": 0.122,
-        "choppiness": 41.4,
-        "variance_ratio": 1.136,
-        "confidence_mult": 0.754
+        "name": "chaotique",
+        "trend_strength": 0.493,
+        "hurst": 0.5,
+        "vol_percentile": 0.071,
+        "quality": 0.306,
+        "choppiness": 39.8,
+        "variance_ratio": 0.92,
+        "confidence_mult": 0.48
       },
       "factors": [
         {
           "name": "trend",
-          "value": -0.4129,
+          "value": 0.5357,
           "weight": -0.295,
-          "detail": "EMA 20/50/200 alignées · prix à -0.5 ATR de l'EMA 50 · pente +0.04 %/bougie (R²=0.12)",
-          "contribution": 0.1218
+          "detail": "EMA 20/50/200 alignées · prix à +1.2 ATR de l'EMA 50 · pente +0.12 %/bougie (R²=0.31)",
+          "contribution": -0.158
         },
         {
           "name": "momentum",
-          "value": 0.0243,
+          "value": -0.2349,
           "weight": 0.0,
-          "detail": "MACD hist z=+0.10 · RSI 50 · ROC(10) -0.1 %",
-          "contribution": 0.0
+          "detail": "MACD hist z=-0.89 · RSI 51 · ROC(10) -1.3 %",
+          "contribution": -0.0
         },
         {
           "name": "mean_reversion",
-          "value": 0.0413,
+          "value": 0.1735,
           "weight": 0.15,
-          "detail": "%B=0.47 · RSI 50 · écart VWAP -0.1 ATR",
-          "contribution": 0.0062
+          "detail": "%B=0.32 · RSI 51 · écart VWAP -0.2 ATR",
+          "contribution": 0.026
         },
         {
           "name": "volume",
-          "value": 0.0006,
+          "value": -0.0016,
           "weight": 0.0,
-          "detail": "volume z=-1.51 · variation 5 bougies +0.7 % · pente OBV +0.06",
-          "contribution": 0.0
+          "detail": "volume z=-1.34 · variation 5 bougies -0.1 % · pente OBV -0.15",
+          "contribution": -0.0
         },
         {
           "name": "breakout",
-          "value": -0.0048,
+          "value": 0.0789,
           "weight": -0.165,
-          "detail": "dans le canal, position 49 %",
-          "contribution": 0.0008
+          "detail": "dans le canal, position 63 %",
+          "contribution": -0.013
         },
         {
           "name": "structure",
-          "value": -0.5,
+          "value": -0.0912,
           "weight": -0.29,
-          "detail": "Supertrend baissier · dans le nuage Ichimoku (indécision)",
-          "contribution": 0.145
+          "detail": "Supertrend baissier · au-dessus du nuage Ichimoku",
+          "contribution": 0.0264
         },
         {
           "name": "sentiment",
@@ -1267,42 +1267,42 @@
           "contribution": 0.0
         }
       ],
-      "entry": 8.501,
-      "stop": 8.3499603,
-      "target": 8.80307939,
+      "entry": 399.80999756,
+      "stop": 410.12952225,
+      "target": 379.17094817,
       "rr": 2.0,
-      "atr": 0.07551985,
-      "atr_pct": 0.89,
+      "atr": 4.12780988,
+      "atr_pct": 1.03,
       "timeframe": "1h",
-      "htf_alignment": "long",
-      "news_score": -0.249,
+      "htf_alignment": "short",
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
-      "bias": "long",
+      "generated_at": "2026-10-31T19:02:24+00:00",
+      "bias": "short",
       "actionable": false,
       "win_prob": 0.333,
-      "expected_r": -0.056,
-      "stop_basis": "plan fixe (2.0 ATR)",
+      "expected_r": -0.058,
+      "stop_basis": "plan fixe (2.5 ATR)",
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
       "obstacle": 0.0,
       "plan_alternatives": [],
       "mouvement": {
         "disponible": true,
-        "var_1h": -0.04,
-        "var_24h": 1.69,
-        "var_7j": -3.35,
-        "amplitude_pct": 4.91,
-        "amplitude_ref_pct": 5.4,
-        "ampleur": 0.91,
-        "retention": 0.344,
-        "position_range": 0.619,
-        "volume_rel": 1.09,
-        "etat": "hausse ordinaire",
+        "var_1h": 0.45,
+        "var_24h": -0.86,
+        "var_7j": 7.42,
+        "amplitude_pct": 4.17,
+        "amplitude_ref_pct": 6.68,
+        "ampleur": 0.62,
+        "retention": 0.207,
+        "position_range": 0.737,
+        "volume_rel": 0.33,
+        "etat": "journée calme",
         "rendu": false
       },
       "warnings": [
-        "signal contraire à l'unité de temps supérieure (unité supérieure baissière (biais -1.00))"
+        "signal contraire à l'unité de temps supérieure (unité supérieure haussière (biais +1.00))"
       ]
     }
   ],
@@ -1749,7 +1749,7 @@
           "name": "volume",
           "value": 0.0001,
           "weight": 0.0,
-          "detail": "volume z=-1.75 · variation 5 bougies -0.3 % · pente OBV +0.04",
+          "detail": "volume z=-1.75 · variation 5 bougies -0.3 % · pente OBV +0.05",
           "contribution": 0.0
         },
         {
@@ -1782,9 +1782,9 @@
       "atr_pct": 0.36,
       "timeframe": "1h",
       "htf_alignment": "short",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "short",
       "actionable": false,
       "win_prob": 0.342,
@@ -1817,61 +1817,61 @@
       "label": "Chainlink",
       "klass": "crypto",
       "direction": "neutre",
-      "score": 50.05,
-      "raw_score": -44.48,
-      "price": 11.506,
+      "score": 57.98,
+      "raw_score": -56.68,
+      "price": 11.77,
       "regime": {
         "name": "tendance_haussière",
-        "trend_strength": 0.402,
-        "hurst": 0.546,
-        "vol_percentile": 0.708,
-        "quality": 0.775,
-        "choppiness": 52.4,
-        "variance_ratio": 1.427,
+        "trend_strength": 0.478,
+        "hurst": 0.542,
+        "vol_percentile": 0.687,
+        "quality": 0.833,
+        "choppiness": 39.7,
+        "variance_ratio": 1.437,
         "confidence_mult": 1.0
       },
       "factors": [
         {
           "name": "trend",
-          "value": 0.4349,
+          "value": 0.5681,
           "weight": -0.295,
-          "detail": "EMA partiellement alignées · prix à +1.0 ATR de l'EMA 50 · pente +0.19 %/bougie (R²=0.77)",
-          "contribution": -0.1283
+          "detail": "EMA partiellement alignées · prix à +2.9 ATR de l'EMA 50 · pente +0.16 %/bougie (R²=0.83)",
+          "contribution": -0.1676
         },
         {
           "name": "momentum",
-          "value": 0.118,
+          "value": 0.4198,
           "weight": 0.0,
-          "detail": "MACD hist z=-0.07 · RSI 55 · ROC(10) +0.8 %",
+          "detail": "MACD hist z=+0.29 · RSI 66 · ROC(10) +2.6 %",
           "contribution": 0.0
         },
         {
           "name": "mean_reversion",
-          "value": -0.1823,
+          "value": -0.7407,
           "weight": 0.15,
-          "detail": "%B=0.58 · RSI 55 · écart VWAP +0.2 ATR",
-          "contribution": -0.0273
+          "detail": "%B=0.97 · RSI 66 · écart VWAP +1.8 ATR",
+          "contribution": -0.1111
         },
         {
           "name": "volume",
-          "value": 0.0,
+          "value": -0.0696,
           "weight": 0.0,
-          "detail": "volume z=-1.16 · variation 5 bougies -0.5 % · pente OBV +0.01",
-          "contribution": 0.0
+          "detail": "volume z=-1.12 · variation 5 bougies +2.4 % · pente OBV -0.67",
+          "contribution": -0.0
         },
         {
           "name": "breakout",
-          "value": 0.0784,
+          "value": 0.2441,
           "weight": -0.165,
-          "detail": "dans le canal, position 63 %",
-          "contribution": -0.0129
+          "detail": "dans le canal, position 91 %",
+          "contribution": -0.0403
         },
         {
           "name": "structure",
-          "value": 0.9803,
+          "value": 0.9992,
           "weight": -0.29,
           "detail": "Supertrend haussier · au-dessus du nuage Ichimoku",
-          "contribution": -0.2843
+          "contribution": -0.2898
         },
         {
           "name": "sentiment",
@@ -1881,21 +1881,21 @@
           "contribution": 0.0
         }
       ],
-      "entry": 11.506,
-      "stop": 11.75272137,
-      "target": 11.01255726,
+      "entry": 11.77,
+      "stop": 12.00501969,
+      "target": 11.29996062,
       "rr": 2.0,
-      "atr": 0.12336069,
-      "atr_pct": 1.07,
+      "atr": 0.11750984,
+      "atr_pct": 1.0,
       "timeframe": "1h",
       "htf_alignment": "short",
-      "news_score": -0.249,
+      "news_score": -0.247,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "short",
       "actionable": false,
-      "win_prob": 0.333,
-      "expected_r": -0.046,
+      "win_prob": 0.342,
+      "expected_r": -0.023,
       "stop_basis": "plan fixe (2.0 ATR)",
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
@@ -1903,15 +1903,15 @@
       "plan_alternatives": [],
       "mouvement": {
         "disponible": true,
-        "var_1h": 0.14,
-        "var_24h": 4.03,
-        "var_7j": 1.04,
-        "amplitude_pct": 6.41,
+        "var_1h": 0.01,
+        "var_24h": 5.66,
+        "var_7j": 1.98,
+        "amplitude_pct": 6.16,
         "amplitude_ref_pct": 5.1,
-        "ampleur": 1.26,
-        "retention": 0.629,
-        "position_range": 0.671,
-        "volume_rel": 1.81,
+        "ampleur": 1.21,
+        "retention": 0.918,
+        "position_range": 0.937,
+        "volume_rel": 1.45,
         "etat": "hausse ordinaire",
         "rendu": false
       },
@@ -1959,9 +1959,9 @@
         },
         {
           "name": "volume",
-          "value": -0.0461,
+          "value": -0.1727,
           "weight": 0.0,
-          "detail": "volume z=-1.60 · variation 5 bougies -0.8 % · pente OBV -3.81",
+          "detail": "volume z=-1.60 · variation 5 bougies -0.8 % · pente OBV -7.43",
           "contribution": -0.0
         },
         {
@@ -1987,16 +1987,16 @@
         }
       ],
       "entry": 614.98999023,
-      "stop": 601.3473878,
-      "target": 642.2751951,
+      "stop": 601.34792134,
+      "target": 642.27412802,
       "rr": 2.0,
-      "atr": 5.45704097,
+      "atr": 5.45682756,
       "atr_pct": 0.89,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
@@ -2037,7 +2037,7 @@
         "vol_percentile": 0.861,
         "quality": 0.945,
         "choppiness": 40.3,
-        "variance_ratio": 0.849,
+        "variance_ratio": 0.85,
         "confidence_mult": 1.0
       },
       "factors": [
@@ -2050,7 +2050,7 @@
         },
         {
           "name": "momentum",
-          "value": -0.1934,
+          "value": -0.1933,
           "weight": 0.0,
           "detail": "MACD hist z=+0.70 · RSI 26 · ROC(10) -1.1 %",
           "contribution": -0.0
@@ -2092,16 +2092,16 @@
         }
       ],
       "entry": 99.90000153,
-      "stop": 98.80522958,
-      "target": 102.08954541,
+      "stop": 98.80525211,
+      "target": 102.08950036,
       "rr": 2.0,
-      "atr": 0.54738597,
+      "atr": 0.54737471,
       "atr_pct": 0.55,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
@@ -2134,15 +2134,15 @@
       "label": "Or / Dollar",
       "klass": "forex",
       "direction": "neutre",
-      "score": 35.92,
-      "raw_score": 60.13,
+      "score": 35.93,
+      "raw_score": 60.14,
       "price": 3898.89990234,
       "regime": {
         "name": "tendance_baissière",
-        "trend_strength": 0.809,
+        "trend_strength": 0.773,
         "hurst": 0.614,
-        "vol_percentile": 0.824,
-        "quality": 0.791,
+        "vol_percentile": 0.818,
+        "quality": 0.79,
         "choppiness": 29.4,
         "variance_ratio": 1.007,
         "confidence_mult": 0.832
@@ -2150,30 +2150,30 @@
       "factors": [
         {
           "name": "trend",
-          "value": -0.7129,
+          "value": -0.713,
           "weight": -0.295,
           "detail": "EMA 20/50/200 alignées · prix à -5.1 ATR de l'EMA 50 · pente -0.10 %/bougie (R²=0.79)",
           "contribution": 0.2103
         },
         {
           "name": "momentum",
-          "value": -0.6826,
+          "value": -0.683,
           "weight": 0.0,
-          "detail": "MACD hist z=-1.67 · RSI 22 · ROC(10) -2.3 %",
+          "detail": "MACD hist z=-1.66 · RSI 22 · ROC(10) -2.3 %",
           "contribution": -0.0
         },
         {
           "name": "mean_reversion",
-          "value": 0.8087,
+          "value": 0.81,
           "weight": 0.15,
           "detail": "%B=0.17 · RSI 22 · écart VWAP -2.8 ATR",
-          "contribution": 0.1213
+          "contribution": 0.1215
         },
         {
           "name": "volume",
-          "value": 0.4463,
+          "value": 0.478,
           "weight": 0.0,
-          "detail": "volume z=-1.28 · variation 5 bougies -0.2 % · pente OBV +7.92",
+          "detail": "volume z=-1.28 · variation 5 bougies -0.2 % · pente OBV +8.06",
           "contribution": 0.0
         },
         {
@@ -2199,16 +2199,16 @@
         }
       ],
       "entry": 3898.89990234,
-      "stop": 3866.33874397,
-      "target": 3964.02221908,
+      "stop": 3866.50109478,
+      "target": 3963.69751748,
       "rr": 2.0,
-      "atr": 18.08953243,
+      "atr": 17.99933754,
       "atr_pct": 0.46,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": 0.32,
+      "news_score": 0.318,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
@@ -2251,20 +2251,20 @@
         "vol_percentile": 0.997,
         "quality": 0.795,
         "choppiness": 34.8,
-        "variance_ratio": 0.865,
+        "variance_ratio": 0.863,
         "confidence_mult": 0.816
       },
       "factors": [
         {
           "name": "trend",
-          "value": 0.8183,
+          "value": 0.8184,
           "weight": -0.295,
           "detail": "EMA 20/50/200 alignées · prix à +5.1 ATR de l'EMA 50 · pente +0.34 %/bougie (R²=0.79)",
           "contribution": -0.2414
         },
         {
           "name": "momentum",
-          "value": 0.4999,
+          "value": 0.5003,
           "weight": 0.0,
           "detail": "MACD hist z=+0.22 · RSI 71 · ROC(10) +3.9 %",
           "contribution": 0.0
@@ -2278,9 +2278,9 @@
         },
         {
           "name": "volume",
-          "value": 0.4438,
+          "value": 0.4439,
           "weight": 0.0,
-          "detail": "volume z=-1.06 · variation 5 bougies -0.5 % · pente OBV +4.33",
+          "detail": "volume z=-1.06 · variation 5 bougies -0.5 % · pente OBV +4.34",
           "contribution": 0.0
         },
         {
@@ -2306,16 +2306,16 @@
         }
       ],
       "entry": 1417.54003906,
-      "stop": 1459.01811452,
-      "target": 1334.58388814,
+      "stop": 1458.97112048,
+      "target": 1334.67787622,
       "rr": 2.0,
-      "atr": 16.59123018,
+      "atr": 16.57243257,
       "atr_pct": 1.17,
       "timeframe": "1h",
       "htf_alignment": "short",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "short",
       "actionable": false,
       "win_prob": 0.333,
@@ -2379,16 +2379,16 @@
         },
         {
           "name": "mean_reversion",
-          "value": 0.6908,
+          "value": 0.6906,
           "weight": 0.15,
-          "detail": "%B=0.33 · RSI 25 · écart VWAP -2.3 ATR",
+          "detail": "%B=0.33 · RSI 25 · écart VWAP -2.2 ATR",
           "contribution": 0.1036
         },
         {
           "name": "volume",
-          "value": -0.303,
+          "value": -0.3463,
           "weight": 0.0,
-          "detail": "volume z=-0.88 · variation 5 bougies -0.3 % · pente OBV -9.79",
+          "detail": "volume z=-0.88 · variation 5 bougies -0.3 % · pente OBV -9.76",
           "contribution": -0.0
         },
         {
@@ -2414,16 +2414,16 @@
         }
       ],
       "entry": 279.83999634,
-      "stop": 271.15053618,
-      "target": 297.21891665,
+      "stop": 271.12718524,
+      "target": 297.26561854,
       "rr": 2.0,
-      "atr": 3.47578406,
-      "atr_pct": 1.24,
+      "atr": 3.48512444,
+      "atr_pct": 1.25,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
@@ -2529,9 +2529,9 @@
       "atr_pct": 0.53,
       "timeframe": "1h",
       "htf_alignment": "short",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "short",
       "actionable": false,
       "win_prob": 0.333,
@@ -2580,7 +2580,7 @@
       "factors": [
         {
           "name": "trend",
-          "value": -0.6903,
+          "value": -0.6902,
           "weight": -0.295,
           "detail": "EMA 20/50/200 alignées · prix à -4.2 ATR de l'EMA 50 · pente -0.13 %/bougie (R²=0.40)",
           "contribution": 0.2036
@@ -2601,10 +2601,10 @@
         },
         {
           "name": "volume",
-          "value": -0.1693,
+          "value": 0.2408,
           "weight": 0.0,
-          "detail": "volume z=-1.68 · variation 5 bougies -0.0 % · pente OBV -1.59",
-          "contribution": -0.0
+          "detail": "volume z=-1.68 · variation 5 bougies -0.0 % · pente OBV +3.15",
+          "contribution": 0.0
         },
         {
           "name": "breakout",
@@ -2629,16 +2629,16 @@
         }
       ],
       "entry": 204.63999939,
-      "stop": 199.80863933,
-      "target": 214.30271951,
+      "stop": 199.80863086,
+      "target": 214.30273645,
       "rr": 2.0,
-      "atr": 1.93254402,
+      "atr": 1.93254741,
       "atr_pct": 0.94,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
@@ -2658,7 +2658,7 @@
         "ampleur": 0.75,
         "retention": 1.075,
         "position_range": 0.46,
-        "volume_rel": 0.45,
+        "volume_rel": 0.44,
         "etat": "baisse ordinaire",
         "rendu": false
       },
@@ -2681,7 +2681,7 @@
         "vol_percentile": 0.418,
         "quality": 0.794,
         "choppiness": 62.6,
-        "variance_ratio": 0.634,
+        "variance_ratio": 0.635,
         "confidence_mult": 0.925
       },
       "factors": [
@@ -2736,16 +2736,16 @@
         }
       ],
       "entry": 52.74000168,
-      "stop": 53.25238138,
-      "target": 51.71524227,
+      "stop": 53.2523764,
+      "target": 51.71525224,
       "rr": 2.0,
-      "atr": 0.25618985,
+      "atr": 0.25618736,
       "atr_pct": 0.49,
       "timeframe": "1h",
       "htf_alignment": "short",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "short",
       "actionable": false,
       "win_prob": 0.333,
@@ -2815,9 +2815,9 @@
         },
         {
           "name": "volume",
-          "value": 0.2928,
+          "value": 0.2927,
           "weight": 0.0,
-          "detail": "volume z=-1.70 · variation 5 bougies -0.4 % · pente OBV +4.17",
+          "detail": "volume z=-1.70 · variation 5 bougies -0.4 % · pente OBV +4.18",
           "contribution": 0.0
         },
         {
@@ -2850,9 +2850,9 @@
       "atr_pct": 0.42,
       "timeframe": "1h",
       "htf_alignment": "short",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "short",
       "actionable": false,
       "win_prob": 0.333,
@@ -2883,46 +2883,46 @@
       "label": "Microsoft",
       "klass": "action",
       "direction": "neutre",
-      "score": 25.45,
-      "raw_score": 44.5,
+      "score": 25.42,
+      "raw_score": 44.45,
       "price": 521.90997314,
       "regime": {
         "name": "chaotique",
         "trend_strength": 0.429,
         "hurst": 0.53,
-        "vol_percentile": 0.566,
-        "quality": 0.256,
+        "vol_percentile": 0.537,
+        "quality": 0.261,
         "choppiness": 51.7,
-        "variance_ratio": 1.046,
+        "variance_ratio": 1.061,
         "confidence_mult": 0.473
       },
       "factors": [
         {
           "name": "trend",
-          "value": -0.3694,
+          "value": -0.369,
           "weight": -0.295,
           "detail": "EMA partiellement alignées · prix à -1.2 ATR de l'EMA 50 · pente -0.03 %/bougie (R²=0.26)",
-          "contribution": 0.109
+          "contribution": 0.1089
         },
         {
           "name": "momentum",
-          "value": -0.3256,
+          "value": -0.3259,
           "weight": 0.0,
-          "detail": "MACD hist z=-0.67 · RSI 42 · ROC(10) -1.2 %",
+          "detail": "MACD hist z=-0.66 · RSI 42 · ROC(10) -1.2 %",
           "contribution": -0.0
         },
         {
           "name": "mean_reversion",
-          "value": 0.4722,
+          "value": 0.4696,
           "weight": 0.15,
-          "detail": "%B=0.25 · RSI 42 · écart VWAP -1.0 ATR",
-          "contribution": 0.0708
+          "detail": "%B=0.25 · RSI 42 · écart VWAP -0.9 ATR",
+          "contribution": 0.0704
         },
         {
           "name": "volume",
-          "value": -0.366,
+          "value": -0.3526,
           "weight": 0.0,
-          "detail": "volume z=-1.17 · variation 5 bougies -0.3 % · pente OBV -3.17",
+          "detail": "volume z=-1.18 · variation 5 bougies -0.3 % · pente OBV -3.36",
           "contribution": -0.0
         },
         {
@@ -2948,16 +2948,16 @@
         }
       ],
       "entry": 521.90997314,
-      "stop": 511.35593373,
-      "target": 543.01805197,
+      "stop": 511.356299,
+      "target": 543.01732143,
       "rr": 2.0,
-      "atr": 4.22161576,
+      "atr": 4.22146966,
       "atr_pct": 0.81,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
@@ -2988,40 +2988,40 @@
       "label": "Amazon",
       "klass": "action",
       "direction": "neutre",
-      "score": 24.17,
-      "raw_score": 40.75,
+      "score": 24.16,
+      "raw_score": 40.74,
       "price": 240.3500061,
       "regime": {
         "name": "tendance_baissière",
         "trend_strength": 0.917,
-        "hurst": 0.526,
-        "vol_percentile": 0.863,
+        "hurst": 0.525,
+        "vol_percentile": 0.866,
         "quality": 0.415,
-        "choppiness": 30.9,
-        "variance_ratio": 1.087,
+        "choppiness": 31.0,
+        "variance_ratio": 1.085,
         "confidence_mult": 0.877
       },
       "factors": [
         {
           "name": "trend",
-          "value": -0.6599,
+          "value": -0.6598,
           "weight": -0.295,
           "detail": "EMA 20/50/200 alignées · prix à -2.8 ATR de l'EMA 50 · pente -0.12 %/bougie (R²=0.42)",
-          "contribution": 0.1947
+          "contribution": 0.1946
         },
         {
           "name": "momentum",
-          "value": -0.3248,
+          "value": -0.3234,
           "weight": 0.0,
           "detail": "MACD hist z=-0.08 · RSI 35 · ROC(10) -1.8 %",
           "contribution": -0.0
         },
         {
           "name": "mean_reversion",
-          "value": 0.4761,
+          "value": 0.4753,
           "weight": 0.15,
           "detail": "%B=0.29 · RSI 35 · écart VWAP -0.7 ATR",
-          "contribution": 0.0714
+          "contribution": 0.0713
         },
         {
           "name": "volume",
@@ -3053,16 +3053,16 @@
         }
       ],
       "entry": 240.3500061,
-      "stop": 233.29507173,
-      "target": 254.45987486,
+      "stop": 233.28397963,
+      "target": 254.48205906,
       "rr": 2.0,
-      "atr": 2.82197375,
-      "atr_pct": 1.17,
+      "atr": 2.82641059,
+      "atr_pct": 1.18,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
@@ -3095,8 +3095,8 @@
       "label": "S&P 500",
       "klass": "index",
       "direction": "neutre",
-      "score": 23.62,
-      "raw_score": 53.11,
+      "score": 23.84,
+      "raw_score": 53.52,
       "price": 7580.06982422,
       "regime": {
         "name": "chaotique",
@@ -3125,17 +3125,17 @@
         },
         {
           "name": "mean_reversion",
-          "value": 0.7146,
+          "value": 0.7179,
           "weight": 0.15,
-          "detail": "%B=0.20 · RSI 34 · écart VWAP -2.8 ATR",
-          "contribution": 0.1072
+          "detail": "%B=0.20 · RSI 34 · écart VWAP -2.9 ATR",
+          "contribution": 0.1077
         },
         {
           "name": "volume",
-          "value": -0.0975,
+          "value": 0.2794,
           "weight": 0.0,
-          "detail": "volume z=-1.93 · variation 5 bougies -0.3 % · pente OBV -3.26",
-          "contribution": -0.0
+          "detail": "volume z=-2.04 · variation 5 bougies -0.3 % · pente OBV +2.86",
+          "contribution": 0.0
         },
         {
           "name": "breakout",
@@ -3153,10 +3153,10 @@
         },
         {
           "name": "sentiment",
-          "value": -0.524,
+          "value": -0.475,
           "weight": 0.1,
-          "detail": "3 article(s), sentiment pondéré -0.52",
-          "contribution": -0.0524
+          "detail": "3 article(s), sentiment pondéré -0.47",
+          "contribution": -0.0475
         }
       ],
       "entry": 7580.06982422,
@@ -3167,9 +3167,9 @@
       "atr_pct": 0.37,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": -0.524,
+      "news_score": -0.475,
       "news_count": 3,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
@@ -3189,7 +3189,7 @@
         "ampleur": 0.9,
         "retention": 1.259,
         "position_range": 0.478,
-        "volume_rel": 0.48,
+        "volume_rel": 0.5,
         "etat": "baisse ordinaire",
         "rendu": false
       },
@@ -3198,119 +3198,12 @@
       ]
     },
     {
-      "symbol": "SOL-USD",
-      "label": "Solana",
-      "klass": "crypto",
-      "direction": "neutre",
-      "score": 23.32,
-      "raw_score": 46.16,
-      "price": 95.74,
-      "regime": {
-        "name": "range",
-        "trend_strength": 0.37,
-        "hurst": 0.501,
-        "vol_percentile": 0.076,
-        "quality": 0.039,
-        "choppiness": 49.8,
-        "variance_ratio": 1.179,
-        "confidence_mult": 0.732
-      },
-      "factors": [
-        {
-          "name": "trend",
-          "value": -0.5623,
-          "weight": -0.295,
-          "detail": "EMA 20/50/200 alignées · prix à -1.7 ATR de l'EMA 50 · pente -0.02 %/bougie (R²=0.04)",
-          "contribution": 0.1659
-        },
-        {
-          "name": "momentum",
-          "value": 0.0051,
-          "weight": 0.0,
-          "detail": "MACD hist z=+0.40 · RSI 46 · ROC(10) -0.3 %",
-          "contribution": 0.0
-        },
-        {
-          "name": "mean_reversion",
-          "value": 0.242,
-          "weight": 0.15,
-          "detail": "%B=0.39 · RSI 46 · écart VWAP -0.4 ATR",
-          "contribution": 0.0363
-        },
-        {
-          "name": "volume",
-          "value": -0.0811,
-          "weight": 0.0,
-          "detail": "volume z=-1.48 · variation 5 bougies +0.1 % · pente OBV -0.57",
-          "contribution": -0.0
-        },
-        {
-          "name": "breakout",
-          "value": 0.0291,
-          "weight": -0.165,
-          "detail": "dans le canal, position 55 %",
-          "contribution": -0.0048
-        },
-        {
-          "name": "structure",
-          "value": -0.9502,
-          "weight": -0.29,
-          "detail": "Supertrend baissier · sous le nuage Ichimoku",
-          "contribution": 0.2756
-        },
-        {
-          "name": "sentiment",
-          "value": 0.0,
-          "weight": 0.1,
-          "detail": "aucune actualité rattachée",
-          "contribution": 0.0
-        }
-      ],
-      "entry": 95.74,
-      "stop": 94.4399765,
-      "target": 98.340047,
-      "rr": 2.0,
-      "atr": 0.65001175,
-      "atr_pct": 0.68,
-      "timeframe": "1h",
-      "htf_alignment": "long",
-      "news_score": -0.249,
-      "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
-      "bias": "long",
-      "actionable": false,
-      "win_prob": 0.333,
-      "expected_r": -0.074,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "plan_alternatives": [],
-      "mouvement": {
-        "disponible": true,
-        "var_1h": -0.01,
-        "var_24h": 0.9,
-        "var_7j": -4.05,
-        "amplitude_pct": 3.62,
-        "amplitude_ref_pct": 4.07,
-        "ampleur": 0.89,
-        "retention": 0.247,
-        "position_range": 0.611,
-        "volume_rel": 0.79,
-        "etat": "hausse ordinaire",
-        "rendu": false
-      },
-      "warnings": [
-        "signal contraire à l'unité de temps supérieure (unité supérieure baissière (biais -1.00))"
-      ]
-    },
-    {
       "symbol": "USDJPY",
       "label": "Dollar / Yen",
       "klass": "forex",
       "direction": "neutre",
-      "score": 20.97,
-      "raw_score": 31.63,
+      "score": 22.22,
+      "raw_score": 33.42,
       "price": 157.51899719,
       "regime": {
         "name": "tendance_baissière",
@@ -3367,10 +3260,10 @@
         },
         {
           "name": "sentiment",
-          "value": -0.19,
+          "value": 0.0,
           "weight": 0.1,
-          "detail": "1 article(s), sentiment pondéré -0.19",
-          "contribution": -0.019
+          "detail": "aucune actualité rattachée",
+          "contribution": 0.0
         }
       ],
       "entry": 157.51899719,
@@ -3381,9 +3274,9 @@
       "atr_pct": 0.15,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": -0.19,
-      "news_count": 1,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "news_score": -0.141,
+      "news_count": 0,
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
@@ -3412,65 +3305,65 @@
       ]
     },
     {
-      "symbol": "XRP-USD",
-      "label": "XRP",
+      "symbol": "SOL-USD",
+      "label": "Solana",
       "klass": "crypto",
       "direction": "neutre",
-      "score": 18.68,
-      "raw_score": 43.26,
-      "price": 1.2486,
+      "score": 21.25,
+      "raw_score": 41.49,
+      "price": 96.02,
       "regime": {
         "name": "range",
-        "trend_strength": 0.3,
-        "hurst": 0.582,
-        "vol_percentile": 0.008,
-        "quality": 0.066,
-        "choppiness": 52.8,
-        "variance_ratio": 1.019,
-        "confidence_mult": 0.628
+        "trend_strength": 0.302,
+        "hurst": 0.49,
+        "vol_percentile": 0.013,
+        "quality": 0.114,
+        "choppiness": 57.9,
+        "variance_ratio": 1.184,
+        "confidence_mult": 0.752
       },
       "factors": [
         {
           "name": "trend",
-          "value": -0.543,
+          "value": -0.5179,
           "weight": -0.295,
-          "detail": "EMA 20/50/200 alignées · prix à -1.5 ATR de l'EMA 50 · pente +0.02 %/bougie (R²=0.07)",
-          "contribution": 0.1602
+          "detail": "EMA 20/50/200 alignées · prix à -1.2 ATR de l'EMA 50 · pente -0.03 %/bougie (R²=0.11)",
+          "contribution": 0.1528
         },
         {
           "name": "momentum",
-          "value": 0.0033,
+          "value": 0.0965,
           "weight": 0.0,
-          "detail": "MACD hist z=+0.25 · RSI 47 · ROC(10) +0.1 %",
+          "detail": "MACD hist z=+0.38 · RSI 49 · ROC(10) +0.5 %",
           "contribution": 0.0
         },
         {
           "name": "mean_reversion",
-          "value": 0.2117,
+          "value": 0.0849,
           "weight": 0.15,
-          "detail": "%B=0.37 · RSI 47 · écart VWAP -0.3 ATR",
-          "contribution": 0.0318
+          "detail": "%B=0.51 · RSI 49 · écart VWAP -0.4 ATR",
+          "contribution": 0.0127
         },
         {
           "name": "volume",
-          "value": -0.0125,
+          "value": -0.118,
           "weight": 0.0,
-          "detail": "volume z=-1.40 · variation 5 bougies +0.0 % · pente OBV -0.11",
+          "detail": "volume z=-1.35 · variation 5 bougies +0.3 % · pente OBV -0.79",
           "contribution": -0.0
         },
         {
           "name": "breakout",
-          "value": -0.0468,
+          "value": -0.0452,
           "weight": -0.165,
           "detail": "dans le canal, position 42 % · compression Bollinger (percentile 5 %)",
-          "contribution": 0.0077
+          "contribution": 0.0075
         },
         {
           "name": "structure",
-          "value": -0.8237,
+          "value": -0.8455,
           "weight": -0.29,
           "detail": "Supertrend baissier · sous le nuage Ichimoku",
-          "contribution": 0.2389
+          "contribution": 0.2452
         },
         {
           "name": "sentiment",
@@ -3480,21 +3373,21 @@
           "contribution": 0.0
         }
       ],
-      "entry": 1.2486,
-      "stop": 1.23489229,
-      "target": 1.27601541,
+      "entry": 96.02,
+      "stop": 94.88233486,
+      "target": 98.29533028,
       "rr": 2.0,
-      "atr": 0.00685385,
-      "atr_pct": 0.55,
+      "atr": 0.56883257,
+      "atr_pct": 0.59,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": -0.213,
+      "news_score": -0.247,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
-      "expected_r": -0.501,
+      "expected_r": -0.084,
       "stop_basis": "plan fixe (2.0 ATR)",
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
@@ -3502,16 +3395,16 @@
       "plan_alternatives": [],
       "mouvement": {
         "disponible": true,
-        "var_1h": -0.1,
-        "var_24h": -0.51,
-        "var_7j": -1.55,
-        "amplitude_pct": 2.31,
-        "amplitude_ref_pct": 4.23,
-        "ampleur": 0.55,
-        "retention": 0.22,
-        "position_range": 0.509,
-        "volume_rel": 0.5,
-        "etat": "journée calme",
+        "var_1h": -0.02,
+        "var_24h": 1.3,
+        "var_7j": -5.09,
+        "amplitude_pct": 3.11,
+        "amplitude_ref_pct": 4.04,
+        "ampleur": 0.77,
+        "retention": 0.417,
+        "position_range": 0.642,
+        "volume_rel": 0.59,
+        "etat": "hausse ordinaire",
         "rendu": false
       },
       "warnings": [
@@ -3595,9 +3488,9 @@
       "atr_pct": 0.58,
       "timeframe": "1h",
       "htf_alignment": "short",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "short",
       "actionable": false,
       "win_prob": 0.333,
@@ -3660,7 +3553,7 @@
         },
         {
           "name": "mean_reversion",
-          "value": -0.6967,
+          "value": -0.6968,
           "weight": 0.15,
           "detail": "%B=0.87 · RSI 64 · écart VWAP +1.9 ATR",
           "contribution": -0.1045
@@ -3695,16 +3588,16 @@
         }
       ],
       "entry": 187.25,
-      "stop": 190.72440754,
-      "target": 180.30118492,
+      "stop": 190.72386222,
+      "target": 180.30227556,
       "rr": 2.0,
-      "atr": 1.38976302,
+      "atr": 1.38954489,
       "atr_pct": 0.74,
       "timeframe": "1h",
       "htf_alignment": "short",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "short",
       "actionable": false,
       "win_prob": 0.333,
@@ -3745,8 +3638,8 @@
         "trend_strength": 0.368,
         "hurst": 0.514,
         "vol_percentile": 0.558,
-        "quality": 0.045,
-        "choppiness": 45.9,
+        "quality": 0.044,
+        "choppiness": 45.8,
         "variance_ratio": 0.683,
         "confidence_mult": 0.734
       },
@@ -3760,7 +3653,7 @@
         },
         {
           "name": "momentum",
-          "value": -0.4395,
+          "value": -0.4397,
           "weight": 0.0,
           "detail": "MACD hist z=-1.64 · RSI 44 · ROC(10) -1.5 %",
           "contribution": -0.0
@@ -3774,9 +3667,9 @@
         },
         {
           "name": "volume",
-          "value": -0.0724,
+          "value": -0.0859,
           "weight": 0.0,
-          "detail": "volume z=-1.72 · variation 5 bougies -0.8 % · pente OBV -0.56",
+          "detail": "volume z=-1.72 · variation 5 bougies -0.8 % · pente OBV -0.67",
           "contribution": -0.0
         },
         {
@@ -3802,16 +3695,16 @@
         }
       ],
       "entry": 344.63000488,
-      "stop": 339.43792965,
-      "target": 355.01415535,
+      "stop": 339.43970473,
+      "target": 355.01060519,
       "rr": 2.0,
-      "atr": 2.07683009,
+      "atr": 2.07612006,
       "atr_pct": 0.6,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
@@ -3838,226 +3731,12 @@
       "warnings": []
     },
     {
-      "symbol": "BNB-USD",
-      "label": "BNB",
-      "klass": "crypto",
-      "direction": "neutre",
-      "score": 16.66,
-      "raw_score": 33.77,
-      "price": 706.67,
-      "regime": {
-        "name": "range",
-        "trend_strength": 0.346,
-        "hurst": 0.534,
-        "vol_percentile": 0.532,
-        "quality": 0.055,
-        "choppiness": 51.9,
-        "variance_ratio": 0.906,
-        "confidence_mult": 0.736
-      },
-      "factors": [
-        {
-          "name": "trend",
-          "value": -0.5116,
-          "weight": -0.295,
-          "detail": "EMA 20/50/200 alignées · prix à -1.2 ATR de l'EMA 50 · pente -0.02 %/bougie (R²=0.05)",
-          "contribution": 0.1509
-        },
-        {
-          "name": "momentum",
-          "value": 0.2124,
-          "weight": 0.0,
-          "detail": "MACD hist z=+0.78 · RSI 52 · ROC(10) +0.4 %",
-          "contribution": 0.0
-        },
-        {
-          "name": "mean_reversion",
-          "value": -0.3488,
-          "weight": 0.15,
-          "detail": "%B=0.75 · RSI 52 · écart VWAP +0.7 ATR",
-          "contribution": -0.0523
-        },
-        {
-          "name": "volume",
-          "value": 0.0025,
-          "weight": 0.0,
-          "detail": "volume z=-1.20 · variation 5 bougies +0.3 % · pente OBV +0.09",
-          "contribution": 0.0
-        },
-        {
-          "name": "breakout",
-          "value": 0.1317,
-          "weight": -0.165,
-          "detail": "dans le canal, position 72 %",
-          "contribution": -0.0217
-        },
-        {
-          "name": "structure",
-          "value": -0.8827,
-          "weight": -0.29,
-          "detail": "Supertrend baissier · sous le nuage Ichimoku",
-          "contribution": 0.256
-        },
-        {
-          "name": "sentiment",
-          "value": 0.0,
-          "weight": 0.1,
-          "detail": "aucune actualité rattachée",
-          "contribution": 0.0
-        }
-      ],
-      "entry": 706.67,
-      "stop": 698.51631232,
-      "target": 722.97737536,
-      "rr": 2.0,
-      "atr": 4.07684384,
-      "atr_pct": 0.58,
-      "timeframe": "1h",
-      "htf_alignment": "long",
-      "news_score": -0.213,
-      "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
-      "bias": "long",
-      "actionable": false,
-      "win_prob": 0.333,
-      "expected_r": -0.087,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "plan_alternatives": [],
-      "mouvement": {
-        "disponible": true,
-        "var_1h": -0.14,
-        "var_24h": 0.92,
-        "var_7j": -2.07,
-        "amplitude_pct": 2.1,
-        "amplitude_ref_pct": 2.67,
-        "ampleur": 0.79,
-        "retention": 0.438,
-        "position_range": 0.719,
-        "volume_rel": 0.98,
-        "etat": "hausse ordinaire",
-        "rendu": false
-      },
-      "warnings": [
-        "signal contraire à l'unité de temps supérieure (unité supérieure baissière (biais -1.00))"
-      ]
-    },
-    {
-      "symbol": "BTC-USD",
-      "label": "Bitcoin",
-      "klass": "crypto",
-      "direction": "neutre",
-      "score": 15.91,
-      "raw_score": 31.82,
-      "price": 77436.15,
-      "regime": {
-        "name": "range",
-        "trend_strength": 0.308,
-        "hurst": 0.55,
-        "vol_percentile": 0.089,
-        "quality": 0.102,
-        "choppiness": 55.8,
-        "variance_ratio": 1.129,
-        "confidence_mult": 0.749
-      },
-      "factors": [
-        {
-          "name": "trend",
-          "value": -0.5771,
-          "weight": -0.295,
-          "detail": "EMA 20/50/200 alignées · prix à -1.8 ATR de l'EMA 50 · pente -0.02 %/bougie (R²=0.10)",
-          "contribution": 0.1702
-        },
-        {
-          "name": "momentum",
-          "value": 0.1102,
-          "weight": 0.0,
-          "detail": "MACD hist z=+0.71 · RSI 47 · ROC(10) +0.2 %",
-          "contribution": 0.0
-        },
-        {
-          "name": "mean_reversion",
-          "value": -0.136,
-          "weight": 0.15,
-          "detail": "%B=0.61 · RSI 47 · écart VWAP +0.4 ATR",
-          "contribution": -0.0204
-        },
-        {
-          "name": "volume",
-          "value": -0.0107,
-          "weight": 0.0,
-          "detail": "volume z=-1.45 · variation 5 bougies +0.0 % · pente OBV -0.18",
-          "contribution": -0.0
-        },
-        {
-          "name": "breakout",
-          "value": 0.1654,
-          "weight": -0.165,
-          "detail": "dans le canal, position 78 %",
-          "contribution": -0.0273
-        },
-        {
-          "name": "structure",
-          "value": -0.9883,
-          "weight": -0.29,
-          "detail": "Supertrend baissier · sous le nuage Ichimoku",
-          "contribution": 0.2866
-        },
-        {
-          "name": "sentiment",
-          "value": -0.97,
-          "weight": 0.1,
-          "detail": "9 article(s), sentiment pondéré -0.97",
-          "contribution": -0.097
-        }
-      ],
-      "entry": 77436.15,
-      "stop": 76810.52566882,
-      "target": 78687.39866235,
-      "rr": 2.0,
-      "atr": 312.81216559,
-      "atr_pct": 0.4,
-      "timeframe": "1h",
-      "htf_alignment": "long",
-      "news_score": -0.97,
-      "news_count": 9,
-      "generated_at": "2026-10-31T15:03:48+00:00",
-      "bias": "long",
-      "actionable": false,
-      "win_prob": 0.333,
-      "expected_r": -0.124,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "plan_alternatives": [],
-      "mouvement": {
-        "disponible": true,
-        "var_1h": -0.0,
-        "var_24h": -0.24,
-        "var_7j": -2.97,
-        "amplitude_pct": 2.3,
-        "amplitude_ref_pct": 2.39,
-        "ampleur": 0.96,
-        "retention": 0.104,
-        "position_range": 0.622,
-        "volume_rel": 0.68,
-        "etat": "baisse ordinaire",
-        "rendu": false
-      },
-      "warnings": [
-        "signal contraire à l'unité de temps supérieure (unité supérieure baissière (biais -1.00))"
-      ]
-    },
-    {
       "symbol": "XLP",
       "label": "Consommation de base",
       "klass": "secteur",
       "direction": "neutre",
       "score": 14.79,
-      "raw_score": -45.84,
+      "raw_score": -45.83,
       "price": 89.41999817,
       "regime": {
         "name": "chaotique",
@@ -4086,10 +3765,10 @@
         },
         {
           "name": "mean_reversion",
-          "value": -0.7144,
+          "value": -0.7143,
           "weight": 0.15,
           "detail": "%B=0.76 · RSI 71 · écart VWAP +2.2 ATR",
-          "contribution": -0.1072
+          "contribution": -0.1071
         },
         {
           "name": "volume",
@@ -4128,9 +3807,9 @@
       "atr_pct": 0.42,
       "timeframe": "1h",
       "htf_alignment": "short",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "short",
       "actionable": false,
       "win_prob": 0.333,
@@ -4235,9 +3914,9 @@
       "atr_pct": 0.38,
       "timeframe": "1h",
       "htf_alignment": "short",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "short",
       "actionable": false,
       "win_prob": 0.333,
@@ -4276,7 +3955,7 @@
       "regime": {
         "name": "chaotique",
         "trend_strength": 0.772,
-        "hurst": 0.549,
+        "hurst": 0.55,
         "vol_percentile": 0.997,
         "quality": 0.115,
         "choppiness": 22.8,
@@ -4342,9 +4021,9 @@
       "atr_pct": 0.81,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
@@ -4374,119 +4053,12 @@
       ]
     },
     {
-      "symbol": "AVAX-USD",
-      "label": "Avalanche",
-      "klass": "crypto",
-      "direction": "neutre",
-      "score": 14.08,
-      "raw_score": 28.13,
-      "price": 8.501,
-      "regime": {
-        "name": "range",
-        "trend_strength": 0.211,
-        "hurst": 0.49,
-        "vol_percentile": 0.163,
-        "quality": 0.122,
-        "choppiness": 41.4,
-        "variance_ratio": 1.136,
-        "confidence_mult": 0.754
-      },
-      "factors": [
-        {
-          "name": "trend",
-          "value": -0.4129,
-          "weight": -0.295,
-          "detail": "EMA 20/50/200 alignées · prix à -0.5 ATR de l'EMA 50 · pente +0.04 %/bougie (R²=0.12)",
-          "contribution": 0.1218
-        },
-        {
-          "name": "momentum",
-          "value": 0.0243,
-          "weight": 0.0,
-          "detail": "MACD hist z=+0.10 · RSI 50 · ROC(10) -0.1 %",
-          "contribution": 0.0
-        },
-        {
-          "name": "mean_reversion",
-          "value": 0.0413,
-          "weight": 0.15,
-          "detail": "%B=0.47 · RSI 50 · écart VWAP -0.1 ATR",
-          "contribution": 0.0062
-        },
-        {
-          "name": "volume",
-          "value": 0.0006,
-          "weight": 0.0,
-          "detail": "volume z=-1.51 · variation 5 bougies +0.7 % · pente OBV +0.06",
-          "contribution": 0.0
-        },
-        {
-          "name": "breakout",
-          "value": -0.0048,
-          "weight": -0.165,
-          "detail": "dans le canal, position 49 %",
-          "contribution": 0.0008
-        },
-        {
-          "name": "structure",
-          "value": -0.5,
-          "weight": -0.29,
-          "detail": "Supertrend baissier · dans le nuage Ichimoku (indécision)",
-          "contribution": 0.145
-        },
-        {
-          "name": "sentiment",
-          "value": 0.0,
-          "weight": 0.1,
-          "detail": "aucune actualité rattachée",
-          "contribution": 0.0
-        }
-      ],
-      "entry": 8.501,
-      "stop": 8.3499603,
-      "target": 8.80307939,
-      "rr": 2.0,
-      "atr": 0.07551985,
-      "atr_pct": 0.89,
-      "timeframe": "1h",
-      "htf_alignment": "long",
-      "news_score": -0.249,
-      "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
-      "bias": "long",
-      "actionable": false,
-      "win_prob": 0.333,
-      "expected_r": -0.056,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "plan_alternatives": [],
-      "mouvement": {
-        "disponible": true,
-        "var_1h": -0.04,
-        "var_24h": 1.69,
-        "var_7j": -3.35,
-        "amplitude_pct": 4.91,
-        "amplitude_ref_pct": 5.4,
-        "ampleur": 0.91,
-        "retention": 0.344,
-        "position_range": 0.619,
-        "volume_rel": 1.09,
-        "etat": "hausse ordinaire",
-        "rendu": false
-      },
-      "warnings": [
-        "signal contraire à l'unité de temps supérieure (unité supérieure baissière (biais -1.00))"
-      ]
-    },
-    {
       "symbol": "NDX",
       "label": "Nasdaq Composite",
       "klass": "index",
       "direction": "neutre",
-      "score": 13.74,
-      "raw_score": 53.53,
+      "score": 13.9,
+      "raw_score": 54.04,
       "price": 25436.99804688,
       "regime": {
         "name": "chaotique",
@@ -4522,9 +4094,9 @@
         },
         {
           "name": "volume",
-          "value": -0.011,
+          "value": -0.1457,
           "weight": 0.0,
-          "detail": "volume z=-2.09 · variation 5 bougies -0.3 % · pente OBV -1.80",
+          "detail": "volume z=-2.09 · variation 5 bougies -0.3 % · pente OBV -2.68",
           "contribution": -0.0
         },
         {
@@ -4543,10 +4115,10 @@
         },
         {
           "name": "sentiment",
-          "value": -0.661,
+          "value": -0.593,
           "weight": 0.1,
-          "detail": "1 article(s), sentiment pondéré -0.66",
-          "contribution": -0.0661
+          "detail": "1 article(s), sentiment pondéré -0.59",
+          "contribution": -0.0593
         }
       ],
       "entry": 25436.99804688,
@@ -4557,9 +4129,9 @@
       "atr_pct": 0.57,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": -0.661,
+      "news_score": -0.593,
       "news_count": 1,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
@@ -4579,7 +4151,7 @@
         "ampleur": 0.83,
         "retention": 1.483,
         "position_range": 0.527,
-        "volume_rel": 0.33,
+        "volume_rel": 0.32,
         "etat": "baisse ordinaire",
         "rendu": false
       },
@@ -4589,196 +4161,89 @@
       ]
     },
     {
-      "symbol": "ETH-USD",
-      "label": "Ethereum",
+      "symbol": "BTC-USD",
+      "label": "Bitcoin",
       "klass": "crypto",
       "direction": "neutre",
-      "score": 13.46,
-      "raw_score": 29.1,
-      "price": 2246.74,
+      "score": 13.73,
+      "raw_score": 27.89,
+      "price": 77649.0,
       "regime": {
         "name": "range",
-        "trend_strength": 0.23,
+        "trend_strength": 0.252,
         "hurst": 0.536,
-        "vol_percentile": 0.005,
-        "quality": 0.371,
-        "choppiness": 58.3,
-        "variance_ratio": 0.923,
-        "confidence_mult": 0.695
+        "vol_percentile": 0.021,
+        "quality": 0.076,
+        "choppiness": 58.4,
+        "variance_ratio": 1.126,
+        "confidence_mult": 0.742
       },
       "factors": [
         {
           "name": "trend",
-          "value": -0.4972,
+          "value": -0.5087,
           "weight": -0.295,
-          "detail": "EMA 20/50/200 alignées · prix à -1.1 ATR de l'EMA 50 · pente +0.03 %/bougie (R²=0.37)",
-          "contribution": 0.1467
+          "detail": "EMA 20/50/200 alignées · prix à -1.2 ATR de l'EMA 50 · pente -0.01 %/bougie (R²=0.08)",
+          "contribution": 0.1501
         },
         {
           "name": "momentum",
-          "value": 0.0878,
+          "value": 0.1609,
           "weight": 0.0,
-          "detail": "MACD hist z=+0.41 · RSI 49 · ROC(10) +0.2 %",
+          "detail": "MACD hist z=+0.56 · RSI 52 · ROC(10) +0.2 %",
           "contribution": 0.0
         },
         {
           "name": "mean_reversion",
-          "value": -0.1384,
+          "value": -0.3541,
           "weight": 0.15,
-          "detail": "%B=0.62 · RSI 49 · écart VWAP +0.2 ATR",
-          "contribution": -0.0208
+          "detail": "%B=0.79 · RSI 52 · écart VWAP +0.6 ATR",
+          "contribution": -0.0531
         },
         {
           "name": "volume",
-          "value": 0.0225,
+          "value": -0.0311,
           "weight": 0.0,
-          "detail": "volume z=-0.85 · variation 5 bougies +0.1 % · pente OBV +0.47",
-          "contribution": 0.0
-        },
-        {
-          "name": "breakout",
-          "value": 0.1373,
-          "weight": -0.165,
-          "detail": "dans le canal, position 73 % · compression Bollinger (percentile 0 %)",
-          "contribution": -0.0227
-        },
-        {
-          "name": "structure",
-          "value": -0.7394,
-          "weight": -0.29,
-          "detail": "Supertrend baissier · sous le nuage Ichimoku",
-          "contribution": 0.2144
-        },
-        {
-          "name": "sentiment",
-          "value": -0.339,
-          "weight": 0.1,
-          "detail": "1 article(s), sentiment pondéré -0.34",
-          "contribution": -0.0339
-        }
-      ],
-      "entry": 2246.74,
-      "stop": 2224.94962202,
-      "target": 2290.32075596,
-      "rr": 2.0,
-      "atr": 10.89518899,
-      "atr_pct": 0.48,
-      "timeframe": "1h",
-      "htf_alignment": "long",
-      "news_score": -0.339,
-      "news_count": 1,
-      "generated_at": "2026-10-31T15:03:48+00:00",
-      "bias": "long",
-      "actionable": false,
-      "win_prob": 0.333,
-      "expected_r": -0.103,
-      "stop_basis": "plan fixe (2.0 ATR)",
-      "target_basis": "plan fixe (2.0 R)",
-      "stop_strength": 0.0,
-      "obstacle": 0.0,
-      "plan_alternatives": [],
-      "mouvement": {
-        "disponible": true,
-        "var_1h": 0.01,
-        "var_24h": 0.87,
-        "var_7j": -2.59,
-        "amplitude_pct": 2.0,
-        "amplitude_ref_pct": 3.68,
-        "ampleur": 0.54,
-        "retention": 0.432,
-        "position_range": 0.65,
-        "volume_rel": 0.84,
-        "etat": "journée calme",
-        "rendu": false
-      },
-      "warnings": [
-        "signal contraire à l'unité de temps supérieure (unité supérieure baissière (biais -1.00))"
-      ]
-    },
-    {
-      "symbol": "DOGE-USD",
-      "label": "Dogecoin",
-      "klass": "crypto",
-      "direction": "neutre",
-      "score": 13.28,
-      "raw_score": 44.02,
-      "price": 0.07544,
-      "regime": {
-        "name": "chaotique",
-        "trend_strength": 0.449,
-        "hurst": 0.562,
-        "vol_percentile": 0.013,
-        "quality": 0.012,
-        "choppiness": 45.9,
-        "variance_ratio": 0.999,
-        "confidence_mult": 0.435
-      },
-      "factors": [
-        {
-          "name": "trend",
-          "value": -0.538,
-          "weight": -0.295,
-          "detail": "EMA 20/50/200 alignées · prix à -1.4 ATR de l'EMA 50 · pente -0.01 %/bougie (R²=0.01)",
-          "contribution": 0.1587
-        },
-        {
-          "name": "momentum",
-          "value": 0.0508,
-          "weight": 0.0,
-          "detail": "MACD hist z=+0.45 · RSI 47 · ROC(10) +0.1 %",
-          "contribution": 0.0
-        },
-        {
-          "name": "mean_reversion",
-          "value": 0.0865,
-          "weight": 0.15,
-          "detail": "%B=0.47 · RSI 47 · écart VWAP -0.1 ATR",
-          "contribution": 0.013
-        },
-        {
-          "name": "volume",
-          "value": -0.0026,
-          "weight": 0.0,
-          "detail": "volume z=-1.40 · variation 5 bougies +0.4 % · pente OBV -0.07",
+          "detail": "volume z=-1.58 · variation 5 bougies +0.3 % · pente OBV -0.31",
           "contribution": -0.0
         },
         {
           "name": "breakout",
-          "value": -0.0206,
+          "value": 0.1981,
           "weight": -0.165,
-          "detail": "dans le canal, position 47 % · compression Bollinger (percentile 13 %)",
-          "contribution": 0.0034
+          "detail": "dans le canal, position 83 % · compression Bollinger (percentile 5 %)",
+          "contribution": -0.0327
         },
         {
           "name": "structure",
-          "value": -0.9391,
+          "value": -0.9602,
           "weight": -0.29,
           "detail": "Supertrend baissier · sous le nuage Ichimoku",
-          "contribution": 0.2723
+          "contribution": 0.2785
         },
         {
           "name": "sentiment",
-          "value": 0.0,
+          "value": -0.714,
           "weight": 0.1,
-          "detail": "aucune actualité rattachée",
-          "contribution": 0.0
+          "detail": "9 article(s), sentiment pondéré -0.71",
+          "contribution": -0.0714
         }
       ],
-      "entry": 0.07544,
-      "stop": 0.07452875,
-      "target": 0.07726251,
+      "entry": 77649.0,
+      "stop": 77100.91312337,
+      "target": 78745.17375327,
       "rr": 2.0,
-      "atr": 0.00045563,
-      "atr_pct": 0.6,
+      "atr": 274.04343832,
+      "atr_pct": 0.35,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": -0.302,
-      "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "news_score": -0.714,
+      "news_count": 9,
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
-      "expected_r": -0.455,
+      "expected_r": -0.142,
       "stop_basis": "plan fixe (2.0 ATR)",
       "target_basis": "plan fixe (2.0 R)",
       "stop_strength": 0.0,
@@ -4786,16 +4251,16 @@
       "plan_alternatives": [],
       "mouvement": {
         "disponible": true,
-        "var_1h": 0.05,
-        "var_24h": -0.57,
-        "var_7j": -0.33,
-        "amplitude_pct": 2.86,
-        "amplitude_ref_pct": 4.38,
-        "ampleur": 0.65,
-        "retention": 0.198,
-        "position_range": 0.426,
-        "volume_rel": 0.62,
-        "etat": "journée calme",
+        "var_1h": 0.02,
+        "var_24h": 0.92,
+        "var_7j": -3.53,
+        "amplitude_pct": 1.84,
+        "amplitude_ref_pct": 2.39,
+        "ampleur": 0.77,
+        "retention": 0.499,
+        "position_range": 0.897,
+        "volume_rel": 0.58,
+        "etat": "hausse ordinaire",
         "rendu": false
       },
       "warnings": [
@@ -4812,10 +4277,10 @@
       "price": 337.04000854,
       "regime": {
         "name": "tendance_haussière",
-        "trend_strength": 0.578,
+        "trend_strength": 0.579,
         "hurst": 0.49,
-        "vol_percentile": 0.821,
-        "quality": 0.416,
+        "vol_percentile": 0.818,
+        "quality": 0.417,
         "choppiness": 33.7,
         "variance_ratio": 0.671,
         "confidence_mult": 0.877
@@ -4830,21 +4295,21 @@
         },
         {
           "name": "momentum",
-          "value": -0.47,
+          "value": -0.4699,
           "weight": 0.0,
           "detail": "MACD hist z=-2.02 · RSI 44 · ROC(10) -1.6 %",
           "contribution": -0.0
         },
         {
           "name": "mean_reversion",
-          "value": 0.545,
+          "value": 0.5449,
           "weight": 0.15,
           "detail": "%B=0.23 · RSI 44 · écart VWAP -1.8 ATR",
-          "contribution": 0.0818
+          "contribution": 0.0817
         },
         {
           "name": "volume",
-          "value": -0.0685,
+          "value": -0.0684,
           "weight": 0.0,
           "detail": "volume z=-1.96 · variation 5 bougies -0.5 % · pente OBV -0.75",
           "contribution": -0.0
@@ -4872,16 +4337,16 @@
         }
       ],
       "entry": 337.04000854,
-      "stop": 332.36144586,
-      "target": 346.39713391,
+      "stop": 332.35892483,
+      "target": 346.40217598,
       "rr": 2.0,
-      "atr": 1.87142507,
+      "atr": 1.87243349,
       "atr_pct": 0.56,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
@@ -4986,9 +4451,9 @@
       "atr_pct": 0.45,
       "timeframe": "1h",
       "htf_alignment": "short",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "short",
       "actionable": false,
       "win_prob": 0.333,
@@ -5017,27 +4482,241 @@
       ]
     },
     {
+      "symbol": "BNB-USD",
+      "label": "BNB",
+      "klass": "crypto",
+      "direction": "neutre",
+      "score": 11.5,
+      "raw_score": 24.06,
+      "price": 707.57,
+      "regime": {
+        "name": "range",
+        "trend_strength": 0.297,
+        "hurst": 0.529,
+        "vol_percentile": 0.326,
+        "quality": 0.004,
+        "choppiness": 48.1,
+        "variance_ratio": 0.901,
+        "confidence_mult": 0.724
+      },
+      "factors": [
+        {
+          "name": "trend",
+          "value": -0.4771,
+          "weight": -0.295,
+          "detail": "EMA 20/50/200 alignées · prix à -0.9 ATR de l'EMA 50 · pente -0.00 %/bougie (R²=0.00)",
+          "contribution": 0.1407
+        },
+        {
+          "name": "momentum",
+          "value": 0.2208,
+          "weight": 0.0,
+          "detail": "MACD hist z=+0.59 · RSI 53 · ROC(10) +0.7 %",
+          "contribution": 0.0
+        },
+        {
+          "name": "mean_reversion",
+          "value": -0.388,
+          "weight": 0.15,
+          "detail": "%B=0.78 · RSI 53 · écart VWAP +0.7 ATR",
+          "contribution": -0.0582
+        },
+        {
+          "name": "volume",
+          "value": -0.0023,
+          "weight": 0.0,
+          "detail": "volume z=-1.54 · variation 5 bougies -0.0 % · pente OBV -0.08",
+          "contribution": -0.0
+        },
+        {
+          "name": "breakout",
+          "value": 0.1375,
+          "weight": -0.165,
+          "detail": "dans le canal, position 73 %",
+          "contribution": -0.0227
+        },
+        {
+          "name": "structure",
+          "value": -0.595,
+          "weight": -0.29,
+          "detail": "Supertrend baissier · sous le nuage Ichimoku",
+          "contribution": 0.1725
+        },
+        {
+          "name": "sentiment",
+          "value": 0.0,
+          "weight": 0.1,
+          "detail": "aucune actualité rattachée",
+          "contribution": 0.0
+        }
+      ],
+      "entry": 707.57,
+      "stop": 700.53612819,
+      "target": 721.63774362,
+      "rr": 2.0,
+      "atr": 3.51693591,
+      "atr_pct": 0.5,
+      "timeframe": "1h",
+      "htf_alignment": "long",
+      "news_score": -0.212,
+      "news_count": 0,
+      "generated_at": "2026-10-31T19:02:24+00:00",
+      "bias": "long",
+      "actionable": false,
+      "win_prob": 0.333,
+      "expected_r": -0.101,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "plan_alternatives": [],
+      "mouvement": {
+        "disponible": true,
+        "var_1h": -0.0,
+        "var_24h": 0.98,
+        "var_7j": -3.09,
+        "amplitude_pct": 2.1,
+        "amplitude_ref_pct": 2.66,
+        "ampleur": 0.79,
+        "retention": 0.467,
+        "position_range": 0.78,
+        "volume_rel": 0.81,
+        "etat": "hausse ordinaire",
+        "rendu": false
+      },
+      "warnings": [
+        "signal contraire à l'unité de temps supérieure (unité supérieure baissière (biais -1.00))"
+      ]
+    },
+    {
+      "symbol": "DOGE-USD",
+      "label": "Dogecoin",
+      "klass": "crypto",
+      "direction": "neutre",
+      "score": 11.14,
+      "raw_score": 26.27,
+      "price": 0.07592,
+      "regime": {
+        "name": "range",
+        "trend_strength": 0.34,
+        "hurst": 0.555,
+        "vol_percentile": 0.008,
+        "quality": 0.118,
+        "choppiness": 42.1,
+        "variance_ratio": 1.004,
+        "confidence_mult": 0.64
+      },
+      "factors": [
+        {
+          "name": "trend",
+          "value": -0.3923,
+          "weight": -0.295,
+          "detail": "EMA 20/50/200 alignées · prix à -0.4 ATR de l'EMA 50 · pente -0.01 %/bougie (R²=0.12)",
+          "contribution": 0.1157
+        },
+        {
+          "name": "momentum",
+          "value": 0.285,
+          "weight": 0.0,
+          "detail": "MACD hist z=+0.67 · RSI 55 · ROC(10) +1.1 %",
+          "contribution": 0.0
+        },
+        {
+          "name": "mean_reversion",
+          "value": -0.4534,
+          "weight": 0.15,
+          "detail": "%B=0.78 · RSI 55 · écart VWAP +0.9 ATR",
+          "contribution": -0.068
+        },
+        {
+          "name": "volume",
+          "value": -0.0114,
+          "weight": 0.0,
+          "detail": "volume z=-1.30 · variation 5 bougies +0.7 % · pente OBV -0.17",
+          "contribution": -0.0
+        },
+        {
+          "name": "breakout",
+          "value": 0.1012,
+          "weight": -0.165,
+          "detail": "dans le canal, position 67 %",
+          "contribution": -0.0167
+        },
+        {
+          "name": "structure",
+          "value": -0.7714,
+          "weight": -0.29,
+          "detail": "Supertrend baissier · sous le nuage Ichimoku",
+          "contribution": 0.2237
+        },
+        {
+          "name": "sentiment",
+          "value": 0.0,
+          "weight": 0.1,
+          "detail": "aucune actualité rattachée",
+          "contribution": 0.0
+        }
+      ],
+      "entry": 0.07592,
+      "stop": 0.07508149,
+      "target": 0.07759702,
+      "rr": 2.0,
+      "atr": 0.00041926,
+      "atr_pct": 0.55,
+      "timeframe": "1h",
+      "htf_alignment": "long",
+      "news_score": -0.3,
+      "news_count": 0,
+      "generated_at": "2026-10-31T19:02:24+00:00",
+      "bias": "long",
+      "actionable": false,
+      "win_prob": 0.333,
+      "expected_r": -0.498,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "plan_alternatives": [],
+      "mouvement": {
+        "disponible": true,
+        "var_1h": -0.04,
+        "var_24h": 0.66,
+        "var_7j": -1.56,
+        "amplitude_pct": 2.49,
+        "amplitude_ref_pct": 4.37,
+        "ampleur": 0.57,
+        "retention": 0.266,
+        "position_range": 0.72,
+        "volume_rel": 0.47,
+        "etat": "journée calme",
+        "rendu": false
+      },
+      "warnings": [
+        "signal contraire à l'unité de temps supérieure (unité supérieure baissière (biais -1.00))"
+      ]
+    },
+    {
       "symbol": "GBPUSD",
       "label": "Livre / Dollar",
       "klass": "forex",
       "direction": "neutre",
-      "score": 12.17,
-      "raw_score": -11.82,
+      "score": 10.23,
+      "raw_score": -9.94,
       "price": 1.33893895,
       "regime": {
         "name": "tendance_haussière",
         "trend_strength": 0.447,
         "hurst": 0.587,
         "vol_percentile": 0.792,
-        "quality": 0.657,
+        "quality": 0.656,
         "choppiness": 46.0,
-        "variance_ratio": 0.909,
+        "variance_ratio": 0.906,
         "confidence_mult": 1.0
       },
       "factors": [
         {
           "name": "trend",
-          "value": 0.5232,
+          "value": 0.523,
           "weight": -0.295,
           "detail": "EMA 20/50/200 alignées · prix à +1.2 ATR de l'EMA 50 · pente +0.02 %/bougie (R²=0.66)",
           "contribution": -0.1543
@@ -5051,7 +4730,7 @@
         },
         {
           "name": "mean_reversion",
-          "value": 0.2186,
+          "value": 0.2188,
           "weight": 0.15,
           "detail": "%B=0.30 · RSI 50",
           "contribution": 0.0328
@@ -5079,10 +4758,10 @@
         },
         {
           "name": "sentiment",
-          "value": -0.179,
+          "value": 0.0,
           "weight": 0.1,
-          "detail": "1 article(s), sentiment pondéré -0.18",
-          "contribution": -0.0179
+          "detail": "aucune actualité rattachée",
+          "contribution": 0.0
         }
       ],
       "entry": 1.33893895,
@@ -5093,9 +4772,9 @@
       "atr_pct": 0.1,
       "timeframe": "1h",
       "htf_alignment": "short",
-      "news_score": -0.179,
-      "news_count": 1,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "news_score": -0.124,
+      "news_count": 0,
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "short",
       "actionable": false,
       "win_prob": 0.333,
@@ -5120,6 +4799,220 @@
         "rendu": false
       },
       "warnings": []
+    },
+    {
+      "symbol": "XRP-USD",
+      "label": "XRP",
+      "klass": "crypto",
+      "direction": "neutre",
+      "score": 7.58,
+      "raw_score": 18.72,
+      "price": 1.2559,
+      "regime": {
+        "name": "range",
+        "trend_strength": 0.232,
+        "hurst": 0.577,
+        "vol_percentile": 0.008,
+        "quality": 0.015,
+        "choppiness": 54.6,
+        "variance_ratio": 1.017,
+        "confidence_mult": 0.617
+      },
+      "factors": [
+        {
+          "name": "trend",
+          "value": -0.4003,
+          "weight": -0.295,
+          "detail": "EMA 20/50/200 alignées · prix à -0.4 ATR de l'EMA 50 · pente -0.00 %/bougie (R²=0.02)",
+          "contribution": 0.1181
+        },
+        {
+          "name": "momentum",
+          "value": 0.1982,
+          "weight": 0.0,
+          "detail": "MACD hist z=+0.41 · RSI 55 · ROC(10) +0.6 %",
+          "contribution": 0.0
+        },
+        {
+          "name": "mean_reversion",
+          "value": -0.4405,
+          "weight": 0.15,
+          "detail": "%B=0.78 · RSI 55 · écart VWAP +0.9 ATR",
+          "contribution": -0.0661
+        },
+        {
+          "name": "volume",
+          "value": -0.012,
+          "weight": 0.0,
+          "detail": "volume z=-1.30 · variation 5 bougies +0.5 % · pente OBV -0.10",
+          "contribution": -0.0
+        },
+        {
+          "name": "breakout",
+          "value": 0.107,
+          "weight": -0.165,
+          "detail": "dans le canal, position 68 % · compression Bollinger (percentile 7 %)",
+          "contribution": -0.0177
+        },
+        {
+          "name": "structure",
+          "value": -0.5,
+          "weight": -0.29,
+          "detail": "Supertrend baissier · dans le nuage Ichimoku (indécision)",
+          "contribution": 0.145
+        },
+        {
+          "name": "sentiment",
+          "value": 0.0,
+          "weight": 0.1,
+          "detail": "aucune actualité rattachée",
+          "contribution": 0.0
+        }
+      ],
+      "entry": 1.2559,
+      "stop": 1.24360739,
+      "target": 1.28048522,
+      "rr": 2.0,
+      "atr": 0.0061463,
+      "atr_pct": 0.49,
+      "timeframe": "1h",
+      "htf_alignment": "long",
+      "news_score": -0.212,
+      "news_count": 0,
+      "generated_at": "2026-10-31T19:02:24+00:00",
+      "bias": "long",
+      "actionable": false,
+      "win_prob": 0.333,
+      "expected_r": -0.562,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "plan_alternatives": [],
+      "mouvement": {
+        "disponible": true,
+        "var_1h": 0.01,
+        "var_24h": 0.4,
+        "var_7j": -2.55,
+        "amplitude_pct": 1.89,
+        "amplitude_ref_pct": 4.23,
+        "ampleur": 0.45,
+        "retention": 0.212,
+        "position_range": 0.73,
+        "volume_rel": 0.37,
+        "etat": "journée calme",
+        "rendu": false
+      },
+      "warnings": [
+        "signal contraire à l'unité de temps supérieure (unité supérieure baissière (biais -1.00))"
+      ]
+    },
+    {
+      "symbol": "ETH-USD",
+      "label": "Ethereum",
+      "klass": "crypto",
+      "direction": "neutre",
+      "score": 5.78,
+      "raw_score": 12.57,
+      "price": 2255.74,
+      "regime": {
+        "name": "range",
+        "trend_strength": 0.217,
+        "hurst": 0.528,
+        "vol_percentile": 0.0,
+        "quality": 0.419,
+        "choppiness": 55.6,
+        "variance_ratio": 0.923,
+        "confidence_mult": 0.705
+      },
+      "factors": [
+        {
+          "name": "trend",
+          "value": -0.3759,
+          "weight": -0.295,
+          "detail": "EMA 20/50/200 alignées · prix à -0.3 ATR de l'EMA 50 · pente +0.02 %/bougie (R²=0.42)",
+          "contribution": 0.1109
+        },
+        {
+          "name": "momentum",
+          "value": 0.1937,
+          "weight": 0.0,
+          "detail": "MACD hist z=+0.36 · RSI 56 · ROC(10) +0.4 %",
+          "contribution": 0.0
+        },
+        {
+          "name": "mean_reversion",
+          "value": -0.4921,
+          "weight": 0.15,
+          "detail": "%B=0.90 · RSI 56 · écart VWAP +0.8 ATR",
+          "contribution": -0.0738
+        },
+        {
+          "name": "volume",
+          "value": 0.0001,
+          "weight": 0.0,
+          "detail": "volume z=-0.71 · variation 5 bougies +0.4 % · pente OBV +0.08",
+          "contribution": 0.0
+        },
+        {
+          "name": "breakout",
+          "value": 0.2127,
+          "weight": -0.165,
+          "detail": "dans le canal, position 85 % · compression Bollinger (percentile 2 %)",
+          "contribution": -0.0351
+        },
+        {
+          "name": "structure",
+          "value": -0.5134,
+          "weight": -0.29,
+          "detail": "Supertrend baissier · sous le nuage Ichimoku",
+          "contribution": 0.1489
+        },
+        {
+          "name": "sentiment",
+          "value": -0.312,
+          "weight": 0.1,
+          "detail": "1 article(s), sentiment pondéré -0.31",
+          "contribution": -0.0312
+        }
+      ],
+      "entry": 2255.74,
+      "stop": 2236.37822392,
+      "target": 2294.46355215,
+      "rr": 2.0,
+      "atr": 9.68088804,
+      "atr_pct": 0.43,
+      "timeframe": "1h",
+      "htf_alignment": "long",
+      "news_score": -0.312,
+      "news_count": 1,
+      "generated_at": "2026-10-31T19:02:24+00:00",
+      "bias": "long",
+      "actionable": false,
+      "win_prob": 0.333,
+      "expected_r": -0.117,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "plan_alternatives": [],
+      "mouvement": {
+        "disponible": true,
+        "var_1h": -0.0,
+        "var_24h": 0.69,
+        "var_7j": -3.59,
+        "amplitude_pct": 1.6,
+        "amplitude_ref_pct": 3.65,
+        "ampleur": 0.44,
+        "retention": 0.429,
+        "position_range": 0.906,
+        "volume_rel": 0.38,
+        "etat": "journée calme",
+        "rendu": false
+      },
+      "warnings": [
+        "signal contraire à l'unité de temps supérieure (unité supérieure baissière (biais -1.00))"
+      ]
     },
     {
       "symbol": "XLI",
@@ -5163,9 +5056,9 @@
         },
         {
           "name": "volume",
-          "value": -0.1645,
+          "value": -0.1892,
           "weight": 0.0,
-          "detail": "volume z=-1.91 · variation 5 bougies -0.6 % · pente OBV -1.08",
+          "detail": "volume z=-1.91 · variation 5 bougies -0.6 % · pente OBV -1.29",
           "contribution": -0.0
         },
         {
@@ -5198,9 +5091,9 @@
       "atr_pct": 0.47,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
@@ -5256,7 +5149,7 @@
         },
         {
           "name": "momentum",
-          "value": -0.235,
+          "value": -0.2349,
           "weight": 0.0,
           "detail": "MACD hist z=-0.89 · RSI 51 · ROC(10) -1.3 %",
           "contribution": -0.0
@@ -5270,9 +5163,9 @@
         },
         {
           "name": "volume",
-          "value": -0.0018,
+          "value": -0.0016,
           "weight": 0.0,
-          "detail": "volume z=-1.34 · variation 5 bougies -0.1 % · pente OBV -0.18",
+          "detail": "volume z=-1.34 · variation 5 bougies -0.1 % · pente OBV -0.15",
           "contribution": -0.0
         },
         {
@@ -5298,16 +5191,16 @@
         }
       ],
       "entry": 399.80999756,
-      "stop": 410.12772783,
-      "target": 379.17453702,
+      "stop": 410.12952225,
+      "target": 379.17094817,
       "rr": 2.0,
-      "atr": 4.12709211,
+      "atr": 4.12780988,
       "atr_pct": 1.03,
       "timeframe": "1h",
       "htf_alignment": "short",
-      "news_score": -0.213,
+      "news_score": -0.212,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "short",
       "actionable": false,
       "win_prob": 0.333,
@@ -5321,7 +5214,7 @@
         "disponible": true,
         "var_1h": 0.45,
         "var_24h": -0.86,
-        "var_7j": 7.41,
+        "var_7j": 7.42,
         "amplitude_pct": 4.17,
         "amplitude_ref_pct": 6.68,
         "ampleur": 0.62,
@@ -5336,12 +5229,119 @@
       ]
     },
     {
+      "symbol": "AVAX-USD",
+      "label": "Avalanche",
+      "klass": "crypto",
+      "direction": "neutre",
+      "score": 2.73,
+      "raw_score": 5.64,
+      "price": 8.609,
+      "regime": {
+        "name": "range",
+        "trend_strength": 0.245,
+        "hurst": 0.479,
+        "vol_percentile": 0.076,
+        "quality": 0.085,
+        "choppiness": 49.1,
+        "variance_ratio": 1.151,
+        "confidence_mult": 0.744
+      },
+      "factors": [
+        {
+          "name": "trend",
+          "value": -0.1966,
+          "weight": -0.295,
+          "detail": "EMA 20/50/200 alignées · prix à +0.9 ATR de l'EMA 50 · pente +0.03 %/bougie (R²=0.09)",
+          "contribution": 0.058
+        },
+        {
+          "name": "momentum",
+          "value": 0.3729,
+          "weight": 0.0,
+          "detail": "MACD hist z=+0.46 · RSI 60 · ROC(10) +2.1 %",
+          "contribution": 0.0
+        },
+        {
+          "name": "mean_reversion",
+          "value": -0.5507,
+          "weight": 0.15,
+          "detail": "%B=0.79 · RSI 60 · écart VWAP +1.1 ATR",
+          "contribution": -0.0826
+        },
+        {
+          "name": "volume",
+          "value": -0.008,
+          "weight": 0.0,
+          "detail": "volume z=-2.70 · variation 5 bougies +1.2 % · pente OBV -0.17",
+          "contribution": -0.0
+        },
+        {
+          "name": "breakout",
+          "value": 0.1791,
+          "weight": -0.165,
+          "detail": "dans le canal, position 80 %",
+          "contribution": -0.0296
+        },
+        {
+          "name": "structure",
+          "value": -0.371,
+          "weight": -0.29,
+          "detail": "Supertrend baissier · au-dessus du nuage Ichimoku",
+          "contribution": 0.1076
+        },
+        {
+          "name": "sentiment",
+          "value": 0.0,
+          "weight": 0.1,
+          "detail": "aucune actualité rattachée",
+          "contribution": 0.0
+        }
+      ],
+      "entry": 8.609,
+      "stop": 8.46759517,
+      "target": 8.89180967,
+      "rr": 2.0,
+      "atr": 0.07070242,
+      "atr_pct": 0.82,
+      "timeframe": "1h",
+      "htf_alignment": "long",
+      "news_score": -0.247,
+      "news_count": 0,
+      "generated_at": "2026-10-31T19:02:24+00:00",
+      "bias": "long",
+      "actionable": false,
+      "win_prob": 0.333,
+      "expected_r": -0.061,
+      "stop_basis": "plan fixe (2.0 ATR)",
+      "target_basis": "plan fixe (2.0 R)",
+      "stop_strength": 0.0,
+      "obstacle": 0.0,
+      "plan_alternatives": [],
+      "mouvement": {
+        "disponible": true,
+        "var_1h": 0.03,
+        "var_24h": 1.95,
+        "var_7j": -3.43,
+        "amplitude_pct": 3.64,
+        "amplitude_ref_pct": 5.39,
+        "ampleur": 0.67,
+        "retention": 0.537,
+        "position_range": 0.837,
+        "volume_rel": 1.02,
+        "etat": "journée calme",
+        "rendu": false
+      },
+      "warnings": [
+        "signal contraire à l'unité de temps supérieure (unité supérieure baissière (biais -1.00))"
+      ]
+    },
+    {
       "symbol": "EURUSD",
       "label": "Euro / Dollar",
       "klass": "forex",
       "direction": "neutre",
-      "score": 0.6,
-      "raw_score": 1.72,
+      "score": 0.61,
+      "raw_score": 1.75,
       "price": 1.11656988,
       "regime": {
         "name": "chaotique",
@@ -5398,10 +5398,10 @@
         },
         {
           "name": "sentiment",
-          "value": -0.336,
+          "value": -0.333,
           "weight": 0.1,
-          "detail": "1 article(s), sentiment pondéré -0.34",
-          "contribution": -0.0336
+          "detail": "1 article(s), sentiment pondéré -0.33",
+          "contribution": -0.0333
         }
       ],
       "entry": 1.11656988,
@@ -5412,9 +5412,9 @@
       "atr_pct": 0.12,
       "timeframe": "1h",
       "htf_alignment": "long",
-      "news_score": -0.336,
+      "news_score": -0.333,
       "news_count": 1,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "long",
       "actionable": false,
       "win_prob": 0.333,
@@ -5519,9 +5519,9 @@
       "atr_pct": 0.12,
       "timeframe": "1h",
       "htf_alignment": "short",
-      "news_score": 0.178,
+      "news_score": 0.177,
       "news_count": 0,
-      "generated_at": "2026-10-31T15:03:48+00:00",
+      "generated_at": "2026-10-31T19:02:24+00:00",
       "bias": "short",
       "actionable": false,
       "win_prob": 0.333,
@@ -5553,8 +5553,8 @@
   "regimes": {
     "tendance_haussière": 6,
     "tendance_baissière": 7,
-    "range": 8,
-    "chaotique": 15
+    "range": 9,
+    "chaotique": 14
   },
   "memecoins": [
     {
@@ -5562,32 +5562,32 @@
       "name": "GTA6CAT",
       "chain": "solana",
       "address": "HsprHxBRgiVaQdRf3TnKNuZZtaX9JUSPgMFdAkk6pump",
-      "price_usd": 0.006372,
-      "liquidity_usd": 250779.19,
-      "volume_24h": 1143920.4,
-      "change_1h": 7.43,
-      "change_6h": 12.64,
-      "change_24h": 29.39,
-      "txns_24h": 43704,
-      "age_hours": 1610.6076667778184,
-      "buy_sell_ratio": 0.6204671857619577,
+      "price_usd": 0.006391,
+      "liquidity_usd": 252021.52,
+      "volume_24h": 1232920.52,
+      "change_1h": -6.54,
+      "change_6h": 11.49,
+      "change_24h": 38.38,
+      "txns_24h": 74515,
+      "age_hours": 1614.5843166676839,
+      "buy_sell_ratio": 0.9895071287445933,
       "url": "https://dexscreener.com/solana/5e3dxlxgwmtdcoka51wyyakttjfzbwqcoyuhbui5gt2m",
-      "health_score": 84.5
+      "health_score": 88.3
     },
     {
       "symbol": "DESSA",
       "name": "Dessa",
       "chain": "solana",
       "address": "npz2FhoufQ7pKqhGpaipYWacrAkidyW2yDpVWSvpump",
-      "price_usd": 0.02988,
-      "liquidity_usd": 496418.95,
-      "volume_24h": 4569432.67,
-      "change_1h": 55.01,
-      "change_6h": 91.3,
-      "change_24h": 249.0,
-      "txns_24h": 22133,
-      "age_hours": 121.97516679884168,
-      "buy_sell_ratio": 1.0772407320506805,
+      "price_usd": 0.02421,
+      "liquidity_usd": 449220.9,
+      "volume_24h": 5350346.85,
+      "change_1h": -0.38,
+      "change_6h": 50.79,
+      "change_24h": 159.0,
+      "txns_24h": 24364,
+      "age_hours": 125.95181669386122,
+      "buy_sell_ratio": 1.1123634471995838,
       "url": "https://dexscreener.com/solana/dextcer4k9dwbxtmu8znvvwgevvmvhmb183pf2xxzwvh",
       "health_score": 81.8
     },
@@ -5596,88 +5596,105 @@
       "name": "DogWifJob",
       "chain": "solana",
       "address": "9Pq7aLAbhDG2tTnS22cm6kuysZVcZpLFE368HWuypump",
-      "price_usd": 0.003206,
-      "liquidity_usd": 157620.35,
-      "volume_24h": 1308140.97,
-      "change_1h": -3.46,
-      "change_6h": -3.24,
-      "change_24h": 18.95,
-      "txns_24h": 25828,
-      "age_hours": 91.8390556705051,
-      "buy_sell_ratio": 0.8826445076171733,
+      "price_usd": 0.003144,
+      "liquidity_usd": 156632.77,
+      "volume_24h": 1205866.52,
+      "change_1h": -8.17,
+      "change_6h": -7.93,
+      "change_24h": -7.83,
+      "txns_24h": 24308,
+      "age_hours": 95.81570556443957,
+      "buy_sell_ratio": 0.777810283039567,
       "url": "https://dexscreener.com/solana/hauvbmnthcfmg9srxmvz1gaxnpu955hkpdsasc2cx4c8",
-      "health_score": 77.4
+      "health_score": 76.1
     },
     {
       "symbol": "GLITCH",
       "name": "Infinite Money Glitch",
       "chain": "solana",
       "address": "8Xg89xT8Ve34sKiYqYuMs46mycREsCA2F362UscRpump",
-      "price_usd": 0.003731,
-      "liquidity_usd": 168903.12,
-      "volume_24h": 533934.08,
-      "change_1h": 5.73,
-      "change_6h": 10.66,
-      "change_24h": 39.31,
-      "txns_24h": 4003,
-      "age_hours": 359.48350011983234,
-      "buy_sell_ratio": 0.8635940409683427,
+      "price_usd": 0.003665,
+      "liquidity_usd": 167732.71,
+      "volume_24h": 503295.61,
+      "change_1h": -7.15,
+      "change_6h": 12.42,
+      "change_24h": 43.04,
+      "txns_24h": 4049,
+      "age_hours": 363.4601500104438,
+      "buy_sell_ratio": 0.8059768064228368,
       "url": "https://dexscreener.com/solana/em6rvzgxhd35pz7cvujctpenv4jaztscavhaxbxcbcg7",
-      "health_score": 76.1
+      "health_score": 75.5
+    },
+    {
+      "symbol": "AGENC",
+      "name": "The Super Intelligent Beauty",
+      "chain": "solana",
+      "address": "DDG8rjV3TViCqKRQED2QZq4MEaE1uqXgEiosBNpapump",
+      "price_usd": 0.001127,
+      "liquidity_usd": 1006632.41,
+      "volume_24h": 3362838.11,
+      "change_1h": 11.69,
+      "change_6h": 220.0,
+      "change_24h": 205.0,
+      "txns_24h": 244372,
+      "age_hours": 24.69181666164822,
+      "buy_sell_ratio": 1.8421297480868088,
+      "url": "https://dexscreener.com/solana/abf43sbqjwkf1gzy8mkhnhr8ejlzgf6v9asr8lrmbucj",
+      "health_score": 74.4
     }
   ],
   "meme_report": {
     "screened": 44,
-    "retained": 4,
-    "rejected": 40,
+    "retained": 5,
+    "rejected": 39,
     "near_misses": [
       {
         "symbol": "HELL",
         "chain": "solana",
-        "liquidity_usd": 140186,
-        "volume_24h": 100223,
-        "age_hours": 434.0,
-        "reason": "volume 24h 100,223$ < 250,000$ requis à 434h d'âge"
+        "liquidity_usd": 141049,
+        "volume_24h": 138052,
+        "age_hours": 438.0,
+        "reason": "volume 24h 138,052$ < 250,000$ requis à 438h d'âge"
+      },
+      {
+        "symbol": "CBUCKS",
+        "chain": "solana",
+        "liquidity_usd": 119650,
+        "volume_24h": 140960,
+        "age_hours": 600.5,
+        "reason": "volume 24h 140,960$ < 250,000$ requis à 601h d'âge"
       },
       {
         "symbol": "LEVERHEDGE",
         "chain": "solana",
-        "liquidity_usd": 99324,
-        "volume_24h": 1211110,
-        "age_hours": 15.4,
-        "reason": "liquidité 99,324$ < 150,000$ requis à 15h d'âge"
+        "liquidity_usd": 93022,
+        "volume_24h": 1547130,
+        "age_hours": 19.4,
+        "reason": "liquidité 93,022$ < 150,000$ requis à 19h d'âge"
       },
       {
         "symbol": "SI276",
         "chain": "solana",
-        "liquidity_usd": 72664,
-        "volume_24h": 42485,
-        "age_hours": 595.6,
-        "reason": "volume 24h 42,485$ < 250,000$ requis à 596h d'âge"
+        "liquidity_usd": 73263,
+        "volume_24h": 45607,
+        "age_hours": 599.6,
+        "reason": "volume 24h 45,607$ < 250,000$ requis à 600h d'âge"
+      },
+      {
+        "symbol": "SIS",
+        "chain": "solana",
+        "liquidity_usd": 50777,
+        "volume_24h": 854356,
+        "age_hours": 1.2,
+        "reason": "pool âgé de 1h, sous les 8h requises"
       },
       {
         "symbol": "BNB",
         "chain": "solana",
-        "liquidity_usd": 53393,
-        "volume_24h": 4740866,
-        "age_hours": 18.2,
-        "reason": "liquidité 53,393$ < 150,000$ requis à 18h d'âge"
-      },
-      {
-        "symbol": "QI",
-        "chain": "solana",
-        "liquidity_usd": 52692,
-        "volume_24h": 45663,
-        "age_hours": 538.3,
-        "reason": "volume 24h 45,663$ < 250,000$ requis à 538h d'âge"
-      },
-      {
-        "symbol": "AGENC",
-        "chain": "solana",
-        "liquidity_usd": 36209,
-        "volume_24h": 4573341,
-        "age_hours": 20.7,
-        "reason": "liquidité 36,209$ < 150,000$ requis à 21h d'âge"
+        "liquidity_usd": 50318,
+        "volume_24h": 5541774,
+        "age_hours": 22.2,
+        "reason": "liquidité 50,318$ < 150,000$ requis à 22h d'âge"
       }
     ]
   },
@@ -5687,7 +5704,7 @@
       "source": "Cointelegraph",
       "url": "https://cointelegraph.com/markets/bitcoin-price-metrics-hint-at-rebound-as-16b-liquidations-follow-binance-hack?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "published": "2026-10-30T11:29:23+00:00",
-      "age_hours": 27.6,
+      "age_hours": 31.6,
       "sentiment": -10.2,
       "matched": [
         "liquidations",
@@ -5707,7 +5724,7 @@
       "source": "Decrypt",
       "url": "https://decrypt.co/382257/binance-hack-why-bitcoin-didnt-crash",
       "published": "2026-10-30T18:45:03+00:00",
-      "age_hours": 20.3,
+      "age_hours": 24.3,
       "sentiment": -8.5,
       "matched": [
         "crash",
@@ -5728,7 +5745,7 @@
       "source": "Cointelegraph",
       "url": "https://cointelegraph.com/news/live-updates-binance-63b-hack-linked-to-north-koreas-tradertraitor?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "published": "2026-10-30T16:49:50+00:00",
-      "age_hours": 22.2,
+      "age_hours": 26.2,
       "sentiment": -7.8,
       "matched": [
         "investigation",
@@ -5745,7 +5762,7 @@
       "source": "Decrypt",
       "url": "https://decrypt.co/382268/secret-service-fbi-binance-hack-probe",
       "published": "2026-10-30T17:50:26+00:00",
-      "age_hours": 21.2,
+      "age_hours": 25.2,
       "sentiment": -6.6,
       "matched": [
         "freeze",
@@ -5763,7 +5780,7 @@
       "source": "Decrypt",
       "url": "https://decrypt.co/382274/why-ai-models-cheat-reward-hacking-explained",
       "published": "2026-10-31T13:01:03+00:00",
-      "age_hours": 2.0,
+      "age_hours": 6.0,
       "sentiment": -6.0,
       "matched": [
         "hack"
@@ -5779,7 +5796,7 @@
       "source": "CoinDesk",
       "url": "https://www.coindesk.com/business/2026/10/31/the-usd6-3-billion-binance-hack-paradox-centralization-made-the-hack-possible-but-also-saved-usd3-billion",
       "published": "2026-10-31T12:00:00+00:00",
-      "age_hours": 3.1,
+      "age_hours": 7.0,
       "sentiment": -6.0,
       "matched": [
         "hack"
@@ -5795,7 +5812,7 @@
       "source": "TheBlock",
       "url": "https://www.theblock.co/news/business/2026-10-30-binance-hack-largest-crypto-hack-north-korea-432225",
       "published": "2026-10-30T21:20:23+00:00",
-      "age_hours": 17.7,
+      "age_hours": 21.7,
       "sentiment": -6.0,
       "matched": [
         "hack"
@@ -5811,7 +5828,7 @@
       "source": "TheBlock",
       "url": "https://www.theblock.co/news/regulation/2026-10-30-trump-looking-into-binance-hack-calls-grow-for-crypto-rules-432236",
       "published": "2026-10-30T21:06:03+00:00",
-      "age_hours": 18.0,
+      "age_hours": 21.9,
       "sentiment": -6.0,
       "matched": [
         "hack"
@@ -5827,7 +5844,7 @@
       "source": "NYT Business",
       "url": "https://www.nytimes.com/2026/10/30/business/binances-hack-customer-protections.html",
       "published": "2026-10-30T20:49:27+00:00",
-      "age_hours": 18.2,
+      "age_hours": 22.2,
       "sentiment": -6.0,
       "matched": [
         "hacked",
@@ -5844,7 +5861,7 @@
       "source": "Guardian World",
       "url": "https://www.theguardian.com/world/2026/oct/30/how-crypto-hacking-funds-isolated-north-korea-nuclear-programme",
       "published": "2026-10-30T17:37:46+00:00",
-      "age_hours": 21.4,
+      "age_hours": 25.4,
       "sentiment": -6.0,
       "matched": [
         "hack"
@@ -5862,7 +5879,7 @@
       "source": "Cointelegraph",
       "url": "https://cointelegraph.com/news/recap-binances-record-63b-hack-unfolded?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "published": "2026-10-30T16:53:46+00:00",
-      "age_hours": 22.2,
+      "age_hours": 26.1,
       "sentiment": -6.0,
       "matched": [
         "hack"
@@ -5878,7 +5895,7 @@
       "source": "Decrypt",
       "url": "https://decrypt.co/382236/elon-musk-cz-trade-blows-spacex-shares-binance-hack",
       "published": "2026-10-30T16:25:06+00:00",
-      "age_hours": 22.6,
+      "age_hours": 26.6,
       "sentiment": -6.0,
       "matched": [
         "hack"
@@ -5894,7 +5911,7 @@
       "source": "TheBlock",
       "url": "https://www.theblock.co/news/ecosystems/2026-10-30-binance-says-it-has-6-34-billion-ready-to-cover-hack-losses-432208",
       "published": "2026-10-30T13:14:56+00:00",
-      "age_hours": 25.8,
+      "age_hours": 29.8,
       "sentiment": -6.0,
       "matched": [
         "hack"
@@ -5910,7 +5927,7 @@
       "source": "Decrypt",
       "url": "https://decrypt.co/382225/morning-minute-binances-6-4b-hack-overshadows-hyperliquids-biggest-day",
       "published": "2026-10-30T12:31:30+00:00",
-      "age_hours": 26.5,
+      "age_hours": 30.5,
       "sentiment": -6.0,
       "matched": [
         "hack"
@@ -5926,7 +5943,7 @@
       "source": "BBC Business",
       "url": "https://www.bbc.co.uk/news/videos/cv2d62e34rw5o?at_medium=RSS&at_campaign=rss",
       "published": "2026-10-30T12:27:28+00:00",
-      "age_hours": 26.6,
+      "age_hours": 30.6,
       "sentiment": -6.0,
       "matched": [
         "hack"
@@ -5942,7 +5959,7 @@
       "source": "Decrypt",
       "url": "https://decrypt.co/382224/trm-and-chainalysis-tie-6-4b-binance-hack-to-north-koreas-tradertraitor",
       "published": "2026-10-30T12:22:04+00:00",
-      "age_hours": 26.7,
+      "age_hours": 30.7,
       "sentiment": -6.0,
       "matched": [
         "hack"
@@ -5958,23 +5975,7 @@
       "source": "BBC Business",
       "url": "https://www.bbc.co.uk/news/articles/cwg7xp8kx4v5o?at_medium=RSS&at_campaign=rss",
       "published": "2026-10-30T09:33:51+00:00",
-      "age_hours": 29.5,
-      "sentiment": -6.0,
-      "matched": [
-        "hack"
-      ],
-      "assets": [],
-      "category": "marches",
-      "risk": 0.0,
-      "risk_terms": [],
-      "speech": {}
-    },
-    {
-      "title": "North Korea’s TraderTraitor linked to $6.3B Binance hack",
-      "source": "Cointelegraph",
-      "url": "https://cointelegraph.com/news/north-korea-linked-to-63b-binance-hack-by-crypto-investigators?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
-      "published": "2026-10-30T05:51:41+00:00",
-      "age_hours": 33.2,
+      "age_hours": 33.5,
       "sentiment": -6.0,
       "matched": [
         "hack"
@@ -5990,7 +5991,7 @@
       "source": "CoinDesk",
       "url": "https://www.coindesk.com/markets/2026/10/30/crypto-liquidations-jump-to-usd1-57-billion-as-binance-hack-sends-bitcoin-ether-lower",
       "published": "2026-10-30T11:09:24+00:00",
-      "age_hours": 27.9,
+      "age_hours": 31.9,
       "sentiment": -5.2,
       "matched": [
         "liquidations",
@@ -6010,7 +6011,7 @@
       "source": "Cointelegraph",
       "url": "https://cointelegraph.com/news/texas-brothers-sentenced-to-15-years-in-prison-for-armed-crypto-robbery-kidnapping?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "published": "2026-10-31T13:37:49+00:00",
-      "age_hours": 1.4,
+      "age_hours": 5.4,
       "sentiment": 0.0,
       "matched": [],
       "assets": [],
@@ -6027,7 +6028,7 @@
       "source": "Cointelegraph",
       "url": "https://cointelegraph.com/markets/coinbase-leads-crypto-stock-selloff-shares-tumble?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "published": "2026-10-30T17:48:27+00:00",
-      "age_hours": 21.3,
+      "age_hours": 25.2,
       "sentiment": -5.0,
       "matched": [
         "selloff",
@@ -6042,11 +6043,45 @@
       "speech": {}
     },
     {
+      "title": "Face aux spéculations de nouvelles frappes sur l'Iran, Mojtaba Khamenei menace de riposter",
+      "source": "France 24",
+      "url": "https://www.france24.com/fr/moyen-orient/20261031-iran-%C3%A9tats-unis-isra%C3%ABl-guere-face-aux-sp%C3%A9culations-de-nouvelles-frappes-mojtaba-khamenei-menace-d-une-riposte-imm%C3%A9diate",
+      "published": "2026-10-31T17:47:09+00:00",
+      "age_hours": 1.3,
+      "sentiment": 0.0,
+      "matched": [],
+      "assets": [],
+      "category": "monde",
+      "risk": 4.8,
+      "risk_terms": [
+        "frappes",
+        "guerre"
+      ],
+      "speech": {}
+    },
+    {
+      "title": "Cédric Chetaille, contre-amiral : « Nous assistons à une forme de nouvelle “guerre des étoiles” sous-marine »",
+      "source": "Le Monde",
+      "url": "https://www.lemonde.fr/international/article/2026/10/31/cedric-chetaille-contre-amiral-nous-assistons-a-une-forme-de-nouvelle-guerre-des-etoiles-sous-marine_6803715_3210.html",
+      "published": "2026-10-31T16:00:09+00:00",
+      "age_hours": 3.0,
+      "sentiment": 0.0,
+      "matched": [],
+      "assets": [],
+      "category": "monde",
+      "risk": 4.8,
+      "risk_terms": [
+        "nucléaire",
+        "guerre"
+      ],
+      "speech": {}
+    },
+    {
       "title": "Chainalysis says hacker using ‘offensive agentic techniques’ accessed its customers’ names and emails",
       "source": "TheBlock",
       "url": "https://www.theblock.co/news/business/2026-10-31-chainalysis-says-hacker-using-offensive-agentic-techniques-accessed-its-customers-names-and-emails-432244",
       "published": "2026-10-31T13:27:17+00:00",
-      "age_hours": 1.6,
+      "age_hours": 5.6,
       "sentiment": -4.8,
       "matched": [
         "freeze",
@@ -6061,28 +6096,11 @@
       "speech": {}
     },
     {
-      "title": "Iran lawmakers call for withdrawal from NPT: Will we have war or peace?",
-      "source": "Al Jazeera",
-      "url": "https://www.aljazeera.com/news/2026/10/31/iran-lawmakers-call-for-withdrawal-from-npt-will-we-have-war-or-peace?traffic_source=rss",
-      "published": "2026-10-31T12:22:45+00:00",
-      "age_hours": 2.7,
-      "sentiment": -0.0,
-      "matched": [],
-      "assets": [],
-      "category": "monde",
-      "risk": 4.8,
-      "risk_terms": [
-        "nuclear",
-        "war"
-      ],
-      "speech": {}
-    },
-    {
       "title": "Experts divided over Binance hack asset freezes, warn recovery is another matter",
       "source": "CoinDesk",
       "url": "https://www.coindesk.com/business/2026/10/30/experts-divided-over-binance-hack-asset-freezes-warn-recovery-is-another-matter",
       "published": "2026-10-30T19:55:00+00:00",
-      "age_hours": 19.1,
+      "age_hours": 23.1,
       "sentiment": -4.8,
       "matched": [
         "freeze",
@@ -6098,8 +6116,8 @@
       "title": "UK charity shop profits plummet amid shift in secondhand clothes market",
       "source": "Guardian World",
       "url": "https://www.theguardian.com/society/2026/oct/31/profits-uk-charity-shops-oxfam-shift-secondhand-clothes-market",
-      "published": "2026-10-31T14:43:20+00:00",
-      "age_hours": 0.3,
+      "published": "2026-10-31T15:10:52+00:00",
+      "age_hours": 3.9,
       "sentiment": -4.4,
       "matched": [
         "plummet"
@@ -6111,30 +6129,11 @@
       "speech": {}
     },
     {
-      "title": "Iran warns of unfettered retaliation if attacked as mediators try for peace",
-      "source": "Al Jazeera",
-      "url": "https://www.aljazeera.com/news/2026/10/31/iran-warns-of-unfettered-retaliation-if-attacked-as-mediators-try-for-peace?traffic_source=rss",
-      "published": "2026-10-31T12:13:42+00:00",
-      "age_hours": 2.8,
-      "sentiment": 0.7,
-      "matched": [
-        "warns"
-      ],
-      "assets": [],
-      "category": "monde",
-      "risk": 4.4,
-      "risk_terms": [
-        "retaliation",
-        "attack"
-      ],
-      "speech": {}
-    },
-    {
       "title": "Gulf states must rethink trillion-dollar defence in light of US-Iran war, says report",
       "source": "Guardian World",
       "url": "https://www.theguardian.com/world/2026/oct/30/gulf-states-rethink-trillion-dollar-defence-us-iran-war-iiss-report",
       "published": "2026-10-30T12:49:56+00:00",
-      "age_hours": 26.2,
+      "age_hours": 30.2,
       "sentiment": 0.0,
       "matched": [],
       "assets": [],
@@ -6150,8 +6149,8 @@
       "title": "Protests under way in Germany and France as minister warns against use of Halloween masks – Europe live",
       "source": "Guardian World",
       "url": "https://www.theguardian.com/world/live/2026/oct/31/france-germany-protests-paris-europe-latest-news-updates",
-      "published": "2026-10-31T14:43:59+00:00",
-      "age_hours": 0.3,
+      "published": "2026-10-31T18:31:38+00:00",
+      "age_hours": 0.5,
       "sentiment": -1.4,
       "matched": [
         "warns"
@@ -6172,7 +6171,7 @@
       "source": "NYT Business",
       "url": "https://www.nytimes.com/2026/10/30/business/pslf-education-department-lawsuit.html",
       "published": "2026-10-30T20:09:36+00:00",
-      "age_hours": 18.9,
+      "age_hours": 22.9,
       "sentiment": -4.0,
       "matched": [
         "lawsuit",
@@ -6185,47 +6184,11 @@
       "speech": {}
     },
     {
-      "title": "Court Rejects Erin Patterson’s Appeal in Mushroom Murders Case",
-      "source": "NYT World",
-      "url": "https://www.nytimes.com/2026/10/29/world/asia/mushroom-murder-case-sentencing-appeal-australia.html",
-      "published": "2026-10-30T10:14:33+00:00",
-      "age_hours": 28.8,
-      "sentiment": -4.0,
-      "matched": [
-        "rejected",
-        "rejects"
-      ],
-      "assets": [],
-      "category": "monde",
-      "risk": 0.0,
-      "risk_terms": [],
-      "speech": {}
-    },
-    {
-      "title": "Pénurie de navires et tarifs record : comment la guerre au Moyen-Orient fait bondir les prix du transport de pétrole",
-      "source": "Le Monde",
-      "url": "https://www.lemonde.fr/economie/article/2026/10/31/penurie-de-navires-et-tarifs-record-comment-la-guerre-au-moyen-orient-fait-bondir-les-prix-du-transport-de-petrole_6803378_3234.html",
-      "published": "2026-10-31T04:00:48+00:00",
-      "age_hours": 11.1,
-      "sentiment": 0.0,
-      "matched": [],
-      "assets": [
-        "USDJPY"
-      ],
-      "category": "monde",
-      "risk": 3.8,
-      "risk_terms": [
-        "pénurie",
-        "guerre"
-      ],
-      "speech": {}
-    },
-    {
       "title": "Why Are There Protests in France?",
       "source": "NYT World",
       "url": "https://www.nytimes.com/article/france-student-protests-why.html",
       "published": "2026-10-31T11:48:56+00:00",
-      "age_hours": 3.2,
+      "age_hours": 7.2,
       "sentiment": 0.0,
       "matched": [],
       "assets": [],
@@ -6238,11 +6201,63 @@
       "speech": {}
     },
     {
+      "title": "How Binance’s $6.3 Billion Hack Went Down",
+      "source": "NYT Business",
+      "url": "https://www.nytimes.com/2026/10/31/technology/binance-hack-crypto-north-korea.html",
+      "published": "2026-10-31T17:51:04+00:00",
+      "age_hours": 1.2,
+      "sentiment": -3.0,
+      "matched": [
+        "hack"
+      ],
+      "assets": [],
+      "category": "marches",
+      "risk": 2.2,
+      "risk_terms": [
+        "war"
+      ],
+      "speech": {}
+    },
+    {
+      "title": "Crypto firm Binance covers 90% of losses after $6.3bn hack",
+      "source": "BBC World",
+      "url": "https://www.bbc.co.uk/news/articles/ckpdg3ql4169o?at_medium=RSS&at_campaign=rss",
+      "published": "2026-10-31T16:32:08+00:00",
+      "age_hours": 2.5,
+      "sentiment": -3.0,
+      "matched": [
+        "hack"
+      ],
+      "assets": [],
+      "category": "monde",
+      "risk": 0.0,
+      "risk_terms": [],
+      "speech": {}
+    },
+    {
+      "title": "Bitcoin held up better than expected after Binance hack, Strive CEO says",
+      "source": "Cointelegraph",
+      "url": "https://cointelegraph.com/markets/bitcoin-binance-hack-strive-ceo?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
+      "published": "2026-10-31T15:26:46+00:00",
+      "age_hours": 3.6,
+      "sentiment": 3.0,
+      "matched": [
+        "hack"
+      ],
+      "assets": [
+        "BTC-USD"
+      ],
+      "category": "marches",
+      "risk": 0.0,
+      "risk_terms": [],
+      "speech": {}
+    },
+    {
       "title": "Binance Hack: Everything You Need to Know About the Biggest Crypto Heist in History",
       "source": "Decrypt",
       "url": "https://decrypt.co/382306/binance-hack-everything-you-need-to-know",
       "published": "2026-10-31T15:01:02+00:00",
-      "age_hours": 0.0,
+      "age_hours": 4.0,
       "sentiment": -3.0,
       "matched": [
         "hack"
@@ -6258,7 +6273,7 @@
       "source": "Cointelegraph",
       "url": "https://cointelegraph.com/magazine/bitcoin-turns-18-has-the-original-rebel-grown-up?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "published": "2026-10-31T14:27:52+00:00",
-      "age_hours": 0.6,
+      "age_hours": 4.6,
       "sentiment": -3.0,
       "matched": [
         "hack"
@@ -6272,29 +6287,11 @@
       "speech": {}
     },
     {
-      "title": "How Binance’s $6.3 Billion Hack Went Down",
-      "source": "NYT Business",
-      "url": "https://www.nytimes.com/2026/10/31/technology/binance-hack-crypto-north-korea.html",
-      "published": "2026-10-31T14:29:34+00:00",
-      "age_hours": 0.6,
-      "sentiment": -3.0,
-      "matched": [
-        "hack"
-      ],
-      "assets": [],
-      "category": "marches",
-      "risk": 2.2,
-      "risk_terms": [
-        "war"
-      ],
-      "speech": {}
-    },
-    {
       "title": "A Nasdaq-listed company may sell $450 million bitcoin, citing Binance hack and quantum fears",
       "source": "CoinDesk",
       "url": "https://www.coindesk.com/markets/2026/10/31/a-nasdaq-listed-company-may-sell-usd450-million-bitcoin-citing-binance-hack-and-quantum-fears",
       "published": "2026-10-31T12:49:47+00:00",
-      "age_hours": 2.2,
+      "age_hours": 6.2,
       "sentiment": -3.0,
       "matched": [
         "hack"
@@ -6313,7 +6310,7 @@
       "source": "Cointelegraph",
       "url": "https://cointelegraph.com/news/binance-63b-record-hack-sparks-pre-election-political-chatter?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound",
       "published": "2026-10-31T09:58:50+00:00",
-      "age_hours": 5.1,
+      "age_hours": 9.1,
       "sentiment": -3.0,
       "matched": [
         "hack"
@@ -6329,7 +6326,7 @@
       "source": "BBC World",
       "url": "https://www.bbc.co.uk/news/articles/ck9dz3v7z7v3o?at_medium=RSS&at_campaign=rss",
       "published": "2026-10-31T02:12:19+00:00",
-      "age_hours": 12.9,
+      "age_hours": 16.8,
       "sentiment": -3.0,
       "matched": [
         "hack"
@@ -6345,7 +6342,23 @@
       "source": "NYT Business",
       "url": "https://www.nytimes.com/2026/10/30/business/binance-hack-crypto-price-what.html",
       "published": "2026-10-30T21:48:01+00:00",
-      "age_hours": 17.3,
+      "age_hours": 21.2,
+      "sentiment": -3.0,
+      "matched": [
+        "hack"
+      ],
+      "assets": [],
+      "category": "marches",
+      "risk": 0.0,
+      "risk_terms": [],
+      "speech": {}
+    },
+    {
+      "title": "Binance’s $6.3 Billion Hack Is Just the Start of a Risky New Era",
+      "source": "NYT Business",
+      "url": "https://www.nytimes.com/2026/10/30/technology/binance-hack-ai-north-korea.html",
+      "published": "2026-10-30T21:17:37+00:00",
+      "age_hours": 21.7,
       "sentiment": -3.0,
       "matched": [
         "hack"
@@ -6361,7 +6374,7 @@
       "source": "Decrypt",
       "url": "https://decrypt.co/382285/binance-hack-why-offshore-exchanges-need-us-oversight-cftc-chair",
       "published": "2026-10-30T21:16:04+00:00",
-      "age_hours": 17.8,
+      "age_hours": 21.8,
       "sentiment": -3.0,
       "matched": [
         "hack"
@@ -6374,443 +6387,443 @@
     }
   ],
   "sentiment": {
-    "META": {
-      "score": -0.213,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.213,
-      "haven_beta": -0.6,
-      "monetary": 0.0,
-      "monetary_beta": 0.3
-    },
-    "XLI": {
-      "score": -0.213,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.213,
-      "haven_beta": -0.6,
-      "monetary": 0.0,
-      "monetary_beta": 0.3
-    },
-    "XLC": {
-      "score": -0.213,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.213,
-      "haven_beta": -0.6,
-      "monetary": 0.0,
-      "monetary_beta": 0.3
-    },
-    "JPM": {
-      "score": -0.213,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.213,
-      "haven_beta": -0.6,
-      "monetary": 0.0,
-      "monetary_beta": 0.3
-    },
-    "XOM": {
-      "score": -0.213,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.213,
-      "haven_beta": -0.6,
-      "monetary": 0.0,
-      "monetary_beta": 0.3
-    },
-    "LLY": {
-      "score": -0.213,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.213,
-      "haven_beta": -0.6,
-      "monetary": 0.0,
-      "monetary_beta": 0.3
-    },
-    "XLRE": {
-      "score": -0.213,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.213,
-      "haven_beta": -0.6,
-      "monetary": 0.0,
-      "monetary_beta": 0.3
-    },
-    "USDJPY": {
-      "score": -0.19,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 1,
-      "confidence": 0.42,
-      "recency": 0.527,
-      "geo": -0.142,
-      "haven_beta": -0.4,
-      "monetary": -0.0,
-      "monetary_beta": -0.45
-    },
-    "ETH-USD": {
-      "score": -0.339,
-      "raw": -5.2,
-      "macro": -2.2,
-      "count": 1,
-      "confidence": 0.42,
-      "recency": 0.2,
-      "geo": -0.213,
-      "haven_beta": -0.6,
-      "monetary": 0.0,
-      "monetary_beta": 0.65
-    },
-    "XLE": {
-      "score": -0.213,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.213,
-      "haven_beta": -0.6,
-      "monetary": 0.0,
-      "monetary_beta": 0.3
-    },
-    "XLU": {
-      "score": -0.213,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.213,
-      "haven_beta": -0.6,
-      "monetary": 0.0,
-      "monetary_beta": 0.3
-    },
-    "GOOGL": {
-      "score": -0.213,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.213,
-      "haven_beta": -0.6,
-      "monetary": 0.0,
-      "monetary_beta": 0.3
-    },
-    "SOL-USD": {
-      "score": -0.249,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.249,
-      "haven_beta": -0.7,
-      "monetary": 0.0,
-      "monetary_beta": 0.6
-    },
-    "XAUUSD": {
-      "score": 0.32,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": 0.32,
-      "haven_beta": 0.9,
-      "monetary": 0.0,
-      "monetary_beta": 1.0
-    },
-    "BNB-USD": {
-      "score": -0.213,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.213,
-      "haven_beta": -0.6,
-      "monetary": 0.0,
-      "monetary_beta": 0.5
-    },
-    "NDX": {
-      "score": -0.661,
-      "raw": -3.0,
-      "macro": -2.2,
-      "count": 1,
-      "confidence": 0.42,
-      "recency": 0.881,
-      "geo": -0.32,
-      "haven_beta": -0.9,
-      "monetary": 0.0,
-      "monetary_beta": 0.85
-    },
-    "EURUSD": {
-      "score": -0.336,
-      "raw": -1.4,
-      "macro": -2.2,
-      "count": 1,
-      "confidence": 0.42,
-      "recency": 0.983,
-      "geo": -0.107,
-      "haven_beta": -0.3,
-      "monetary": 0.0,
-      "monetary_beta": 0.55
-    },
-    "MSFT": {
-      "score": -0.213,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.213,
-      "haven_beta": -0.6,
-      "monetary": 0.0,
-      "monetary_beta": 0.3
-    },
-    "LINK-USD": {
-      "score": -0.249,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.249,
-      "haven_beta": -0.7,
-      "monetary": 0.0,
-      "monetary_beta": 0.55
-    },
-    "DOGE-USD": {
-      "score": -0.302,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.302,
-      "haven_beta": -0.85,
-      "monetary": 0.0,
-      "monetary_beta": 0.6
-    },
-    "AVAX-USD": {
-      "score": -0.249,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.249,
-      "haven_beta": -0.7,
-      "monetary": 0.0,
-      "monetary_beta": 0.6
-    },
-    "DXY": {
-      "score": 0.178,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": 0.178,
-      "haven_beta": 0.5,
-      "monetary": -0.0,
-      "monetary_beta": -0.75
-    },
     "BTC-USD": {
-      "score": -0.97,
-      "raw": -4.05,
+      "score": -0.714,
+      "raw": -2.4,
       "macro": -2.2,
       "count": 9,
       "confidence": 0.87,
-      "recency": 0.966,
-      "geo": -0.195,
+      "recency": 0.812,
+      "geo": -0.194,
       "haven_beta": -0.55,
       "monetary": 0.0,
       "monetary_beta": 0.7
     },
-    "XLF": {
-      "score": -0.213,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.213,
-      "haven_beta": -0.6,
-      "monetary": 0.0,
-      "monetary_beta": 0.3
-    },
-    "XLK": {
-      "score": -0.213,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.213,
-      "haven_beta": -0.6,
-      "monetary": 0.0,
-      "monetary_beta": 0.3
-    },
-    "XLB": {
-      "score": -0.213,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.213,
-      "haven_beta": -0.6,
-      "monetary": 0.0,
-      "monetary_beta": 0.3
-    },
-    "TSLA": {
-      "score": -0.213,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.213,
-      "haven_beta": -0.6,
-      "monetary": 0.0,
-      "monetary_beta": 0.3
-    },
-    "XLY": {
-      "score": -0.213,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.213,
-      "haven_beta": -0.6,
-      "monetary": 0.0,
-      "monetary_beta": 0.3
-    },
-    "SPX": {
-      "score": -0.524,
-      "raw": -3.69,
-      "macro": -2.2,
-      "count": 3,
-      "confidence": 0.68,
-      "recency": 0.313,
-      "geo": -0.284,
-      "haven_beta": -0.8,
-      "monetary": 0.0,
-      "monetary_beta": 0.65
-    },
-    "XRP-USD": {
-      "score": -0.213,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.213,
-      "haven_beta": -0.6,
-      "monetary": 0.0,
-      "monetary_beta": 0.5
-    },
-    "AAPL": {
-      "score": -0.213,
-      "raw": 0.0,
-      "macro": -2.2,
-      "count": 0,
-      "confidence": 0.0,
-      "recency": 0.0,
-      "geo": -0.213,
-      "haven_beta": -0.6,
-      "monetary": 0.0,
-      "monetary_beta": 0.3
-    },
     "GBPUSD": {
-      "score": -0.179,
-      "raw": -2.6,
+      "score": -0.124,
+      "raw": 0.0,
       "macro": -2.2,
-      "count": 1,
-      "confidence": 0.42,
-      "recency": 0.15,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
       "geo": -0.124,
       "haven_beta": -0.35,
       "monetary": 0.0,
       "monetary_beta": 0.5
     },
-    "NVDA": {
-      "score": -0.213,
+    "ETH-USD": {
+      "score": -0.312,
+      "raw": -5.2,
+      "macro": -2.2,
+      "count": 1,
+      "confidence": 0.42,
+      "recency": 0.158,
+      "geo": -0.212,
+      "haven_beta": -0.6,
+      "monetary": 0.0,
+      "monetary_beta": 0.65
+    },
+    "NDX": {
+      "score": -0.593,
+      "raw": -3.0,
+      "macro": -2.2,
+      "count": 1,
+      "confidence": 0.42,
+      "recency": 0.699,
+      "geo": -0.318,
+      "haven_beta": -0.9,
+      "monetary": 0.0,
+      "monetary_beta": 0.85
+    },
+    "DXY": {
+      "score": 0.177,
       "raw": 0.0,
       "macro": -2.2,
       "count": 0,
       "confidence": 0.0,
       "recency": 0.0,
-      "geo": -0.213,
+      "geo": 0.177,
+      "haven_beta": 0.5,
+      "monetary": -0.0,
+      "monetary_beta": -0.75
+    },
+    "XLF": {
+      "score": -0.212,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.212,
+      "haven_beta": -0.6,
+      "monetary": 0.0,
+      "monetary_beta": 0.3
+    },
+    "XLB": {
+      "score": -0.212,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.212,
+      "haven_beta": -0.6,
+      "monetary": 0.0,
+      "monetary_beta": 0.3
+    },
+    "XRP-USD": {
+      "score": -0.212,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.212,
+      "haven_beta": -0.6,
+      "monetary": 0.0,
+      "monetary_beta": 0.5
+    },
+    "XLC": {
+      "score": -0.212,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.212,
+      "haven_beta": -0.6,
+      "monetary": 0.0,
+      "monetary_beta": 0.3
+    },
+    "MSFT": {
+      "score": -0.212,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.212,
+      "haven_beta": -0.6,
+      "monetary": 0.0,
+      "monetary_beta": 0.3
+    },
+    "XLU": {
+      "score": -0.212,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.212,
+      "haven_beta": -0.6,
+      "monetary": 0.0,
+      "monetary_beta": 0.3
+    },
+    "AAPL": {
+      "score": -0.212,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.212,
+      "haven_beta": -0.6,
+      "monetary": 0.0,
+      "monetary_beta": 0.3
+    },
+    "BNB-USD": {
+      "score": -0.212,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.212,
+      "haven_beta": -0.6,
+      "monetary": 0.0,
+      "monetary_beta": 0.5
+    },
+    "XLY": {
+      "score": -0.212,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.212,
+      "haven_beta": -0.6,
+      "monetary": 0.0,
+      "monetary_beta": 0.3
+    },
+    "SOL-USD": {
+      "score": -0.247,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.247,
+      "haven_beta": -0.7,
+      "monetary": 0.0,
+      "monetary_beta": 0.6
+    },
+    "EURUSD": {
+      "score": -0.333,
+      "raw": -1.4,
+      "macro": -2.2,
+      "count": 1,
+      "confidence": 0.42,
+      "recency": 0.972,
+      "geo": -0.106,
+      "haven_beta": -0.3,
+      "monetary": 0.0,
+      "monetary_beta": 0.55
+    },
+    "XAUUSD": {
+      "score": 0.318,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": 0.318,
+      "haven_beta": 0.9,
+      "monetary": 0.0,
+      "monetary_beta": 1.0
+    },
+    "XLK": {
+      "score": -0.212,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.212,
       "haven_beta": -0.6,
       "monetary": 0.0,
       "monetary_beta": 0.3
     },
     "XLV": {
-      "score": -0.213,
+      "score": -0.212,
       "raw": 0.0,
       "macro": -2.2,
       "count": 0,
       "confidence": 0.0,
       "recency": 0.0,
-      "geo": -0.213,
+      "geo": -0.212,
       "haven_beta": -0.6,
       "monetary": 0.0,
       "monetary_beta": 0.3
     },
-    "XLP": {
-      "score": -0.213,
+    "XOM": {
+      "score": -0.212,
       "raw": 0.0,
       "macro": -2.2,
       "count": 0,
       "confidence": 0.0,
       "recency": 0.0,
-      "geo": -0.213,
+      "geo": -0.212,
       "haven_beta": -0.6,
       "monetary": 0.0,
       "monetary_beta": 0.3
     },
     "AMZN": {
-      "score": -0.213,
+      "score": -0.212,
       "raw": 0.0,
       "macro": -2.2,
       "count": 0,
       "confidence": 0.0,
       "recency": 0.0,
-      "geo": -0.213,
+      "geo": -0.212,
+      "haven_beta": -0.6,
+      "monetary": 0.0,
+      "monetary_beta": 0.3
+    },
+    "USDJPY": {
+      "score": -0.141,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.141,
+      "haven_beta": -0.4,
+      "monetary": -0.0,
+      "monetary_beta": -0.45
+    },
+    "XLP": {
+      "score": -0.212,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.212,
+      "haven_beta": -0.6,
+      "monetary": 0.0,
+      "monetary_beta": 0.3
+    },
+    "META": {
+      "score": -0.212,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.212,
+      "haven_beta": -0.6,
+      "monetary": 0.0,
+      "monetary_beta": 0.3
+    },
+    "XLI": {
+      "score": -0.212,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.212,
+      "haven_beta": -0.6,
+      "monetary": 0.0,
+      "monetary_beta": 0.3
+    },
+    "XLE": {
+      "score": -0.212,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.212,
+      "haven_beta": -0.6,
+      "monetary": 0.0,
+      "monetary_beta": 0.3
+    },
+    "SPX": {
+      "score": -0.475,
+      "raw": -3.69,
+      "macro": -2.2,
+      "count": 3,
+      "confidence": 0.68,
+      "recency": 0.25,
+      "geo": -0.282,
+      "haven_beta": -0.8,
+      "monetary": 0.0,
+      "monetary_beta": 0.65
+    },
+    "AVAX-USD": {
+      "score": -0.247,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.247,
+      "haven_beta": -0.7,
+      "monetary": 0.0,
+      "monetary_beta": 0.6
+    },
+    "TSLA": {
+      "score": -0.212,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.212,
+      "haven_beta": -0.6,
+      "monetary": 0.0,
+      "monetary_beta": 0.3
+    },
+    "XLRE": {
+      "score": -0.212,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.212,
+      "haven_beta": -0.6,
+      "monetary": 0.0,
+      "monetary_beta": 0.3
+    },
+    "GOOGL": {
+      "score": -0.212,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.212,
+      "haven_beta": -0.6,
+      "monetary": 0.0,
+      "monetary_beta": 0.3
+    },
+    "NVDA": {
+      "score": -0.212,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.212,
+      "haven_beta": -0.6,
+      "monetary": 0.0,
+      "monetary_beta": 0.3
+    },
+    "JPM": {
+      "score": -0.212,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.212,
+      "haven_beta": -0.6,
+      "monetary": 0.0,
+      "monetary_beta": 0.3
+    },
+    "DOGE-USD": {
+      "score": -0.3,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.3,
+      "haven_beta": -0.85,
+      "monetary": 0.0,
+      "monetary_beta": 0.6
+    },
+    "LINK-USD": {
+      "score": -0.247,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.247,
+      "haven_beta": -0.7,
+      "monetary": 0.0,
+      "monetary_beta": 0.55
+    },
+    "LLY": {
+      "score": -0.212,
+      "raw": 0.0,
+      "macro": -2.2,
+      "count": 0,
+      "confidence": 0.0,
+      "recency": 0.0,
+      "geo": -0.212,
       "haven_beta": -0.6,
       "monetary": 0.0,
       "monetary_beta": 0.3
     }
   },
   "risk_off": {
-    "level": 0.646,
-    "raw": 2.45,
-    "count": 28,
+    "level": 0.642,
+    "raw": 2.46,
+    "count": 29,
     "top": [
       {
         "title": "Texas brothers sentenced to 15 years in prison for armed crypto robbery, kidnapping",
@@ -6823,24 +6836,24 @@
         "url": "https://cointelegraph.com/news/texas-brothers-sentenced-to-15-years-in-prison-for-armed-crypto-robbery-kidnapping?utm_source=rss_feed&utm_medium=rss&utm_campaign=rss_partner_inbound"
       },
       {
-        "title": "Iran lawmakers call for withdrawal from NPT: Will we have war or peace?",
-        "source": "Al Jazeera",
+        "title": "Face aux spéculations de nouvelles frappes sur l'Iran, Mojtaba Khamenei menace de riposter",
+        "source": "France 24",
         "risk": 4.8,
         "terms": [
-          "nuclear",
-          "war"
+          "frappes",
+          "guerre"
         ],
-        "url": "https://www.aljazeera.com/news/2026/10/31/iran-lawmakers-call-for-withdrawal-from-npt-will-we-have-war-or-peace?traffic_source=rss"
+        "url": "https://www.france24.com/fr/moyen-orient/20261031-iran-%C3%A9tats-unis-isra%C3%ABl-guere-face-aux-sp%C3%A9culations-de-nouvelles-frappes-mojtaba-khamenei-menace-d-une-riposte-imm%C3%A9diate"
       },
       {
-        "title": "Iran warns of unfettered retaliation if attacked as mediators try for peace",
-        "source": "Al Jazeera",
-        "risk": 4.4,
+        "title": "Cédric Chetaille, contre-amiral : « Nous assistons à une forme de nouvelle “guerre des étoiles” sous-marine »",
+        "source": "Le Monde",
+        "risk": 4.8,
         "terms": [
-          "retaliation",
-          "attack"
+          "nucléaire",
+          "guerre"
         ],
-        "url": "https://www.aljazeera.com/news/2026/10/31/iran-warns-of-unfettered-retaliation-if-attacked-as-mediators-try-for-peace?traffic_source=rss"
+        "url": "https://www.lemonde.fr/international/article/2026/10/31/cedric-chetaille-contre-amiral-nous-assistons-a-une-forme-de-nouvelle-guerre-des-etoiles-sous-marine_6803715_3210.html"
       },
       {
         "title": "Gulf states must rethink trillion-dollar defence in light of US-Iran war, says report",
@@ -6871,12 +6884,6 @@
     "open_risk": 0,
     "positions": [],
     "equity_curve": [
-      {
-        "t": "2026-10-06T22:14:27+00:00",
-        "equity": 9949.7,
-        "capital": 9949.7,
-        "open": 0
-      },
       {
         "t": "2026-10-06T22:29:56+00:00",
         "equity": 9949.7,
@@ -9870,10 +9877,16 @@
         "equity": 9949.7,
         "capital": 9949.7,
         "open": 0
+      },
+      {
+        "t": "2026-10-31T19:02:30+00:00",
+        "equity": 9949.7,
+        "capital": 9949.7,
+        "open": 0
       }
     ],
     "closed_count": 12,
-    "updated_at": "2026-10-31T15:03:54+00:00"
+    "updated_at": "2026-10-31T19:02:30+00:00"
   },
   "closed_this_cycle": [],
   "counts": {
